@@ -15,19 +15,11 @@
 </style>
 @endsection
 
-@section('content-title', 'Warehouse Tools')
+@section('content-title', 'Ongoing TEIS Request')
 
 @section('content')
     <!-- Page Content -->
     <div class="content">
-        @if (Auth::user()->user_type_id == 2 || Auth::user()->user_type_id == 1)
-        <button type="button" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
-            data-bs-target="#modal-tools"><i class="fa fa-plus me-1"></i>Add Tools</button>
-        @endif
-        @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4)
-        <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
-            data-bs-target="#requestToolsModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
-        @endif
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -35,18 +27,14 @@
                     class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
-                            <th  style="padding-right: 10px;"></th>
-                            <th>PO Number</th>
-                            <th>Asset Code</th>
-                            <th>Serial#</th>
-                            <th>Item Code</th>
-                            <th>Item Desc</th>
-                            <th>Brand</th>
-                            <th>Location</th>
-                            <th>Status</th>
+                            <th style="padding-right: 10px;"></th>
+                            <th>TEIS#</th>
+                            <th>Customer Name</th>
+                            <th>Project Code</th>
+                            <th>Project Name</th>
+                            <th>Project Address</th>
+                            <th>Date Requested</th>
                             <th>Action</th>
-                            {{-- <th style="width: 15%;">Access</th>
-                    <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
                         </tr>
                     </thead>
                     <tbody>
@@ -254,8 +242,6 @@
         </div>
     </div>
 
-    @include('pages.modals.request_tool_modal')
-
 @endsection
 
 
@@ -309,12 +295,6 @@
                     },
                     {
                         data: 'brand'
-                    },
-                    {
-                        data: 'location'
-                    },
-                    {
-                        data: 'tools_status'
                     },
                     {
                         data: 'action'
