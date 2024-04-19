@@ -20,9 +20,12 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/warehouse', 'pages.warehouse');
     Route::view('/pages/project_site', 'pages.project_site');
     Route::view('/pages/datatables', 'pages.datatables');
+    Route::view('/pages/datatables', 'pages.datatables');
+    Route::view('/pages/request_ongoing', 'pages.request_ongoing');
+    Route::view('/pages/request_completed', 'pages.request_completed');
+    // Route::view('/pages/slick', 'pages.slick');
 });
 
-// Route::view('/pages/blank', 'pages.blank');
 
 Route::controller(WarehouseController::class)->group(function () {
     Route::post('add_warehouse_tools', 'add_tools')->name('add_tools');

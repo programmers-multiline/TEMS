@@ -156,18 +156,18 @@
                 </ul>
               </li>
               <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
-                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
+                <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/request_ongoing', 'pages/request_completed') ? ' active' : '' }}" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                   <i class="nav-main-link-icon fa fa-file-pen"></i>
                   <span class="nav-main-link-name">My TEIS Request</span>
                 </a>
                 <ul class="nav-main-submenu">
                   <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/datatables') ? ' active' : '' }}" href="/pages/datatables">
+                    <a class="nav-main-link{{ request()->is('pages/request_ongoing') ? ' active' : '' }}" href="/pages/request_ongoing">
                       <span class="nav-main-link-name">Ongoing</span>
                     </a>
                   </li>
                   <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/slick') ? ' active' : '' }}" href="/pages/slick">
+                    <a class="nav-main-link{{ request()->is('pages/request_completed') ? ' active' : '' }}" href="/pages/request_completed">
                       <span class="nav-main-link-name">Completed</span>
                     </a>
                   </li>
