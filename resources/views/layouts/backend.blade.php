@@ -132,24 +132,24 @@
                 </a>
               </li>
               <li class="nav-main-item">
-                <a class="nav-main-link{{ request()->is('') ? ' active' : '' }}" href="/">
+                <a class="nav-main-link{{ request()->is('pages/my_te') ? ' active' : '' }}" href="/pages/my_te">
                   <i class="nav-main-link-icon fa fa-screwdriver-wrench"></i>
                   <span class="nav-main-link-name">My Tools and Equipment</span>
                 </a>
               </li>
               <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
-                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
+                <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/pullout_ongoing', 'pages/pullout_completed') ? ' active' : '' }}" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                   <i class="nav-main-link-icon fa fa-arrows-turn-right"></i>
                   <span class="nav-main-link-name">Pull-Out Request</span>
                 </a>
                 <ul class="nav-main-submenu">
                   <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/datatables') ? ' active' : '' }}" href="/pages/datatables">
+                    <a class="nav-main-link{{ request()->is('pages/pullout_ongoing') ? ' active' : '' }}" href="/pages/pullout_ongoing">
                       <span class="nav-main-link-name">Ongoing</span>
                     </a>
                   </li>
                   <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/slick') ? ' active' : '' }}" href="/pages/slick">
+                    <a class="nav-main-link{{ request()->is('pages/pullout_completed') ? ' active' : '' }}" href="/pages/pullout_completed">
                       <span class="nav-main-link-name">Completed</span>
                     </a>
                   </li>
@@ -172,6 +172,12 @@
                     </a>
                   </li>
                 </ul>
+              </li>
+              <li class="nav-main-item">
+                <a class="nav-main-link{{ request()->is('pages') ? ' active' : '' }}" href="/pages/my_te">
+                  <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
+                  <span class="nav-main-link-name">Site to Site Transfer</span>
+                </a>
               </li>
               {{-- <li class="nav-main-item{{ request()->is('pages/*') ? ' open' : '' }}">
                 <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">

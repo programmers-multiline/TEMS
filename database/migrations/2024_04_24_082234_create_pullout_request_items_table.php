@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transfer_request_items', function (Blueprint $table) {
+        Schema::create('pullout_request_items', function (Blueprint $table) {
             $table->id();
+            $table->integer('pullout_request_id');
             $table->integer('tool_id');
-            $table->integer('teis_number');
+            $table->integer('pullout_number');
+            $table->integer('user_id');
+            $table->integer('status');
+            $table->timestamps();
         });
     }
 
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transfer_request_items');
+        Schema::dropIfExists('pullout_request_items');
     }
 };

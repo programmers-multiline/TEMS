@@ -36,6 +36,7 @@
                     <thead>
                         <tr>
                             <th  style="padding-right: 10px;"></th>
+                            <th>ID</th>
                             <th>PO Number</th>
                             <th>Asset Code</th>
                             <th>Serial#</th>
@@ -273,6 +274,7 @@
   </script> --}}
 
 
+
     <script>
         $(document).ready(function() {
             const table = $("#table").DataTable({
@@ -281,7 +283,8 @@
                 searchable: true,
                 pagination: true,
                 "aoColumnDefs": [
-                    { "bSortable": false, "aTargets": [ 0 ] }
+                    { "bSortable": false, "aTargets": [ 0 ] },
+                    { "targets": [1], "visible": false, "searchable": false }
                 ],
                 ajax: {
                     type: 'get',
@@ -291,6 +294,9 @@
                     {
                         data: null,
                         render: DataTable.render.select()
+                    },
+                    {
+                        data: 'id'
                     },
                     {
                         data: 'po_number'
@@ -320,7 +326,11 @@
                         data: 'action'
                     },
                 ],
-                select: true
+                select: true,
+                select: {
+                    style: 'multi+shift',
+                    selector: 'td'
+                },
             });
 
             $("#poNumber").keypress(function(e) {
@@ -352,6 +362,8 @@
                     }
                 })
             })
+
+            // table.select.selector('td:first-child');
 
 
             $(document).on('click', '#editBtn', function() {
@@ -451,7 +463,7 @@
                 for(var i = 0; i < data.length; i++ ){
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
                     
-                $("#tbodyModal").append(`<tr><td>${data[i].item_code}</td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`);
+                $("#tbodyModal").append(`<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`);
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
 
@@ -459,6 +471,44 @@
 
             $(".closeModalRfteis").click(function(){
                 $("#tbodyModal").empty()
+            })
+
+
+
+
+            $("#requestToolsModalBtn").click(function(){
+                const pe = $("#pe").val();
+                const subcon = $("#subcon").val();
+                const date = $("#date").val();
+                const customerName = $("#customerName").val();
+                const projectName = $("#projectName").val();
+                const projectCode = $("#projectCode").val();
+                const projectAddress = $("#projectAddress").val();
+
+                const id = $("#tbodyModal input[type=hidden]").map((i, id) => id.defaultValue);
+
+                const selectedItemId = [];
+
+                for(var i = 0; i < id.length; i++ ){
+                    selectedItemId.push(id[i])
+                }
+
+                const arrayToString = JSON.stringify(selectedItemId);
+
+                $.ajax({
+                    url: '{{route("request_tools")}}',
+                    method: 'post',
+                    data: {
+                        pe, subcon, date, customerName, projectName, projectCode, projectAddress,
+                        idArray: arrayToString,
+                        _token: "{{csrf_token()}}"
+                    },
+                    success(){
+                        // table.ajax.reload();
+                    }
+                })
+
+                // #tbodyModal > tr:nth-child(1) > td:nth-child(1) > input[type=text]
             })
             
         })

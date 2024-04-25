@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use DataTables;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\TransferRequest;
 use App\Models\ToolsAndEquipment;
+use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 
 class WarehouseController extends Controller
@@ -120,6 +123,51 @@ class WarehouseController extends Controller
         $deleteTools->update();
 
     }
+
+
+    public function request_tools(Request $request){
+
+        $prev_tn = TransferRequest::where('status', 1)->orderBy('teis_number', 'desc')->first();
+        
+
+        $new_teis_number = '';
+        if(!$prev_tn){
+            $new_teis_number = 1;
+        }else{
+            $new_teis_number = $prev_tn->teis_number + 1;
+        }
+
+        TransferRequest::create([
+            'teis_number' => $new_teis_number,
+            'pe' => Auth::user()->id,
+            'subcon' => $request->subcon,
+            'customer_name' => $request->customerName,
+            'project_name' => $request->projectName,
+            'project_code' => $request->projectCode,
+            'project_address' => $request->projectAddress,
+            'date_requested' => Carbon::now(),
+            'status' => 1,
+        ]);
+
+        $last_id = TransferRequest::orderBy('id', 'desc')->first();
+
+
+        $array_id = json_decode($request->idArray);
+
+        $array_count = count($array_id);
+
+        for ($i=0; $i < $array_count; $i++) { 
+            TransferRequestItems::create([
+                'tool_id' => $array_id[$i],
+                'teis_number' => $new_teis_number,
+                'transfer_request_id' => $last_id->id,
+                'pe' => Auth::user()->id,
+                'status' => 1,
+            ]);
+        }
+
+    }
+
 
 
  
