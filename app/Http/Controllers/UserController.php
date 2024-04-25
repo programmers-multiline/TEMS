@@ -43,7 +43,7 @@ class UserController extends Controller
 
         if($user->user_type_id == 1){
             return redirect()->intended('dashboard')->withSuccess('Login Successfully');;
-        }else if($user->user_type_id == 3){
+        }else if($user->user_type_id == 3 || $user->user_type_id == 4){
             return redirect()->intended('dashboard_PM')->withSuccess('Login Successfully');
         }
 

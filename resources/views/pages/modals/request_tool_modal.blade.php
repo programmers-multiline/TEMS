@@ -17,12 +17,11 @@
                             <div class="col-5">
                                 <label class="form-label" for="pe">Project Enginner <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="pe" name="pe"
+                                <input type="text" class="form-control" id="pe" name="pe" value="{{Auth::user()->fullname}}" disabled
                                     placeholder="Enter PE" required>
                             </div>
                             <div class="col-4">
-                                <label class="form-label" for="subcon">Subcon <span
-                                        class="text-danger">*</span></label>
+                                <label class="form-label" for="subcon">Subcon</label>
                                 <input type="text" class="form-control" id="subcon" name="subcon"
                                     placeholder="Enter Subcon">
                             </div>
