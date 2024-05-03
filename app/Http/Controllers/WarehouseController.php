@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use DataTables;
 use Carbon\Carbon;
+use App\Models\Daf;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Models\TransferRequest;
 use App\Models\ToolsAndEquipment;
@@ -12,6 +14,18 @@ use Illuminate\Support\Facades\Auth;
 
 class WarehouseController extends Controller
 {
+
+    public function view_warehouse(){
+
+        $warehouses = Warehouse::where('status', 1)->get();
+
+        // $department_name =
+
+        return view('/pages/warehouse', compact('warehouses'));
+
+    }
+
+
     public function add_tools(Request $request){
 
 
@@ -48,20 +62,41 @@ class WarehouseController extends Controller
         $action = '';
         $status = '';
 
+        if($request->warehouseId){
+            $tools = ToolsAndEquipment::leftJoin('warehouses','warehouses.id','tools_and_equipment.location')
+            ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+            ->where('tools_and_equipment.status', 1)
+            ->where('tools_and_equipment.wh_ps', 'wh')
+            ->where('location', $request->warehouseId)
+            ->get();
+        }else{
+            $tools = ToolsAndEquipment::leftJoin('warehouses','warehouses.id','tools_and_equipment.location')
+            ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+            ->where('tools_and_equipment.status', 1)
+            ->where('tools_and_equipment.wh_ps', 'wh')
+            ->get();
+        }
         
-        $tools = ToolsAndEquipment::where('status', 1)->where('wh_ps', 'wh')->get();
+        
         
         return DataTables::of($tools)
         
         
         // ->addColumn('box', function($row){
-        //     return $box = '
-        //       <div class="form-check">
-        //         <input class="form-check-input" style="margin-left: -10px" type="checkbox">
-        //         <label class="form-check-label" for="row_1"></label>
-        //         </div>
-        //       ';
-        // })
+            //     return $box = '
+            //       <div class="form-check">
+            //         <input class="form-check-input" style="margin-left: -10px" type="checkbox">
+            //         <label class="form-check-label" for="row_1"></label>
+            //         </div>
+            //       ';
+            // })
+            
+            ->setRowClass(function ($row) {
+            $tool_id = TransferRequestItems::where('status', 1)->get();
+            $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
+
+            return in_array($row->id, $toolIds) ? 'bg-gray' : '';
+        })
         
         ->addColumn('tools_status', function($row){
             $status = $row->tools_status;
@@ -147,6 +182,13 @@ class WarehouseController extends Controller
             'project_address' => $request->projectAddress,
             'date_requested' => Carbon::now(),
             'status' => 1,
+        ]);
+
+
+        Daf::create([
+            'daf_number' => $new_teis_number,
+            'user_id' => Auth::user()->id,
+            'date' => Carbon::now(),
         ]);
 
         $last_id = TransferRequest::orderBy('id', 'desc')->first();

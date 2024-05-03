@@ -145,7 +145,7 @@
                     style: 'multi+shift',
                     selector: 'td'
                 },
-                });
+            });
 
 
                 

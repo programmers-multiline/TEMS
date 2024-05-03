@@ -1,18 +1,17 @@
 @extends('layouts.backend')
 
 @section('css')
-<link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
 
-<style>
-    #table > thead > tr > th.text-center.dt-orderable-none.dt-ordering-asc > span.dt-column-order{
-        display: none;
-    }
+    <style>
+        #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
+            display: none;
+        }
 
-    #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
-        display: none;
-    }
-
-</style>
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
+            display: none;
+        }
+    </style>
 @endsection
 
 @section('content-title', 'Warehouse Tools')
@@ -21,21 +20,33 @@
     <!-- Page Content -->
     <div class="content">
         @if (Auth::user()->user_type_id == 2 || Auth::user()->user_type_id == 1)
-        <button type="button" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
-            data-bs-target="#modal-tools"><i class="fa fa-plus me-1"></i>Add Tools</button>
+            <button type="button" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
+                data-bs-target="#modal-tools"><i class="fa fa-plus me-1"></i>Add Tools</button>
         @endif
         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4)
-        <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
-            data-bs-target="#requestToolsModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
+            <div class="d-flex mb-3 justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fa fa-filter fs-2 me-2 text-secondary"></i>
+                    <select class="form-select" id="selectWarehouse" name="example-select">
+                        <option disabled selected="">Select Warehouse</option>
+                        @foreach ($warehouses as $warehouse)
+                            <option value="{{ $warehouse->id }}">{{ $warehouse->warehouse_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto"
+                    data-bs-toggle="modal" data-bs-target="#requestToolsModal" disabled><i
+                        class="fa fa-pen-to-square me-1"></i>Request Tools</button>
+            </div>
         @endif
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
                 <table id="table"
-                    class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                    class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
-                            <th  style="padding-right: 10px;"></th>
+                            <th style="padding-right: 10px;"></th>
                             <th>ID</th>
                             <th>PO Number</th>
                             <th>Asset Code</th>
@@ -60,11 +71,11 @@
     <!-- END Page Content -->
 
 
-    
 
 
 
-   
+
+
 
 
 
@@ -127,10 +138,9 @@
                                             class="text-danger">*</span></label>
                                     <select class="form-select" id="location" name="location" size="1">
                                         <option disabled selected>Select Location</option>
-                                        <option value="warehouse1">Warehouse 1</option>
-                                        <option value="warehouse2">Warehouse 2</option>
-                                        <option value="warehouse3">Warehouse 3</option>
-                                        <option value="warehouse4">Warehouse 4</option>
+                                        @foreach ($warehouses as $warehouse)
+                                            <option value="{{ $warehouse->id }}">{{ $warehouse->warehouse_name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-6">
@@ -265,11 +275,11 @@
 @section('js')
 
 
-{{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-<script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
-<script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
+    <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
+    <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
 
-{{-- <script type="module">
+    {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
   </script> --}}
 
@@ -282,16 +292,21 @@
                 serverSide: false,
                 searchable: true,
                 pagination: true,
-                "aoColumnDefs": [
-                    { "bSortable": false, "aTargets": [ 0 ] },
-                    { "targets": [1], "visible": false, "searchable": false }
+                "aoColumnDefs": [{
+                        "bSortable": false,
+                        "aTargets": [0]
+                    },
+                    {
+                        "targets": [1],
+                        "visible": false,
+                        "searchable": false
+                    }
                 ],
                 ajax: {
                     type: 'get',
                     url: '{{ route('fetch_tools') }}'
                 },
-                columns: [
-                    {
+                columns: [{
                         data: null,
                         render: DataTable.render.select()
                     },
@@ -317,7 +332,7 @@
                         data: 'brand'
                     },
                     {
-                        data: 'location'
+                        data: 'warehouse_name'
                     },
                     {
                         data: 'tools_status'
@@ -332,6 +347,19 @@
                     selector: 'td'
                 },
             });
+
+
+            table.on('select', function(e, dt, type, indexes) {
+                if (type === 'row') {
+                    var rows = table.rows(indexes).nodes().to$();
+                    $.each(rows, function() {
+                        if ($(this).hasClass('bg-gray')) table.row($(this)).deselect();
+                    })
+                }
+            });
+
+            table.select.selector('td:first-child');
+
 
             $("#poNumber").keypress(function(e) {
                 if (String.fromCharCode(e.keyCode).match(/[^0-9]/g)) return false;
@@ -358,7 +386,7 @@
                         table.ajax.reload();
                         $("#addToolsForm")[0].reset();
                         // $('#closeModal').click();
-      
+
                     }
                 })
             })
@@ -402,7 +430,7 @@
                 const updateStatus = $("#editStatus").val()
 
                 $.ajax({
-                    url: '{{ route("edit_tools") }}',
+                    url: '{{ route('edit_tools') }}',
                     method: 'post',
                     data: {
                         hiddenToolsId,
@@ -425,58 +453,64 @@
                 })
             })
 
-            $(document).on('click','#deleteToolsBtn', function(){
+            $(document).on('click', '#deleteToolsBtn', function() {
                 const id = $(this).data('id');
 
                 $.ajax({
-                    url: '{{route("delete_tools")}}',
+                    url: '{{ route('delete_tools') }}',
                     method: 'post',
                     data: {
                         id,
-                        _token: "{{csrf_token()}}"
+                        _token: "{{ csrf_token() }}"
                     },
-                    success(){
+                    success() {
                         table.ajax.reload();
                     }
                 })
 
             })
 
-            $("#tableContainer").click(function(){
-                const dataCount = table.rows({ selected: true }).count();
+            $("#tableContainer").click(function() {
+                const dataCount = table.rows({
+                    selected: true
+                }).count();
 
-                if(dataCount > 0){
+                if (dataCount > 0) {
                     $("#requesToolstBtn").prop('disabled', false);
-                }else{
+                } else {
                     $("#requesToolstBtn").prop('disabled', true);
-                    
+
                 }
             })
 
-            
-            $("#requesToolstBtn").click(function(){
-                const data = table.rows({ selected: true }).data();
-           
+
+            $("#requesToolstBtn").click(function() {
+                const data = table.rows({
+                    selected: true
+                }).data();
+
                 // const arrItem = []
 
 
-                for(var i = 0; i < data.length; i++ ){
+                for (var i = 0; i < data.length; i++) {
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
-                    
-                $("#tbodyModal").append(`<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`);
+
+                    $("#tbodyModal").append(
+                        `<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`
+                    );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
 
             })
 
-            $(".closeModalRfteis").click(function(){
+            $(".closeModalRfteis").click(function() {
                 $("#tbodyModal").empty()
             })
 
 
 
 
-            $("#requestToolsModalBtn").click(function(){
+            $("#requestToolsModalBtn").click(function() {
                 const pe = $("#pe").val();
                 const subcon = $("#subcon").val();
                 const date = $("#date").val();
@@ -489,28 +523,103 @@
 
                 const selectedItemId = [];
 
-                for(var i = 0; i < id.length; i++ ){
+                for (var i = 0; i < id.length; i++) {
                     selectedItemId.push(id[i])
                 }
 
                 const arrayToString = JSON.stringify(selectedItemId);
 
                 $.ajax({
-                    url: '{{route("request_tools")}}',
+                    url: '{{ route('request_tools') }}',
                     method: 'post',
                     data: {
-                        pe, subcon, date, customerName, projectName, projectCode, projectAddress,
+                        pe,
+                        subcon,
+                        date,
+                        customerName,
+                        projectName,
+                        projectCode,
+                        projectAddress,
                         idArray: arrayToString,
-                        _token: "{{csrf_token()}}"
+                        _token: "{{ csrf_token() }}"
                     },
-                    success(){
+                    success() {
                         // table.ajax.reload();
                     }
                 })
 
                 // #tbodyModal > tr:nth-child(1) > td:nth-child(1) > input[type=text]
             })
-            
+
+
+            $("#selectWarehouse").change(function() {
+
+                const table = $("#table").DataTable({
+                    processing: true,
+                    serverSide: false,
+                    searchable: true,
+                    pagination: true,
+                    destroy:true,
+                    "aoColumnDefs": [{
+                            "bSortable": false,
+                            "aTargets": [0]
+                        },
+                        {
+                            "targets": [1],
+                            "visible": false,
+                            "searchable": false
+                        }
+                    ],
+                    ajax: {
+                        type: 'get',
+                        url: '{{ route('fetch_tools') }}',
+                        data: {
+                        warehouseId: $(this).val(),
+                    }
+                    },
+                    columns: [{
+                            data: null,
+                            render: DataTable.render.select()
+                        },
+                        {
+                            data: 'id'
+                        },
+                        {
+                            data: 'po_number'
+                        },
+                        {
+                            data: 'asset_code'
+                        },
+                        {
+                            data: 'serial_number'
+                        },
+                        {
+                            data: 'item_code'
+                        },
+                        {
+                            data: 'item_description'
+                        },
+                        {
+                            data: 'brand'
+                        },
+                        {
+                            data: 'warehouse_name'
+                        },
+                        {
+                            data: 'tools_status'
+                        },
+                        {
+                            data: 'action'
+                        },
+                    ],
+                    select: true,
+                    select: {
+                        style: 'multi+shift',
+                        selector: 'td'
+                    },
+                });
+            })
+
         })
     </script>
 @endsection

@@ -75,7 +75,7 @@
                 serverSide: false,
                 ajax: {
                     type: 'get',
-                    url: '{{ route('ongoing_teis_request') }}'
+                    url: '{{ route('fetch_ongoing_pullout') }}'
                 },
                 columns: [
                     {
