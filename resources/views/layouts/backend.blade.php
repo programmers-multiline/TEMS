@@ -131,10 +131,28 @@
                   <span class="nav-main-link-name">Dashboard</span>
                 </a>
               </li>
+
+              @if (Auth::user()->user_type_id == 2)
+              <li class="nav-main-item">
+                <a class="nav-main-link{{ request()->is('pages/rftte') ? ' active' : '' }}" href="/pages/rftte">
+                  <i class="nav-main-link-icon fa fa-box-open"></i>
+                  <span class="nav-main-link-name">RFTTE</span>
+                </a>
+              </li>
+              <li class="nav-main-item">
+                <a class="nav-main-link{{ request()->is('pages/pullout_warehouse') ? ' active' : '' }}" href="/pages/pullout_warehouse">
+                  <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
+                  <span class="nav-main-link-name">Pull-Out</span>
+                </a>
+              </li>
+              @endif
+
+              @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
               <li class="nav-main-item">
                 <a class="nav-main-link{{ request()->is('pages/my_te') ? ' active' : '' }}" href="/pages/my_te">
                   <i class="nav-main-link-icon fa fa-screwdriver-wrench"></i>
-                  <span class="nav-main-link-name">My Tools and Equipment</span>
+                  <span class="nav-main-link-name">
+                    Tools and Equipment</span>
                 </a>
               </li>
               <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
@@ -158,7 +176,7 @@
               <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                 <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/request_ongoing', 'pages/request_completed') ? ' active' : '' }}" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                   <i class="nav-main-link-icon fa fa-file-pen"></i>
-                  <span class="nav-main-link-name">My TEIS Request</span>
+                  <span class="nav-main-link-name">TEIS Request</span>
                 </a>
                 <ul class="nav-main-submenu">
                   <li class="nav-main-item">
@@ -179,32 +197,10 @@
                   <span class="nav-main-link-name">Site to Site Transfer</span>
                 </a>
               </li>
-              {{-- <li class="nav-main-item{{ request()->is('pages/*') ? ' open' : '' }}">
-                <a class="nav-main-link nav-main-link-submenu" data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
-                  <i class="nav-main-link-icon fa fa-lightbulb"></i>
-                  <span class="nav-main-link-name">Pull-Out Request</span>
-                </a>
-                <ul class="nav-main-submenu">
-                  <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/datatables') ? ' active' : '' }}" href="/pages/datatables">
-                      <span class="nav-main-link-name">DataTables</span>
-                    </a>
-                  </li>
-                  <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/slick') ? ' active' : '' }}" href="/pages/slick">
-                      <span class="nav-main-link-name">Slick Slider</span>
-                    </a>
-                  </li>
-                  <li class="nav-main-item">
-                    <a class="nav-main-link{{ request()->is('pages/blank') ? ' active' : '' }}" href="/pages/blank">
-                      <span class="nav-main-link-name">Blank</span>
-                    </a>
-                  </li>
-                </ul>
-              </li> --}}
+              @endif
               <li class="nav-main-heading">Tools and Equipment from</li>
               <li class="nav-main-item">
-                <a class="nav-main-link{{ request()->is('pages/warehouse') ? ' active' : '' }}" href="/pages/warehouse">
+                <a class="nav-main-link{{ request()->is('pages/warehouse') ? ' active' : '' }}" href="/view_warehouse">
                   <i class="nav-main-link-icon fa fa-warehouse"></i>
                   <span class="nav-main-link-name">Warehouse</span>
                 </a>
