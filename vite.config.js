@@ -8,7 +8,7 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/sass/main.scss',
-                'resources/js/codebase/app.js'
+                'resources/scss/style.scss'
         ],
             refresh: true,
         }),
