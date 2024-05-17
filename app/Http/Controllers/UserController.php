@@ -9,7 +9,6 @@ class UserController extends Controller
 {
     public function auth_login(Request $request){
 
-        // $user = User::where('username', $request->login_username)->first();
 
         // if(!$user){
         //     notyf()->position('y', 'top')->addError('Invalid Credential.');
