@@ -522,12 +522,12 @@
 
 
 
-    <script src="{{ asset('public/js/lib/jquery.min.js') }}"></script>
-    <script src="{{ asset('public/js/plugins/datatables/dataTables.min.js') }}"></script>
-    <script src="{{ asset('public/js/plugins/datatables-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
-    <script src="{{ asset('public/js/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ asset('public/js/plugins/datatables-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
-    <script src="{{ asset('public/js/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('js/lib/jquery.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables/dataTables.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
     {{-- <script src="{{asset('js/plugins/datatables-buttons/dataTables.buttons.min.js')}}"></script>
   <script src="{{asset('js/plugins/datatables-buttons-bs5/js/buttons.bootstrap5.min.js')}}"></script>
   <script src="{{asset('js/plugins/datatables-buttons-jszip/jszip.min.js')}}"></script>
