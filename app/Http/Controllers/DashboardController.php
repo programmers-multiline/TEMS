@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Daf;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\TransferRequest;
