@@ -41,11 +41,7 @@ class UserController extends Controller
         // Logged
         Auth::login($user);
 
-        if($user->user_type_id == 1){
-            return redirect()->intended('dashboard')->withSuccess('Login Successfully');;
-        }else if($user->user_type_id == 2 || $user->user_type_id == 3 || $user->user_type_id == 4 || $user->user_type_id == 5){
-            return redirect()->intended('dashboard_PM')->withSuccess('Login Successfully');
-        }
+        return redirect()->intended('dashboard')->withSuccess('Login Successfully');
 
         // return redirect route;
 

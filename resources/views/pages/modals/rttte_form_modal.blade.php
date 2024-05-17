@@ -1,6 +1,6 @@
 <div class="modal fade" id="rttteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
     aria-labelledby="modal-popin" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
         <div class="modal-content">
             <div class="block block-rounded shadow-none mb-0">
                 <div class="block-header block-header-default">
@@ -14,29 +14,25 @@
                 <div class="block-content fs-sm">
                     <form id="rttteForm">
                         @csrf
-                        <div class="col-5">
-                            <label class="form-label" for="pe">Project Enginner <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="pe" name="pe"
-                                value="{{ Auth::user()->fullname }}" disabled placeholder="Enter PE" required>
-                        </div>
-                        <div class="col-5">
-                            <label class="form-label" for="customerName">Customer Name <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="customerName" name="customerName"
-                                placeholder="Enter Customer Name">
-                        </div>
-                        <div class="col-4">
+                        <div class="col-12 mb-3">
                             <label class="form-label" for="projectName">Project Name <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="projectName" name="projectName"
                                 placeholder="Enter Project Name">
                         </div>
-                        <div class="col-3">
-                            <label class="form-label" for="projectCode">Project Code <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="projectCode" name="projectCode"
-                                placeholder="Enter Project code">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label" for="pe">Project Enginner <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="pe" name="pe"
+                                    value="{{ Auth::user()->fullname }}" disabled placeholder="Enter PE" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label" for="projectCode">Project Code <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="projectCode" name="projectCode"
+                                    placeholder="Enter Project code">
+                            </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="projectAddress">Project Address <span
@@ -47,7 +43,7 @@
                     </form>
                     <hr class="mt-5">
                     <h3 class="mb-1 text-secondary">Selected Tools</h3>
-                    <table class="table table-hover table-borderless table-vcenter">
+                    <table class="table table-hover table-bordered table-vcenter">
                         <thead>
                             <tr>
                                 <th>Item Code</th>
@@ -63,7 +59,7 @@
                         data-bs-dismiss="modal">
                         Close
                     </button>
-                    <button id="requestToolsModalBtn" type="button" class="btn btn-alt-primary">
+                    <button id="psRequestToolsModalBtn" type="button" class="btn btn-alt-primary">
                         Request
                     </button>
                 </div>

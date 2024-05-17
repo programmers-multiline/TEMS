@@ -7,10 +7,15 @@ use Carbon\Carbon;
 use App\Models\Daf;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use App\Models\RequestApprover;
 use App\Models\TransferRequest;
 use App\Models\ToolsAndEquipment;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+use App\Mail\ApproverEmail;
+
 
 class WarehouseController extends Controller
 {
@@ -21,7 +26,10 @@ class WarehouseController extends Controller
 
         // $department_name =
 
-        return view('/pages/warehouse', compact('warehouses'));
+        $search = Route::input('search');
+        $desc = Route::input('desc');
+
+        return view('/pages/warehouse', compact('warehouses','search', 'desc'));
 
     }
 
@@ -90,12 +98,15 @@ class WarehouseController extends Controller
             //         </div>
             //       ';
             // })
-            
-            ->setRowClass(function ($row) {
-            $tool_id = TransferRequestItems::where('status', 1)->get();
-            $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
+            ->setRowClass(function ($row) { 
+                $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
+                ->select('transfer_request_items.*')
+                ->where('transfer_requests.progress', 'ongoing')
+                ->where('transfer_requests.status', 1)->get();
+        
+                $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
 
-            return in_array($row->id, $toolIds) ? 'bg-gray' : '';
+                return in_array($row->id, $toolIds) ? 'bg-gray' : '';
         })
         
         ->addColumn('tools_status', function($row){
@@ -124,6 +135,8 @@ class WarehouseController extends Controller
             }else if($user_type == 3 || $user_type == 4){
                 $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
                 <i class="fa fa-file-pen"></i></button>';
+            }else{
+                $action = '';
             }
             return $action;
         })
@@ -162,6 +175,13 @@ class WarehouseController extends Controller
 
     public function request_tools(Request $request){
 
+        // return $request->idArray;
+
+
+        $mail_data = [];
+        $mail_approvers = [];
+        $mail_Items = [];
+
         $prev_tn = TransferRequest::where('status', 1)->orderBy('teis_number', 'desc')->first();
         
 
@@ -181,6 +201,7 @@ class WarehouseController extends Controller
             'project_code' => $request->projectCode,
             'project_address' => $request->projectAddress,
             'date_requested' => Carbon::now(),
+            'tr_type' => 'rfteis',
             'status' => 1,
         ]);
 
@@ -207,6 +228,36 @@ class WarehouseController extends Controller
                 'status' => 1,
             ]);
         }
+
+
+
+        $approvers = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+        ->select('request_approvers.*', 'users.fullname', 'users.email')
+        ->where('request_approvers.status', 1)->where('request_type', 1)
+        ->where('request_approvers.request_id', $last_id->id)
+        ->orderBy('request_approvers.sequence', 'asc')
+        ->get();
+
+        foreach ($approvers as $approver) {
+            array_push($mail_approvers, ['fullname' => $approver->fullname]);
+        }
+
+        $tools = ToolsAndEquipment::where('status', 1)->whereIn('id',$array_id)->get();
+
+        foreach ($tools as $tool) {
+            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+        }
+        
+
+        
+        
+        
+        foreach ($approvers as $approver) {
+            $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+        
+            Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+        }
+
 
     }
 

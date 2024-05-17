@@ -148,7 +148,9 @@
             });
 
 
-                
+            $("#contact").keypress(function(e) {
+                if (String.fromCharCode(e.keyCode).match(/[^0-9]/g)) return false;
+            });
                 
             
             $('#projectCode').change(function(){
@@ -285,7 +287,8 @@
                     method: 'post',
                     data: finalData,
                     success(){
-                        // table.ajax.reload();
+                        table.ajax.reload();
+                        
                     }
                 })
 

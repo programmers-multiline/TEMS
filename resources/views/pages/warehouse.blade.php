@@ -42,8 +42,7 @@
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table"
-                    class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table" class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
@@ -56,7 +55,9 @@
                             <th>Brand</th>
                             <th>Location</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            @if (!Auth::user()->user_type_id == 6)
+                                <th>Action</th>
+                            @endif
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
                         </tr>
@@ -292,6 +293,7 @@
                 serverSide: false,
                 searchable: true,
                 pagination: true,
+                destroy: true,
                 "aoColumnDefs": [{
                         "bSortable": false,
                         "aTargets": [0]
@@ -349,16 +351,98 @@
             });
 
 
-            table.on('select', function(e, dt, type, indexes) {
-                if (type === 'row') {
-                    var rows = table.rows(indexes).nodes().to$();
-                    $.each(rows, function() {
-                        if ($(this).hasClass('bg-gray')) table.row($(this)).deselect();
-                    })
-                }
-            });
+            if (@json($search) == "search") {
 
-            table.select.selector('td:first-child');
+
+                $("#table").DataTable({
+                    processing: true,
+                    serverSide: false,
+                    searchable: true,
+                    pagination: true,
+                    destroy: true,
+                    "aoColumnDefs": [{
+                            "bSortable": false,
+                            "aTargets": [0]
+                        },
+                        {
+                            "targets": [1],
+                            "visible": false,
+                            "searchable": false
+                        }
+                    ],
+                    "search": {
+                        "search": @json($desc)
+                    },
+                    ajax: {
+                        type: 'get',
+                        url: '{{ route('fetch_tools') }}'
+                    },
+                    columns: [{
+                            data: null,
+                            render: DataTable.render.select()
+                        },
+                        {
+                            data: 'id'
+                        },
+                        {
+                            data: 'po_number'
+                        },
+                        {
+                            data: 'asset_code'
+                        },
+                        {
+                            data: 'serial_number'
+                        },
+                        {
+                            data: 'item_code'
+                        },
+                        {
+                            data: 'item_description'
+                        },
+                        {
+                            data: 'brand'
+                        },
+                        {
+                            data: 'warehouse_name'
+                        },
+                        {
+                            data: 'tools_status'
+                        },
+                        {
+                            data: 'action'
+                        },
+                    ],
+                    select: true,
+                    select: {
+                        style: 'multi+shift',
+                        selector: 'td'
+                    },
+
+                });
+
+
+                table.on('select', function(e, dt, type, indexes) {
+                    if (type === 'row') {
+                        var rows = table.rows(indexes).nodes().to$();
+                        $.each(rows, function() {
+                            if ($(this).hasClass('bg-gray')) {
+                                table.row($(this)).deselect();
+                                showToast("error",
+                                    "Cannot select, This tools is currently on process!");
+                            }
+                        })
+                    }
+                });
+
+                table.select.selector('td:first-child');
+
+
+
+                // table.column(6).search(`${@json($desc)}`);
+                // $("#dt-search-0").val("aaa");
+            }
+
+            // .replace(/_/g, " ")
 
 
             $("#poNumber").keypress(function(e) {
@@ -544,7 +628,8 @@
                         _token: "{{ csrf_token() }}"
                     },
                     success() {
-                        // table.ajax.reload();
+                        table.ajax.reload();
+                        $("#requestToolsModal").modal('hide')
                     }
                 })
 
@@ -559,7 +644,7 @@
                     serverSide: false,
                     searchable: true,
                     pagination: true,
-                    destroy:true,
+                    destroy: true,
                     "aoColumnDefs": [{
                             "bSortable": false,
                             "aTargets": [0]
@@ -574,8 +659,8 @@
                         type: 'get',
                         url: '{{ route('fetch_tools') }}',
                         data: {
-                        warehouseId: $(this).val(),
-                    }
+                            warehouseId: $(this).val(),
+                        }
                     },
                     columns: [{
                             data: null,
