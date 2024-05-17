@@ -6,3 +6,6 @@
 /.fleet
 /.idea
 /.vscode
+.index.php
+/public.index.php
+.htaccess
