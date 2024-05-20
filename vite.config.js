@@ -5,14 +5,12 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/sass/main.scss',
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/js/codebase/app.js',
             ],
             refresh: true
         })
     ],
-    publicDir: 'public' // Specify the correct directory path here
+    // publicDir: 'public' // Specify the correct directory path here
 });
 
