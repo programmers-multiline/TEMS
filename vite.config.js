@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import sass from 'vite-plugin-sass'; // Import the sass plugin directly
+import path from 'path'; // Add this line to import the path module
 
 export default defineConfig({
     plugins: [
@@ -14,5 +15,10 @@ export default defineConfig({
             refresh: true
         })
     ],
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'resources/js'),
+        },
+    },
     // publicDir: 'public' // Specify the correct directory path here
 });
