@@ -11,7 +11,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/codebase/app.js',
             ],
-            refresh: true
+            refresh: ['resources/views/**'],
         })
     ],
     // publicDir: 'public' // Specify the correct directory path here
