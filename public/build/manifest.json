@@ -81,6 +81,11 @@
     "isEntry": true,
     "src": "resources/js/app.js"
   },
+  "resources/js/codebase/app.js": {
+    "file": "assets/app-f570891a.js",
+    "isEntry": true,
+    "src": "resources/js/codebase/app.js"
+  },
   "resources/sass/main.scss": {
     "file": "assets/main-dd9d7536.css",
     "isEntry": true,
