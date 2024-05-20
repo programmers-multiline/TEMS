@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ asset('public/js/plugins/datatables-buttons-bs5/css/buttons.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('public/js/plugins/datatables-responsive-bs5/css/responsive.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('public/js/plugins/sweetalert2/sweetalert2.min.css') }}">
-    @yield('css')
+   
 
     {{-- <link rel="stylesheet" id="css-main" href="{{asset('js/codebase.min.css')}}"> --}}
 
@@ -20,7 +20,7 @@
     <!-- Modules -->
 
 
-    @vite(['resources/sass/main.scss', 'resources/js/codebase/app.js'])
+
 
     <!-- Alternatively, you can also include a specific color theme after the main stylesheet to alter the default color theme of the template -->
     {{-- @vite(['resources/sass/main.scss', 'resources/sass/codebase/themes/corporate.scss', 'resources/js/codebase/app.js']) --}}

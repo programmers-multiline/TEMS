@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" id="css-main" href="{{asset('js/codebase.min.css')}}">
   <!-- Modules -->
-  @yield('css')
+
   @vite(['resources/sass/main.scss', 'resources/js/codebase/app.js'])
 
   <!-- Alternatively, you can also include a specific color theme after the main stylesheet to alter the default color theme of the template -->
