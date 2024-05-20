@@ -3,7 +3,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "hot": "vite --mode development",
     "watch": "vite build --watch",
     "prod": "npm run production",
     "production": "mix --production"
