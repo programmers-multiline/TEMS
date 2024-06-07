@@ -19,21 +19,22 @@
                     <div class="block-content fs-sm">
                         <div class="block block-rounded">
                             <div class="block-content">
-                                <input type="file" class="single-fileupload" multiple
-                                    data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6">
+                                <input type="file" class="teisUpload" multiple
+                                    data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept=".pdf">
 
 
                             </div>
                         </div>
                     </div>
                     <input type="hidden" id="teisNumModalhidden" name="teisNum">
+                    <input type="hidden" id="trTypeModalhidden" name="trType">
                     <div class="block-content block-content-full block-content-sm text-end border-top">
                         <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis"
                             data-bs-dismiss="modal">
                             Close
                         </button>
                         <button type="submit" class="btn btn-alt-primary">
-                            Request
+                            Upload
                         </button>
                     </div>
                 </div>

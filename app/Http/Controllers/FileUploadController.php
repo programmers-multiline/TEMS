@@ -16,7 +16,6 @@ class FileUploadController extends Controller
         //  dd($request->all());
         if ($request->hasFile('teis_upload')) {
             $teis_form = $request->teis_upload;
-            $image_id = mt_rand(111111, 999999) . date('YmdHms');
             foreach ($teis_form as $teis) {
                 $teis_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $teis->extension();
                 Uploads::create([
@@ -31,6 +30,7 @@ class FileUploadController extends Controller
                 TeisUploads::create([
                     'teis_number' => $request->teisNum,
                     'upload_id' => $uploads->id,
+                    'tr_type' => $request->trType,
                 ]);
             }
         }
@@ -67,6 +67,34 @@ class FileUploadController extends Controller
         // return $file->store(
         //     path: 'tmp/'.now()->timestamp.'-'.Str::random(20)
         // );
+    }
+
+
+    public function ps_upload_process_ters(Request $request)
+    {
+        if ($request->hasFile('ters_upload')) {
+
+            $ters_form = $request->ters_upload;
+
+            foreach ($ters_form as $ters) {
+                $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->extension();
+                Uploads::create([
+                    'name' => $ters_name,
+                    'original_name' => $ters->getClientOriginalName(),
+                    'extension' => $ters->extension(),
+                ]);
+                $ters->move('uploads/ters_form/', $ters_name);
+
+                $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+
+                TersUploads::create([
+                    'pullout_number' => $request->tersNum,
+                    'upload_id' => $uploads->id,
+                    'tr_type' => $request->trType,
+                ]);
+            }
+        }
+
     }
 
 

@@ -44,8 +44,9 @@ class MyToolsAndEquipmentController extends Controller
         if($request->id){
 
             $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+            ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
             ->leftJoin('transfer_requests','transfer_requests.id','transfer_request_items.transfer_request_id')
-            ->select('tools_and_equipment.*', 'transfer_request_items.teis_number')
+            ->select('tools_and_equipment.*', 'transfer_request_items.teis_number', 'warehouses.warehouse_name')
             ->where('transfer_requests.pe', Auth::user()->id)
             ->where('transfer_request_items.status', 1)
             ->where('transfer_requests.progress', 'completed')
@@ -53,14 +54,16 @@ class MyToolsAndEquipmentController extends Controller
             ->get();
         }else{
             $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+            ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
             ->leftJoin('transfer_requests','transfer_requests.id','transfer_request_items.transfer_request_id')
-            ->select('transfer_request_items.teis_number','tools_and_equipment.*')
+            ->select('transfer_request_items.teis_number','tools_and_equipment.*', 'warehouses.warehouse_name')
             ->where('transfer_requests.pe', Auth::user()->id)
             ->where('transfer_request_items.status', 1)
             ->where('tools_and_equipment.status', 1)
             ->where('transfer_requests.status', 1)
             ->where('transfer_request_items.item_status', 1)
             ->get();
+
         }
 
         // return $tools[0]->teis_number;
@@ -79,6 +82,17 @@ class MyToolsAndEquipmentController extends Controller
             }
             return $status;
         })
+
+        ->addColumn('transfer_state', function($row){
+            $state = '';
+            if($row->transfer_state){
+                $state = '<span class="btn btn-sm btn-alt-success" style="font-size: 12px;">Available to transfer</span>';
+            }else{
+                $state =  '<span class="btn btn-sm btn-alt-danger" style="font-size: 12px;">Currently Using</span>';
+            }
+            return $state;
+        })
+
         ->addColumn('action', function($row){
             $user_type = Auth::user()->user_type_id;
             if($user_type == 3){
@@ -96,7 +110,7 @@ class MyToolsAndEquipmentController extends Controller
         })
 
 
-        ->rawColumns(['tools_status','action'])
+        ->rawColumns(['transfer_state','tools_status','action'])
         ->toJson();
     }
 
@@ -186,6 +200,19 @@ class MyToolsAndEquipmentController extends Controller
         }
 
         
+    }
+
+
+    public function add_state(Request $request){
+        $state_datas = json_decode($request->stateDatas);
+
+        foreach ($state_datas as $data) {
+            $tools = ToolsAndEquipment::where('status', 1)->where('id', $data->id)->first();
+
+            $tools->transfer_state = $data->state;
+
+            $tools->update();
+        }
     }
 
 }

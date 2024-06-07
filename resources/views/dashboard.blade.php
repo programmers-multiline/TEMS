@@ -16,12 +16,26 @@
                                 <i class="si si-bag fa-2x text-primary-light"></i>
                             </div>
                             <div class="text-end">
-                                <div class="fs-3 fw-semibold text-primary">{{ $issued }}</div>
-                                <div class="fs-sm fw-semibold text-uppercase text-muted">Total My tools and Equipments</div>
+                                <div class="fs-3 fw-semibold text-primary">{{ $total_tools }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Tools and Equipments in Warehouse</div>
                             </div>
                         </div>
                     </a>
                 </div>
+                <div class="col-6 col-xl-3">
+                    <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                        <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                            <div class="d-none d-sm-block">
+                                <i class="si si-bag fa-2x text-primary-light"></i>
+                            </div>
+                            <div class="text-end">
+                                <div class="fs-3 fw-semibold text-primary">{{ $issued }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Transferred Tools and Equipment</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
                 <div class="col-6 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
@@ -30,20 +44,7 @@
                             </div>
                             <div class="text-end">
                                 <div class="fs-3 fw-semibold text-earth">{{ $pending_rttte }}</div>
-                                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Pending RTTTE</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-6 col-xl-3">
-                    <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
-                        <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
-                                <i class="si si-envelope-open fa-2x text-elegance-light"></i>
-                            </div>
-                            <div class="text-end">
-                                <div class="fs-3 fw-semibold text-elegance">{{ $pending_rttte }}</div>
-                                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Pending RTTTE</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending RTTTE</div>
                             </div>
                         </div>
                     </a>
@@ -56,7 +57,7 @@
                             </div>
                             <div class="text-end">
                                 <div class="fs-3 fw-semibold text-pulse">{{ $rttte_approval }}</div>
-                                <div class="fs-sm fw-semibold text-uppercase text-muted">Total RTTTE for Approval</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total RTTTE for Approval</div>
                             </div>
                         </div>
                     </a>
@@ -110,7 +111,7 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-corporate">{{ $issued }}</div>
+                                <div class="fs-3 fw-semibold text-corporate">{{ $request_daf }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Request for DAF</div>
                             </div>
                             <div class="text-end">
@@ -140,7 +141,7 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-pulse">252</div>
+                                <div class="fs-3 fw-semibold text-pulse">{{$approved_pullout}}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved Pull out Request</div>
                             </div>
                             <div class="text-end">
@@ -153,7 +154,7 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-warning">15</div>
+                                <div class="fs-3 fw-semibold text-warning">{{$pending_daf}}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Request for DAF</div>
                             </div>
                             <div class="text-end">
@@ -166,7 +167,7 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-success">422</div>
+                                <div class="fs-3 fw-semibold text-success">{{$rttte_approval}}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total RTTTE for <br>Approval</div>
                             </div>
                             <div class="text-end">
@@ -178,19 +179,34 @@
                 <!-- END Row #1 -->
             </div>
         @endif
-        @if ($user_type_id == 6 )
-        <div class="col-6 col-xl-3">
-            <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
-                <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
-                    <div class="d-none d-sm-block">
-                        <i class="si si-docs fa-2x text-warning"></i>
+        @if ($user_type_id == 6 || $user_type_id == 7)
+        <div class="row">
+            {{-- <div class="col-6 col-xl-3">
+                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                        <div class="d-none d-sm-block">
+                            <i class="si si-docs fa-2x text-warning"></i>
+                        </div>
+                        <div class="text-end">
+                            <div class="fs-3 fw-semibold text-warning">31</div>
+                            <div class="fs-sm fw-semibold text-uppercase text-muted">Total Request to be Approve</div>
+                        </div>
                     </div>
-                    <div class="text-end">
-                        <div class="fs-3 fw-semibold text-warning">12</div>
-                        <div class="fs-sm fw-semibold text-uppercase text-muted">Total Request to be Approve</div>
+                </a>
+            </div> --}}
+            <div class="col-6 col-xl-3">
+                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                        <div class="d-none d-sm-block">
+                            <i class="si si-docs fa-2x text-primary"></i>
+                        </div>
+                        <div class="text-end">
+                            <div class="fs-3 fw-semibold text-primary">31</div>
+                            <div class="fs-sm fw-semibold text-uppercase text-muted">Total Approved Request for DAF</div>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
         </div>
         @endif
         {{-- <div class="row">

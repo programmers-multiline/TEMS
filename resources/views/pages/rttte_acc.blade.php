@@ -31,7 +31,7 @@
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
                 <table id="table"
-                    class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                    class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th>Items</th>
@@ -213,6 +213,60 @@
                         // table.ajax.reload();
                     }
                 })
+
+            })
+
+            $(document).on('click', '.approveBtn', function() {
+                const requestNum = $(this).data('requestnum');
+
+                const confirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success ms-2",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+
+                confirm.fire({
+                    title: "Approve?",
+                    text: "Are you sure you want to approved this tools?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes!",
+                    cancelButtonText: "Close",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: '{{ route('ps_approve_rttte') }}',
+                            method: 'post',
+                            data: {
+                                requestNum,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            beforeSend(){
+                                $("#loader").show()
+                            },
+                            success() {
+                                $("#loader").hide()
+                                table.ajax.reload();
+                                confirm.fire({
+                                    title: "Approved!",
+                                    text: "Items Approved Successfully.",
+                                    icon: "success"
+                                });
+                            }
+                        })
+
+                    } else if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+
+                    }
+                });
+
 
             })
 

@@ -5,6 +5,7 @@
             <div class="modal-content">
                 <div class="block block-rounded shadow-none mb-0">
                     <div class="block-header block-header-default">
+                        <input type="hidden" id="path" value="{{ request()->path() }}">
                         <h3 class="block-title">TOOLS AND EQUIPMENTS</h3>
                         <div class="block-options">
                             <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">

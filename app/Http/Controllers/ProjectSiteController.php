@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Daf;
+use App\Models\DafItems;
+use App\Models\PmGroupings;
 use App\Models\TeisUploads;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -15,10 +18,41 @@ use App\Models\PsTransferRequestItems;
 
 class ProjectSiteController extends Controller
 {
+
+    public function view_project_site(){
+
+        $pg = PmGroupings::leftjoin('assigned_projects', 'assigned_projects.pm_group_id', 'pm_groupings.id')
+        ->leftjoin('project_sites', 'project_sites.id','assigned_projects.project_id')
+        ->select('project_sites.customer_name','project_sites.project_name','project_sites.project_code','project_sites.project_address')
+        ->where('assigned_projects.status', 1)
+        ->where('pm_groupings.status', 1)
+        ->where('project_sites.status', 1)
+        ->where('pm_groupings.pe_code', Auth::user()->emp_id)
+        ->orwhere('pm_groupings.pm_code', Auth::user()->emp_id)
+        ->get();
+
+        return view('/pages/project_site', compact('pg'));
+    }
+
+
     public function fetch_tools_ps(Request $request) {
 
         $action = '';
         $status = '';
+
+        $id = [];
+
+        $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
+        ->select('transfer_request_items.tool_id')
+        ->where('transfer_requests.status', 1)
+        ->where('transfer_request_items.item_status', 1)
+        ->where('transfer_request_items.pe', Auth::user()->id)
+        ->get();
+
+        foreach($tool_id as $tool){
+            $id[] = $tool->tool_id;
+        }
+
 
         if($request->warehouseId){
             $tools = ToolsAndEquipment::leftJoin('warehouses','warehouses.id','tools_and_equipment.location')
@@ -26,12 +60,14 @@ class ProjectSiteController extends Controller
             ->where('tools_and_equipment.status', 1)
             ->where('tools_and_equipment.wh_ps', 'ps')
             ->where('location', $request->warehouseId)
+            ->whereNotIn('tools_and_equipment.id', $id)
             ->get();
         }else{
             $tools = ToolsAndEquipment::leftJoin('warehouses','warehouses.id','tools_and_equipment.location')
             ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
             ->where('tools_and_equipment.status', 1)
             ->where('tools_and_equipment.wh_ps', 'ps')
+            ->whereNotIn('tools_and_equipment.id', $id)
             ->get();
         }
         
@@ -52,12 +88,15 @@ class ProjectSiteController extends Controller
                 ->where('ps_transfer_request_items.status', 1)
                 ->get();
 
+                $tools = ToolsAndEquipment::where('status', 1)->where('transfer_state', 0)->get();
+
                 $toolIds = [];
         
                 $PulloutToolIds = collect($tool_id)->pluck('tool_id')->toArray();
                 $PsToolIds = collect($psTransferRequest)->pluck('tool_id')->toArray();
+                $tools_id = collect($tools)->pluck('id')->toArray();
 
-                $toolIds = array_merge($PulloutToolIds, $PsToolIds);
+                $toolIds = array_merge($PulloutToolIds, $PsToolIds, $tools_id);
 
                 return in_array($row->id, $toolIds) ? 'bg-gray' : '';
             })
@@ -73,6 +112,17 @@ class ProjectSiteController extends Controller
             }
             return $status;
         })
+
+        ->addColumn('transfer_state', function($row){
+            $state = '';
+            if($row->transfer_state){
+                $state = '<span class="btn btn-sm btn-alt-success" style="font-size: 12px;">Available to transfer</span>';
+            }else{
+                $state =  '<span class="btn btn-sm btn-alt-danger" style="font-size: 12px;">Currently Using</span>';
+            }
+            return $state;
+        })
+
         ->addColumn('action', function($row){
             $user_type = Auth::user()->user_type_id;
             if($user_type == 1){
@@ -91,7 +141,7 @@ class ProjectSiteController extends Controller
             }
             return $action;
         })
-        ->rawColumns(['tools_status','action'])
+        ->rawColumns(['transfer_state','tools_status','action'])
         ->toJson();
     }
 
@@ -110,12 +160,21 @@ class ProjectSiteController extends Controller
         }
 
         PsTransferRequests::create([
-            'request_number' => $new_request_number,
-            'user_id' => Auth::user()->id,
-            'project_name' => $request->projectName,
-            'project_code' => $request->projectCode,
+            'request_number'  => $new_request_number,
+            'user_id'         => Auth::user()->id,
+            'project_name'    => $request->projectName,
+            'project_code'    => $request->projectCode,
             'project_address' => $request->projectAddress,
+            'date_requested'  => Carbon::now(),
+            'current_pe'      => $request->currentPe,
+            'current_site_id' => $request->currentSiteId,
+        ]);
+
+        Daf::create([
+            'daf_number'     => $new_request_number,
+            'user_id'        => Auth::user()->id,
             'date_requested' => Carbon::now(),
+            'tr_type'        => 'rttte',
         ]);
 
         $last_id = PsTransferRequests::where('status', 1)->orderBy('id', 'desc')->first();
@@ -127,11 +186,20 @@ class ProjectSiteController extends Controller
 
         for ($i=0; $i < $array_count; $i++) { 
             PsTransferRequestItems::create([
-                'tool_id' => $array_id[$i],
-                'request_number' => $new_request_number,
+                'tool_id'                => $array_id[$i],
+                'request_number'         => $new_request_number,
                 'ps_transfer_request_id' => $last_id->id,
-                'user_id' => Auth::user()->id,
-                'status' => 1,
+                'user_id'                => Auth::user()->id,
+                'status'                 => 1,
+            ]);
+        }
+
+        for ($i=0; $i < $array_count; $i++) { 
+            DafItems::create([
+                'tool_id'    => $array_id[$i],
+                'daf_number' => $new_request_number,
+                'daf_id'     => $last_id->id,
+                'user_id'    => Auth::user()->id,
             ]);
         }
 
@@ -140,7 +208,13 @@ class ProjectSiteController extends Controller
 
         public function fetch_teis_request_ps(){
 
-            $request_tools = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->get();
+            $request_tools = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->whereNull('acc')->get();
+            // if(Auth::user()->user_type_id == 7){
+            // }
+            // else{
+            //     $request_tools = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->get();
+            // }
+
             
             return DataTables::of($request_tools)
             
@@ -150,7 +224,15 @@ class ProjectSiteController extends Controller
             })
             ->addColumn('action', function($row){
                 $user_type = Auth::user()->user_type_id;
-                $action =  '<button data-requestnum="'.$row->request_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload me-1"></i>TEIS</button>';
+                
+
+                if($user_type == 2){
+                    $action =  '<button data-requestnum="'.$row->request_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload me-1"></i>TEIS</button>';
+                }else if($user_type == 7){
+                    $action =  '<button data-requestnum="'.$row->request_number.'" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
+                }else{
+                    $action == '';
+                }
     
                 // if($user_type == 1){
                 //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">

@@ -34,23 +34,28 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-5">
-                                    <label class="form-label" for="customerName">Customer Name <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="customerName" name="customerName"
-                                        placeholder="Enter Customer Name">
+                                <div class="col-3">
+                                    <label class="form-label" for="projectCode">Project Code <span
+                                        class="text-danger">*</span></label>
+                                    <select class="form-select" id="projectCode" name="projectCode" size="1">
+                                        <option disabled selected>Select Project Code</option>
+                                        @foreach ($pg as $project_detail)
+                                            <option data-custname="{{Str::title($project_detail->customer_name)}}" data-pname="{{Str::title($project_detail->project_name)}}" data-paddress="{{Str::title($project_detail->project_address)}}" value="{{ $project_detail->project_code }}">{{ $project_detail->project_code }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
+                               
                                 <div class="col-4">
                                     <label class="form-label" for="projectName">Project Name <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="projectName" name="projectName"
                                         placeholder="Enter Project Name">
                                 </div>
-                                <div class="col-3">
-                                    <label class="form-label" for="projectCode">Project Code <span
+                                <div class="col-5">
+                                    <label class="form-label" for="customerName">Customer Name <span
                                             class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="projectCode" name="projectCode"
-                                        placeholder="Enter Project code">
+                                    <input type="text" class="form-control" id="customerName" name="customerName"
+                                        placeholder="Enter Customer Name">
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -74,8 +79,8 @@
                                 </div>
                                 <div class="col-2">
                                     <label class="form-label" for="empId">Employee id</label>
-                                    <input type="text" class="form-control" id="empId" name="empId"
-                                        placeholder="(Optional)">
+                                    <input value="{{ Auth::user()->emp_id }}" type="text" class="form-control" id="empId" name="empId"
+                                        placeholder="(Optional)" disabled>
                                 </div>
                                 <div class="col-3">
                                     <label class="form-label" for="department">Department</label>

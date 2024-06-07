@@ -32,6 +32,8 @@
                         <tr>
                             <th style="padding-right: 10px;"></th>
                             <th>ID</th>
+                            <th>Current PE</th>
+                            <th>Current Site</th>
                             <th>PO Number</th>
                             <th>Asset Code</th>
                             <th>Serial#</th>
@@ -40,6 +42,7 @@
                             <th>Brand</th>
                             <th>Location</th>
                             <th>Status</th>
+                            <th>Transfer State</th>
                             <th>Action</th>
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
@@ -87,7 +90,7 @@
                         "aTargets": [0]
                     },
                     {
-                        "targets": [1],
+                        "targets": [1, 2, 3],
                         "visible": false,
                         "searchable": false
                     }
@@ -102,6 +105,12 @@
                     },
                     {
                         data: 'id'
+                    },
+                    {
+                        data: 'current_pe'
+                    },
+                    {
+                        data: 'current_site_id'
                     },
                     {
                         data: 'po_number'
@@ -128,6 +137,9 @@
                         data: 'tools_status'
                     },
                     {
+                        data: 'transfer_state'
+                    },
+                    {
                         data: 'action'
                     },
                 ],
@@ -145,7 +157,7 @@
                     $.each(rows, function() {
                         if ($(this).hasClass('bg-gray')){
                             table.row($(this)).deselect();
-                            showToast("error", "Cannot select, This tools is currently on transfer process!");
+                            showToast("error", "Currently on transfer process or on use!");
                         } 
                     })
 
@@ -211,7 +223,7 @@
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 
                     $("#tbodyModal").append(
-                        `<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`
+                        `<tr><td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> </td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`
                         );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
@@ -230,7 +242,11 @@
                 const projectCode = $("#projectCode").val();
                 const projectAddress = $("#projectAddress").val();
 
-                const id = $("#tbodyModal input[type=hidden]").map((i, id) => id.defaultValue);
+                const currentPe = $("#tbodyModal .currentPe").val();
+                const currentSiteId = $("#tbodyModal .currentSiteId").val();
+
+                const id = $("#tbodyModal .toolId").map((i, id) => id.defaultValue);
+
 
                 const selectedItemId = [];
 
@@ -244,6 +260,8 @@
                     url: '{{ route('ps_request_tools') }}',
                     method: 'post',
                     data: {
+                        currentSiteId,
+                        currentPe,
                         projectName,
                         projectCode,
                         projectAddress,
@@ -251,12 +269,23 @@
                         _token: "{{ csrf_token() }}"
                     },
                     success() {
-                        // table.ajax.reload();
+                        $("#rttteModal").modal('hide')
+                        table.ajax.reload();
                     }
                 })
 
                 // #tbodyModal > tr:nth-child(1) > td:nth-child(1) > input[type=text]
             })
+
+            $('#projectName').change(function() {
+                const selectedPcode = $(this).find(':selected')
+                const pCode = selectedPcode.data('pcode');
+                const pAddress = selectedPcode.data('paddress');
+
+                $("#projectCode").val(pCode)
+                $("#projectAddress").val(pAddress)
+
+            });
 
         })
     </script>

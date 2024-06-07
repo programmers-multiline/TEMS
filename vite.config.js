@@ -15,7 +15,7 @@ export default defineConfig({
             refresh: true
         })
     ],
-    base: "https://phpstack-781350-4569790.cloudwaysapps.com/",
+    // base: "https://phplaravel-781350-3947611.cloudwaysapps.com/",
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'resources/js'),

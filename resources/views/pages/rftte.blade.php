@@ -41,6 +41,8 @@
                             <th>Project Name</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
+                            <th>TEIS</th>
+                            <th>TERS</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -55,6 +57,7 @@
 
 
 @include('pages.modals.create_teis_modal')
+@include('pages.modals.ps_upload_ters_modal')
 @include('pages.modals.ongoing_teis_request_modal')
 
 @endsection
@@ -82,27 +85,28 @@
 
 
 <!-- Fileupload JS -->
-<script src="{{ asset('js\lib\fileupload.js') }}"></script>
+
 
 {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
-  </script> --}}
+</script> --}}
 
 
-    <script>
-        $(document).ready(function() {
-            const table = $("#table").DataTable({
-                processing: true,
-                serverSide: false,
-                ajax: {
-                    type: 'get',
-                    url: '{{ route('fetch_teis_request') }}'
+<script>
+    $(document).ready(function() {
+        const table = $("#table").DataTable({
+            processing: true,
+            serverSide: false,
+            destroy: true,
+            ajax: {
+                type: 'get',
+                url: '{{ route('fetch_teis_request') }}'
+            },
+            columns: [
+                {
+                    data: 'view_tools'
                 },
-                columns: [
-                    {
-                        data: 'view_tools'
-                    },
-                    {
+                {
                         data: 'subcon'
                     },
                     {
@@ -121,16 +125,22 @@
                         data: 'date_requested'
                     },
                     {
+                        data: 'teis'
+                    },
+                    {
+                        data: 'ters'
+                    },
+                    {
                         data: 'action'
                     },
                 ],
             });
-
+            
             $(document).on('click','.teisNumber',function(){
-
+                
                 const id = $(this).data("id");
-
-
+                
+                
                 const modalTable = $("#modalTable").DataTable({
                     processing: true,
                     serverSide: false,
@@ -172,42 +182,42 @@
                     ],
                 });
             })
-
-
             
-
+            
+            
+            
             // $("#poNumber").keypress(function(e) {
             //     if (String.fromCharCode(e.keyCode).match(/[^0-9]/g)) return false;
             // });
-
+            
             // $("#btnAddTools").click(function() {
-
-            //     // $("#poNumber").val("");
-            //     // $("#assetCode").val("");
-            //     // $("#serialNumber").val("");
-            //     // $("#itemCode").val("");
-            //     // $("#itemDescription").val("");
-            //     // $("#brand").val("");
-
-
-
-            //     var input = $("#addToolsForm").serializeArray();
-            //     $.ajax({
-            //         url: '{{ route('add_tools') }}',
-            //         method: 'post',
-            //         data: input,
-            //         success() {
-            //             $("#modal-tools").modal('hide')
-            //             table.ajax.reload();
-            //             $("#addToolsForm")[0].reset();
-            //             // $('#closeModal').click();
-      
-            //         }
-            //     })
-            // })
-
-
-            // $(document).on('click', '#editBtn', function() {
+                
+                //     // $("#poNumber").val("");
+                //     // $("#assetCode").val("");
+                //     // $("#serialNumber").val("");
+                //     // $("#itemCode").val("");
+                //     // $("#itemDescription").val("");
+                //     // $("#brand").val("");
+                
+                
+                
+                //     var input = $("#addToolsForm").serializeArray();
+                //     $.ajax({
+                    //         url: '{{ route('add_tools') }}',
+                    //         method: 'post',
+                    //         data: input,
+                    //         success() {
+                        //             $("#modal-tools").modal('hide')
+                        //             table.ajax.reload();
+                        //             $("#addToolsForm")[0].reset();
+                        //             // $('#closeModal').click();
+                        
+                        //         }
+                        //     })
+                        // })
+                        
+                        
+                        // $(document).on('click', '#editBtn', function() {
             //     const id = $(this).data('id');
             //     const po = $(this).data('po');
             //     const asset = $(this).data('asset');
@@ -217,7 +227,7 @@
             //     const brand = $(this).data('brand');
             //     const location = $(this).data('location');
             //     const status = $(this).data('status');
-
+            
             //     $("#editPo").val(po);
             //     $("#editAssetCode").val(asset);
             //     $("#editSerialNumber").val(serial);
@@ -227,30 +237,30 @@
             //     $("#editLocation").val(location)
             //     $("#editStatus").val(status)
             //     $("#hiddenId").val(id)
-
+            
             // })
-
+            
             // $("#updateBtnModal").click(function() {
-
-            //     const hiddenToolsId = $("#hiddenId").val()
-            //     const updatePo = $("#editPo").val();
-            //     const updateAsset = $("#editAssetCode").val();
-            //     const updateSerial = $("#editSerialNumber").val();
-            //     const updateItemCode = $("#editItemCode").val()
-            //     const updateItemDesc = $("#editItemDescription").val()
-            //     const updateBrand = $("#editBrand").val()
-            //     const updateLocation = $("#editLocation").val()
-            //     const updateStatus = $("#editStatus").val()
-
-            //     $.ajax({
-            //         url: '{{ route("edit_tools") }}',
-            //         method: 'post',
-            //         data: {
-            //             hiddenToolsId,
-            //             updatePo,
-            //             updateAsset,
-            //             updateSerial,
-            //             updateItemCode,
+                
+                //     const hiddenToolsId = $("#hiddenId").val()
+                //     const updatePo = $("#editPo").val();
+                //     const updateAsset = $("#editAssetCode").val();
+                //     const updateSerial = $("#editSerialNumber").val();
+                //     const updateItemCode = $("#editItemCode").val()
+                //     const updateItemDesc = $("#editItemDescription").val()
+                //     const updateBrand = $("#editBrand").val()
+                //     const updateLocation = $("#editLocation").val()
+                //     const updateStatus = $("#editStatus").val()
+                
+                //     $.ajax({
+                    //         url: '{{ route("edit_tools") }}',
+                    //         method: 'post',
+                    //         data: {
+                        //             hiddenToolsId,
+                        //             updatePo,
+                        //             updateAsset,
+                        //             updateSerial,
+                        //             updateItemCode,
             //             updateItemDesc,
             //             updateBrand,
             //             updateLocation,
@@ -258,62 +268,63 @@
             //             _token: "{{ csrf_token() }}"
             //         },
             //         success(e) {
-            //             table.ajax.reload();
-            //             $('#closeEditToolsModal').click();
-            //             // console.log(e)
-            //             alert()
-            //         }
-            //     })
-            // })
-
-            // $(document).on('click','#deleteToolsBtn', function(){
-            //     const id = $(this).data('id');
-
-            //     $.ajax({
-            //         url: '{{route("delete_tools")}}',
-            //         method: 'post',
-            //         data: {
-            //             id,
-            //             _token: "{{csrf_token()}}"
-            //         },
-            //         success(){
-            //             table.ajax.reload();
-            //         }
-            //     })
-
-            // })
-
-            // $("#tableContainer").click(function(){
-            //     const dataCount = table.rows({ selected: true }).count();
-
-            //     if(dataCount > 0){
-            //         $("#requesToolstBtn").prop('disabled', false);
-            //     }else{
-            //         $("#requesToolstBtn").prop('disabled', true);
+                //             table.ajax.reload();
+                //             $('#closeEditToolsModal').click();
+                //             // console.log(e)
+                //             alert()
+                //         }
+                //     })
+                // })
+                
+                // $(document).on('click','#deleteToolsBtn', function(){
+                    //     const id = $(this).data('id');
                     
-            //     }
-            // })
-
+                    //     $.ajax({
+                        //         url: '{{route("delete_tools")}}',
+                        //         method: 'post',
+                        //         data: {
+                            //             id,
+                            //             _token: "{{csrf_token()}}"
+                            //         },
+                            //         success(){
+                                //             table.ajax.reload();
+                                //         }
+                                //     })
+                                
+                                // })
+                                
+                                // $("#tableContainer").click(function(){
+                                    //     const dataCount = table.rows({ selected: true }).count();
+                                    
+                                    //     if(dataCount > 0){
+                                        //         $("#requesToolstBtn").prop('disabled', false);
+                                        //     }else{
+                                            //         $("#requesToolstBtn").prop('disabled', true);
+                                            
+                                            //     }
+                                            // })
+                                            
             
             // $("#requesToolstBtn").click(function(){
             //     const data = table.rows({ selected: true }).data();
-           
+            
             //     // const arrItem = []
-
-
+            
+            
             //     for(var i = 0; i < data.length; i++ ){
             //         // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
-                    
+            
             //     $("#tbodyModal").append(`<tr><td>${data[i].item_code}</td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`);
             //         // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
             //     }
-
+            
             // })
 
             // $(".closeModalRfteis").click(function(){
-            //     $("#tbodyModal").empty()
+                //     $("#tbodyModal").empty()
             // })
             
         })
-    </script>
+        </script>
+<script src="{{ asset('js\lib\fileupload.js') }}"></script>
 @endsection

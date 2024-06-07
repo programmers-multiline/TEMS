@@ -29,7 +29,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'dashboard']);
 
     // Route::view('/pages/warehouse', 'pages.warehouse');
-    Route::view('/pages/project_site', 'pages.project_site');
+    // Route::view('/pages/project_site', 'pages.project_site');
     Route::view('/pages/datatables', 'pages.datatables');
     Route::view('/pages/datatables', 'pages.datatables');
     Route::view('/pages/request_ongoing', 'pages.request_ongoing');
@@ -41,6 +41,10 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/rfteis', 'pages.rfteis');
     Route::view('/pages/barcode_scanner', 'pages.barcode_scanner');
     Route::view('/pages/rttte_acc', 'pages.rttte_acc');
+    Route::view('/pages/daf', 'pages.daf');
+    Route::view('/pages/site_to_site_transfer', 'pages.site_to_site_transfer');
+    Route::view('/pages/pullout_completed', 'pages.pullout_completed');
+
     
 
 
@@ -58,6 +62,7 @@ Route::controller(WarehouseController::class)->group(function () {
 });
 
 Route::controller(ProjectSiteController::class)->group(function () {
+    Route::get('project_site', 'view_project_site')->name('view_project_site');
     Route::get('fetch_tools_ps', 'fetch_tools_ps')->name('fetch_tools_ps');
     Route::post('ps_request', 'ps_request_tools')->name('ps_request_tools');
     Route::get('ps_teis_request', 'fetch_teis_request_ps')->name('fetch_teis_request_ps');
@@ -74,11 +79,22 @@ Route::controller(TransferRequestController::class)->group(function () {
     Route::post('approve_tools', 'approve_tools')->name('approve_tools');
     Route::get('barcode_scanner', 'scanned_teis')->name('scanned_teis');
     Route::post('barcode_scanner_received', 'scanned_teis_received')->name('scanned_teis_received');
+    Route::get('daf_approvers', 'fetch_daf_approver')->name('fetch_daf_approver');
+    Route::post('daf_approve_tools', 'daf_approve_tools')->name('daf_approve_tools');
+    Route::get('daf_table_modal', 'daf_table_modal')->name('daf_table_modal');
+    Route::post('daf_add_price', 'add_price_acc_daf')->name('add_price_acc_daf');
+    Route::get('site_tools', 'fetch_site_tools')->name('fetch_site_tools');
+    Route::post('ps_approve_tools', 'ps_approve_tools')->name('ps_approve_tools');
+    Route::post('ps_approve_rttte', 'ps_approve_rttte')->name('ps_approve_rttte');
+    Route::get('completed_teis_request', 'completed_teis_request')->name('completed_teis_request');
+    
+    
 });
 
 Route::controller(MyToolsAndEquipmentController::class)->group(function () {
     Route::get('my_te', 'fetch_my_te')->name('fetch_my_te');
     Route::post('pullout_tools', 'pullout_request')->name('pullout_request');
+    Route::post('add_state', 'add_state')->name('add_state');
 });
 
 Route::controller(PullOutController::class)->group(function () {
@@ -86,6 +102,7 @@ Route::controller(PullOutController::class)->group(function () {
     Route::get('ongoing_pullout_request', 'ongoing_pullout_request_modal')->name('ongoing_pullout_request_modal');
     Route::post('tobe_approve_tools', 'tobe_approve_tools')->name('tobe_approve_tools');
     Route::get('pullout_request', 'fetch_pullout_request')->name('fetch_pullout_request');
+    Route::get('completed_pullout_request', 'fetch_completed_pullout')->name('fetch_completed_pullout');
     
 });
 
@@ -93,6 +110,7 @@ Route::controller(PullOutController::class)->group(function () {
     
 // });
 Route::post('upload_process', [FileUploadController::class, 'upload_process'])->name('upload_process');
+Route::post('ps_upload_process_ters', [FileUploadController::class, 'ps_upload_process_ters'])->name('ps_upload_process_ters');
 Route::post('upload_process_ters', [FileUploadController::class, 'upload_process_ters'])->name('upload_process_ters');
 
 

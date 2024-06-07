@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use DataTables;
 use Carbon\Carbon;
 use App\Models\Daf;
+use App\Models\DafItems;
 use App\Models\Warehouse;
+use App\Mail\ApproverEmail;
+use App\Models\PmGroupings;
 use Illuminate\Http\Request;
 use App\Models\RequestApprover;
 use App\Models\TransferRequest;
@@ -14,7 +17,6 @@ use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use App\Mail\ApproverEmail;
 
 
 class WarehouseController extends Controller
@@ -22,14 +24,24 @@ class WarehouseController extends Controller
 
     public function view_warehouse(){
 
+        $pg = PmGroupings::leftjoin('assigned_projects', 'assigned_projects.pm_group_id', 'pm_groupings.id')
+        ->leftjoin('project_sites', 'project_sites.id','assigned_projects.project_id')
+        ->select('project_sites.customer_name','project_sites.project_name','project_sites.project_code','project_sites.project_address',)
+        ->where('assigned_projects.status', 1)
+        ->where('pm_groupings.status', 1)
+        ->where('project_sites.status', 1)
+        ->where('pm_groupings.pe_code', Auth::user()->emp_id)
+        ->orwhere('pm_groupings.pm_code', Auth::user()->emp_id)
+        ->get();
+
+
         $warehouses = Warehouse::where('status', 1)->get();
 
-        // $department_name =
 
         $search = Route::input('search');
         $desc = Route::input('desc');
 
-        return view('/pages/warehouse', compact('warehouses','search', 'desc'));
+        return view('/pages/warehouse', compact('warehouses','search', 'desc', 'pg'));
 
     }
 
@@ -201,7 +213,6 @@ class WarehouseController extends Controller
             'project_code' => $request->projectCode,
             'project_address' => $request->projectAddress,
             'date_requested' => Carbon::now(),
-            'tr_type' => 'rfteis',
             'status' => 1,
         ]);
 
@@ -209,7 +220,8 @@ class WarehouseController extends Controller
         Daf::create([
             'daf_number' => $new_teis_number,
             'user_id' => Auth::user()->id,
-            'date' => Carbon::now(),
+            'date_requested' => Carbon::now(),
+            'tr_type' => 'rfteis',
         ]);
 
         $last_id = TransferRequest::orderBy('id', 'desc')->first();
@@ -226,6 +238,15 @@ class WarehouseController extends Controller
                 'transfer_request_id' => $last_id->id,
                 'pe' => Auth::user()->id,
                 'status' => 1,
+            ]);
+        }
+
+        for ($i=0; $i < $array_count; $i++) { 
+            DafItems::create([
+                'tool_id' => $array_id[$i],
+                'daf_number' => $new_teis_number,
+                'daf_id' => $last_id->id,
+                'user_id' => Auth::user()->id,
             ]);
         }
 

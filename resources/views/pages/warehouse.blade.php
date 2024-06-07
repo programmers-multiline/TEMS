@@ -1,3 +1,4 @@
+
 @extends('layouts.backend')
 
 @section('css')
@@ -8,8 +9,23 @@
             display: none;
         }
 
-        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order,  {
             display: none;
+        }
+
+        #table > thead > tr > th.dt-orderable-asc.dt-orderable-desc.dt-type-numeric > span.dt-column-order {
+            display: none;
+        }
+        #table > thead > tr > th.dt-orderable-asc.dt-orderable-desc.dt-type-numeric.dt-ordering-asc > span.dt-column-order{
+            display: none;
+        }
+
+        #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
+
+        }
+        #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
+            display: none !important;
+            border: 1px solid red !important;
         }
     </style>
 @endsection
@@ -17,6 +33,9 @@
 @section('content-title', 'Warehouse Tools')
 
 @section('content')
+<div class="loader-container" id="loader" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+    <dotlottie-player src="{{asset('js/loader.json')}}" background="transparent" speed="1" style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal" loop autoplay>Loading</dotlottie-player>
+</div>
     <!-- Page Content -->
     <div class="content">
         @if (Auth::user()->user_type_id == 2 || Auth::user()->user_type_id == 1)
@@ -42,22 +61,22 @@
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table" class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table" class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
                             <th>ID</th>
                             <th>PO Number</th>
-                            <th>Asset Code</th>
+                            <th class="test">Asset Code</th>
                             <th>Serial#</th>
                             <th>Item Code</th>
                             <th>Item Desc</th>
                             <th>Brand</th>
                             <th>Location</th>
                             <th>Status</th>
-                            @if (!Auth::user()->user_type_id == 6)
+                            {{-- @if (!Auth::user()->user_type_id == 6) --}}
                                 <th>Action</th>
-                            @endif
+                            {{-- @endif --}}
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
                         </tr>
@@ -279,6 +298,7 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
     <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
@@ -350,6 +370,9 @@
                 },
             });
 
+            $(".test").click()
+            $(".test").click()
+            $(".test").click()
 
             if (@json($search) == "search") {
 
@@ -420,27 +443,21 @@
 
                 });
 
+            }
 
-                table.on('select', function(e, dt, type, indexes) {
+            table.on('select', function(e, dt, type, indexes) {
                     if (type === 'row') {
                         var rows = table.rows(indexes).nodes().to$();
                         $.each(rows, function() {
                             if ($(this).hasClass('bg-gray')) {
                                 table.row($(this)).deselect();
-                                showToast("error",
-                                    "Cannot select, This tools is currently on process!");
+                                showToast("error","Cannot select, This tools is currently on process!");
                             }
                         })
                     }
                 });
 
                 table.select.selector('td:first-child');
-
-
-
-                // table.column(6).search(`${@json($desc)}`);
-                // $("#dt-search-0").val("aaa");
-            }
 
             // .replace(/_/g, " ")
 
@@ -627,9 +644,15 @@
                         idArray: arrayToString,
                         _token: "{{ csrf_token() }}"
                     },
-                    success() {
-                        table.ajax.reload();
+                    beforeSend(){
                         $("#requestToolsModal").modal('hide')
+                                $("#loader").show()
+                        },
+                    success() {
+                        $("#loader").hide()
+                        table.ajax.reload();
+                        showToast("success", "Request Successfully");
+                        $("#requesToolstBtn").prop('disabled', true);
                     }
                 })
 
@@ -704,6 +727,19 @@
                     },
                 });
             })
+
+            $('#projectCode').change(function() {
+                const selectedPcode = $(this).find(':selected')
+                const custName = selectedPcode.data('custname');
+                const pName = selectedPcode.data('pname');
+                const pAddress = selectedPcode.data('paddress');
+
+                $("#projectName").val(pName)
+                $("#customerName").val(custName)
+                $("#projectAddress").val(pAddress)
+
+            });
+
 
         })
     </script>

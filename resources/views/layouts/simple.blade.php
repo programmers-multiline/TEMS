@@ -94,11 +94,11 @@
     <!-- jQuery (required for BS Notify plugin) -->
     <script src="{{asset('public/js/lib/jquery.min.js')}}"></script>
 
-    <!-- Page JS Plugins -->
+    {{-- <!-- Page JS Plugins -->
     <script src="{{asset('public/js/plugins/bootstrap-notify/bootstrap-notify.min.js')}}"></script>
 
     <!-- Page JS Helpers (BS Notify Plugin) -->
-    <script>Codebase.helpersOnLoad(['jq-notify']);</script>
+    <script>Codebase.helpersOnLoad(['jq-notify']);</script> --}}
 </body>
 
 </html>

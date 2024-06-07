@@ -17,8 +17,15 @@
                         <div class="col-12 mb-3">
                             <label class="form-label" for="projectName">Project Name <span
                                     class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="projectName" name="projectName"
-                                placeholder="Enter Project Name">
+                            <select class="form-select" id="projectName" name="projectName" size="1">
+                                <option disabled selected>Select Project Code</option>
+                                @foreach ($pg as $project_detail)
+                                    <option data-pcode="{{ Str::title($project_detail->project_code) }}"
+                                        data-paddress="{{ Str::title($project_detail->project_address) }}"
+                                        value="{{ $project_detail->project_name }}">{{ $project_detail->project_name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
@@ -39,6 +46,33 @@
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="projectAddress" name="projectAddress"
                                 placeholder="Enter Project Address">
+                        </div>
+                        <hr class="mt-5 mb-3">
+                        <div>
+                            <h3 class='mt-2 mb-4'>DAF</h3>
+                            <div class="row mb-3">
+                                <div class="col-5">
+                                    <label class="form-label" for="pe">Project Enginner <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="pe" name="pe"
+                                        value="{{ Auth::user()->fullname }}" disabled placeholder="Enter PE" required>
+                                </div>
+                                <div class="col-2">
+                                    <label class="form-label" for="empId">Employee id</label>
+                                    <input value="{{ Auth::user()->emp_id }}" type="text" class="form-control" id="empId" name="empId"
+                                        placeholder="(Optional)" disabled>
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label" for="department">Department</label>
+                                    <input value="{{ Auth::user()->dept_id }}" disabled type="text" class="form-control" id="department" name="department"
+                                        placeholder="Enter Department">
+                                </div>
+                                <div class="col-2">
+                                    <label class="form-label" for="date">Date <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="date"
+                                        value="{{ now()->format('m-d-Y') }}" disabled name="date" placeholder="">
+                                </div>
+                            </div>
                         </div>
                     </form>
                     <hr class="mt-5">

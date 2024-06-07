@@ -10,4 +10,7 @@ class TersUploads extends Model
     use HasFactory;
 
     protected $guarded = [];
+    public function uploads(){
+        return $this->belongsTo(Uploads::class,'upload_id','id');
+    }
 }

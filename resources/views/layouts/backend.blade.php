@@ -1,3 +1,149 @@
+@php
+
+    if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3) {
+        $series = 1;
+
+        $approver = App\Models\RequestApprover::where('status', 1)
+            ->where('approver_id', Auth::user()->id)
+            ->where('series', $series)
+            ->where('request_type', 1)
+            ->first();
+
+        if (!$approver) {
+            $tool_approvers = 0;
+        } elseif ($approver->sequence == 1) {
+            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
+            $tool_approvers = App\Models\RequestApprover::leftjoin(
+                'transfer_requests',
+                'transfer_requests.id',
+                'request_approvers.request_id',
+            )
+                ->select(
+                    'transfer_requests.*',
+                    'request_approvers.id as approver_id',
+                    'request_approvers.request_id',
+                    'request_approvers.series',
+                )
+                ->where('transfer_requests.status', 1)
+                ->where('request_approvers.status', 1)
+                ->where('request_approvers.approver_id', Auth::user()->id)
+                ->where('series', $series)
+                ->where('approver_status', 0)
+                ->where('request_type', 1)
+                ->count();
+        } else {
+            $prev_sequence = $approver->sequence - 1;
+
+            $prev_approver = App\Models\RequestApprover::where('status', 1)
+                ->where('request_id', $approver->request_id)
+                ->where('sequence', $prev_sequence)
+                ->where('series', $series)
+                ->where('request_type', 1)
+                ->first();
+
+            if ($prev_approver->approver_status == 1) {
+                $tool_approvers = App\Models\RequestApprover::leftjoin(
+                    'transfer_requests',
+                    'transfer_requests.id',
+                    'request_approvers.request_id',
+                )
+                    ->select(
+                        'transfer_requests.*',
+                        'request_approvers.id as approver_id',
+                        'request_approvers.request_id',
+                        'request_approvers.series',
+                    )
+                    ->where('transfer_requests.status', 1)
+                    ->where('request_approvers.status', 1)
+                    ->where('approver_id', Auth::user()->id)
+                    ->where('series', $series)
+                    ->where('approver_status', 0)
+                    ->where('request_type', 1)
+                    ->count();
+            } else {
+                $tool_approvers = 0;
+            }
+        }
+    } else {
+        $tool_approvers = 0;
+    }
+
+    if (
+        Auth::user()->user_type_id == 6 &&
+        Auth::user()->comp_id == 2 &&
+        (Auth::user()->pos_id == 5 || Auth::user()->pos_id == 6)
+    ) {
+        $series = 1;
+
+        $approver = App\Models\RequestApprover::where('status', 1)
+            ->where('approver_id', Auth::user()->id)
+            ->where('series', $series)
+            ->where('request_type', 4)
+            ->first();
+
+        if ($approver->sequence == 1) {
+            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
+            $tools_approver_dafs = App\Models\RequestApprover::leftjoin('dafs', 'dafs.id', 'request_approvers.request_id')
+                ->leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
+                ->select(
+                    'dafs.*',
+                    'request_approvers.id as approver_id',
+                    'request_approvers.request_id',
+                    'request_approvers.series',
+                    'transfer_requests.subcon',
+                    'transfer_requests.customer_name',
+                    'transfer_requests.project_name',
+                    'transfer_requests.project_code',
+                    'transfer_requests.project_address',
+                )
+                ->where('dafs.status', 1)
+                ->where('transfer_requests.status', 1)
+                ->where('request_approvers.status', 1)
+                ->where('request_approvers.approver_id', Auth::user()->id)
+                ->where('series', $series)
+                ->where('approver_status', 0)
+                ->where('request_type', 4)
+                ->count();
+        } else {
+            $prev_sequence = $approver->sequence - 1;
+
+            $prev_approver = App\Models\RequestApprover::where('status', 1)
+                ->where('request_id', $approver->request_id)
+                ->where('sequence', $prev_sequence)
+                ->where('series', $series)
+                ->where('request_type', 4)
+                ->first();
+
+            if ($prev_approver->approver_status == 1) {
+                $tools_approver_dafs = App\Models\RequestApprover::leftjoin('dafs', 'dafs.id', 'request_approvers.request_id')
+                    ->leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
+                    ->select(
+                        'dafs.*',
+                        'request_approvers.id as approver_id',
+                        'request_approvers.request_id',
+                        'request_approvers.series',
+                        'transfer_requests.subcon',
+                        'transfer_requests.customer_name',
+                        'transfer_requests.project_name',
+                        'transfer_requests.project_code',
+                        'transfer_requests.project_address',
+                    )
+                    ->where('dafs.status', 1)
+                    ->where('transfer_requests.status', 1)
+                    ->where('request_approvers.status', 1)
+                    ->where('request_approvers.approver_id', Auth::user()->id)
+                    ->where('series', $series)
+                    ->where('approver_status', 0)
+                    ->where('request_type', 4)
+                    ->count();
+            } else {
+                $tools_approver_dafs = [];
+            }
+        }
+    }
+
+@endphp
+
 <!doctype html>
 <html lang="{{ config('app.locale') }}">
 
@@ -7,15 +153,14 @@
 
     <title>Tools And Equipment Monitoring System</title>
 
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.5.5/css/simple-line-icons.min.css"/> --}}
-
 
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-bs5/css/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-buttons-bs5/css/buttons.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-responsive-bs5/css/responsive.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/sweetalert2/sweetalert2.min.css') }}">
-   
+
+    @yield('css')
+
 
     {{-- <link rel="stylesheet" id="css-main" href="{{asset('js/codebase.min.css')}}"> --}}
 
@@ -207,8 +352,8 @@
                                     </ul>
                                 </li>
                                 <li class="nav-main-item">
-                                    <a class="nav-main-link{{ request()->is('pages') ? ' active' : '' }}"
-                                        href="/pages/my_te">
+                                    <a class="nav-main-link{{ request()->is('pages/site_to_site_transfer') ? ' active' : '' }}"
+                                        href="/pages/site_to_site_transfer">
                                         <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
                                         <span class="nav-main-link-name">Site to Site Transfer</span>
                                     </a>
@@ -216,35 +361,64 @@
                             @endif
 
                             @if (Auth::user()->user_type_id == 4)
-                            <li class="nav-main-heading">Receive Tools</li>
-                            <li class="nav-main-item">
-                                <a class="nav-main-link{{ request()->is('pages/barcode_scanner') ? ' active' : '' }}"
-                                    href="/pages/barcode_scanner">
-                                    <i class="nav-main-link-icon fa fa-barcode"></i>
-                                    <span class="nav-main-link-name">Barcode Scannner</span>
-                                </a>
-                            </li>
+                                <li class="nav-main-heading">Receive Tools</li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/barcode_scanner') ? ' active' : '' }}"
+                                        href="/pages/barcode_scanner">
+                                        <i class="nav-main-link-icon fa fa-barcode"></i>
+                                        <span class="nav-main-link-name">Barcode Scannner</span>
+                                    </a>
+                                </li>
                             @endif
 
-                            @if (Auth::user()->user_type_id == 6)
-                                <li class="nav-main-item">
+                            @if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3)
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
                                         href="/pages/rfteis">
                                         <i class="nav-main-link-icon fa fa-box-open"></i>
                                         <span class="nav-main-link-name">RFTEIS</span>
                                     </a>
+                                    <span
+                                        class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
+                                            id="rfteisCount" class="bg-info"
+                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
+                                    </span>
+                                </li>
+                            @endif
+
+                            @if (Auth::user()->user_type_id == 6 &&
+                                    Auth::user()->comp_id == 2 && 
+                                    (Auth::user()->pos_id == 5 || Auth::user()->pos_id == 6))
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                    <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
+                                        href="/pages/daf">
+                                        <i class="nav-main-link-icon fa fa-box-open"></i>
+                                        <span class="nav-main-link-name">DAF</span>
+                                    </a>
+                                    <span
+                                        class="countContainer nav-main-link text-light {{ $tools_approver_dafs == 0 ? 'd-none' : '' }}"><span
+                                            id="dafCount" class="bg-info"
+                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tools_approver_dafs }}</span>
+                                    </span>
                                 </li>
                             @endif
 
                             @if (Auth::user()->user_type_id == 7)
-                            <li class="nav-main-item">
-                                <a class="nav-main-link{{ request()->is('pages/rttte_acc') ? ' active' : '' }}"
-                                    href="/pages/rttte_acc">
-                                    <i class="nav-main-link-icon fa fa-box-open"></i>
-                                    <span class="nav-main-link-name">RTTTE</span>
-                                </a>
-                            </li>
-                        @endif
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/rttte_acc') ? ' active' : '' }}"
+                                        href="/pages/rttte_acc">
+                                        <i class="nav-main-link-icon fa fa-box-open"></i>
+                                        <span class="nav-main-link-name">RTTTE</span>
+                                    </a>
+                                </li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
+                                        href="/pages/daf">
+                                        <i class="nav-main-link-icon fa fa-box-archive"></i>
+                                        <span class="nav-main-link-name">DAF</span>
+                                    </a>
+                                </li>
+                            @endif
 
 
                             <li class="nav-main-heading">Tools and Equipment from</li>
@@ -256,8 +430,8 @@
                                 </a>
                             </li>
                             <li class="nav-main-item">
-                                <a class="nav-main-link{{ request()->is('pages/project_site') ? ' active' : '' }}"
-                                    href="/pages/project_site">
+                                <a class="nav-main-link{{ request()->is('project_site') ? ' active' : '' }}"
+                                    href="/project_site">
                                     <i class="nav-main-link-icon fa fa-building"></i>
                                     <span class="nav-main-link-name">Project Site</span>
                                 </a>
@@ -483,45 +657,47 @@
     <!-- END Page Container -->
 
 
-        {{-- search modal --}}
+    {{-- search modal --}}
 
-        <div class="modal fade" id="search" tabindex="-1" role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
-            <div class="modal-dialog modal-md modal-dialog-popin" role="document">
-                <div class="modal-content">
-                    <div class="block block-rounded shadow-none mb-0">
-                        <div class="block-header block-header-default">
-                            <form class="w-100" action="/dashboard" method="POST">
-                                @csrf
-                                <div class="input-group">
-                                    <!-- END Close Search Section -->
-                                    <input type="text" class="form-control" placeholder="Search.."
-                                        id="searchTools" name="page-header-search-input">
-                                    {{-- <button type="submit" class="btn btn-secondary">
+    <div class="modal fade" id="search" tabindex="-1" role="dialog" aria-labelledby="modal-popin"
+        aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-popin" role="document">
+            <div class="modal-content">
+                <div class="block block-rounded shadow-none mb-0">
+                    <div class="block-header block-header-default">
+                        <form class="w-100" action="/dashboard" method="POST">
+                            @csrf
+                            <div class="input-group">
+                                <!-- END Close Search Section -->
+                                <input type="text" class="form-control" placeholder="Search.." id="searchTools"
+                                    name="page-header-search-input">
+                                {{-- <button type="submit" class="btn btn-secondary">
                                         <i class="fa fa-fw fa-search"></i>
                                     </button> --}}
-                                </div>
-                            </form>
-                            <div class="block-options">
-                                <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
-                                    <i class="fa fa-times"></i>
-                                </button>
                             </div>
+                        </form>
+                        <div class="block-options">
+                            <button type="button" class="btn-block-option" data-bs-dismiss="modal"
+                                aria-label="Close">
+                                <i class="fa fa-times"></i>
+                            </button>
                         </div>
-                        <div class="block-content fs-sm w-100">
-                            <div class="block">
-                                <!-- Classic -->
-                                <div class="" id="search-classic">
-                                    <div id="searchResult" class="row">
-                                       
-                                    </div>
+                    </div>
+                    <div class="block-content fs-sm w-100">
+                        <div class="block">
+                            <!-- Classic -->
+                            <div class="" id="search-classic">
+                                <div id="searchResult" class="row">
+
                                 </div>
-                                <!-- END Classic -->
                             </div>
+                            <!-- END Classic -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
 
 
@@ -557,12 +733,13 @@
             Toast.fire({
                 icon: icon,
                 title: title,
-                width: '30em'
+                width: '27em'
             });
         }
 
 
-        function showDialogConfirm(title = "Approve?", text = "Are you sure you want to approved this Tools?", confirmTitle = "Approved!", confirmTxt = "Items Approved Successfully.") {
+        function showDialogConfirm(title = "Approve?", text = "Are you sure you want to approved this Tools?",
+            confirmTitle = "Approved!", confirmTxt = "Items Approved Successfully.") {
             const dialogConfirm = Swal.mixin({
                 customClass: {
                     confirmButton: "btn btn-success",
@@ -597,23 +774,23 @@
             });
         }
 
-        $("#searchTools").keyup(function(){
+        $("#searchTools").keyup(function() {
             const searchVal = $(this).val();
 
-                $.ajax({
-                    url: '{{route("search")}}',
-                    method: 'post',
-                    data: {
-                        searchVal,
-                        _token: "{{csrf_token()}}"
-                    },
-                    success(response){
-                        $("#searchResult").empty()
+            $.ajax({
+                url: '{{ route('search') }}',
+                method: 'post',
+                data: {
+                    searchVal,
+                    _token: "{{ csrf_token() }}"
+                },
+                success(response) {
+                    $("#searchResult").empty()
 
-                        $("#searchResult").append(response);
-                        
-                    }
-                })
+                    $("#searchResult").append(response);
+
+                }
+            })
         })
     </script>
 

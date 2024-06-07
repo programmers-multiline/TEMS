@@ -1,25 +1,31 @@
 @extends('layouts.backend')
 
 @section('css')
-<link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
-<link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
-<link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
-<link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
+    <link rel="stylesheet"
+        href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
 
-<style>
-    #table > thead > tr > th.text-center.dt-orderable-none.dt-ordering-asc > span.dt-column-order{
-        display: none;
-    }
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui-calendar/latest/tui-calendar.css">
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui-date-picker/latest/tui-date-picker.css">
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui-time-picker/latest/tui-time-picker.css">
 
-    #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
-        display: none;
-    }
 
-    .filepond--credits{
-        display: none;
-    }
 
-</style>
+    <style>
+        #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
+            display: none;
+        }
+
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
+            display: none;
+        }
+
+        .filepond--credits {
+            display: none;
+        }
+    </style>
 @endsection
 
 @section('content-title', 'List of Pullout Request')
@@ -30,8 +36,7 @@
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-scroll">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table"
-                    class="table fs-sm table-bordered hover table-vcenter">
+                <table id="table" class="table fs-sm table-bordered hover table-vcenter">
                     <thead>
                         <tr>
                             <th>Items</th>
@@ -40,9 +45,9 @@
                             <th>Project Code</th>
                             <th>Project Name</th>
                             <th>Project Address</th>
+                            <th>Date Requested</th>
                             <th>Pickup Date</th>
                             <th>Contact</th>
-                            <th>Date Requested</th>
                             <th>Reason</th>
                             <th>Action</th>
                         </tr>
@@ -53,12 +58,27 @@
                 </table>
             </div>
         </div>
+        <div class="block block-rounded p-4">
+            <div id="calendar"></div>
+        </div>
     </div>
     <!-- END Page Content -->
 
+    <div class="modal fade" id="showCalendar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
+    aria-labelledby="modal-popin" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
+        <div class="modal-content">
+            <div class="block block-rounded">
+                <div id="calendarModal"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-@include('pages.modals.upload_pullout_modal')
-@include('pages.modals.ongoing_teis_request_modal')
+
+
+    @include('pages.modals.upload_pullout_modal')
+    @include('pages.modals.ongoing_pullout_request_modal')
 
 @endsection
 
@@ -68,32 +88,66 @@
 @section('js')
 
 
-{{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-<script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
-<script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
+    <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
+    <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
 
-<script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-file-encode/filepond-plugin-file-encode.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
-<script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
+    <script
+        src="{{ asset('js/plugins/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-encode/filepond-plugin-file-encode.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
+    </script>
 
+    <script src="{{asset('js/plugins/fullcalendar/index.global.min.js')}}"></script>
 
-<!-- Fileupload JS -->
-<script src="{{ asset('js\lib\fileupload.js') }}"></script>
+    <!-- Fileupload JS -->
+    <script src="{{ asset('js\lib\fileupload.js') }}"></script>
 
-{{-- <script type="module">
+    {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
   </script> --}}
 
 
     <script>
         $(document).ready(function() {
+
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                editable: true, 
+                selectable: true,
+                dateClick: function(info) {
+                    alert('Date clicked: ' + info.dateStr);
+                },
+                
+            });
+            calendar.render();
+
+            var calendarModal = document.getElementById('calendarModal');
+            var calendar = new FullCalendar.Calendar(calendarModal, {
+                initialView: 'dayGridMonth',
+                editable: true, 
+                selectable: true,
+                dateClick: function(info) {
+                    alert('Date clicked: ' + info.dateStr);
+                },
+                
+            });
+            calendar.render();
+            
+
+
+
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
@@ -101,8 +155,7 @@
                     type: 'get',
                     url: '{{ route('fetch_pullout_request') }}'
                 },
-                columns: [
-                    {
+                columns: [{
                         data: 'view_tools'
                     },
                     {
@@ -138,7 +191,7 @@
                 ],
             });
 
-            $(document).on('click','.teisNumber',function(){
+            $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
 
@@ -149,15 +202,14 @@
                     destroy: true,
                     ajax: {
                         type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
+                        url: '{{ route('ongoing_pullout_request_modal') }}',
                         data: {
-                            id, 
-                            _token:'{{csrf_token()}}'
+                            id,
+                            _token: '{{ csrf_token() }}'
                         }
-                        
+
                     },
-                    columns: [
-                        {
+                    columns: [{
                             data: 'po_number'
                         },
                         {
@@ -181,12 +233,15 @@
                         {
                             data: 'tools_status'
                         },
+                        {
+                            data: 'action'
+                        },
                     ],
                 });
             })
 
 
-            
+
 
             // $("#poNumber").keypress(function(e) {
             //     if (String.fromCharCode(e.keyCode).match(/[^0-9]/g)) return false;
@@ -213,7 +268,7 @@
             //             table.ajax.reload();
             //             $("#addToolsForm")[0].reset();
             //             // $('#closeModal').click();
-      
+
             //         }
             //     })
             // })
@@ -255,7 +310,7 @@
             //     const updateStatus = $("#editStatus").val()
 
             //     $.ajax({
-            //         url: '{{ route("edit_tools") }}',
+            //         url: '{{ route('edit_tools') }}',
             //         method: 'post',
             //         data: {
             //             hiddenToolsId,
@@ -282,11 +337,11 @@
             //     const id = $(this).data('id');
 
             //     $.ajax({
-            //         url: '{{route("delete_tools")}}',
+            //         url: '{{ route('delete_tools') }}',
             //         method: 'post',
             //         data: {
             //             id,
-            //             _token: "{{csrf_token()}}"
+            //             _token: "{{ csrf_token() }}"
             //         },
             //         success(){
             //             table.ajax.reload();
@@ -302,20 +357,20 @@
             //         $("#requesToolstBtn").prop('disabled', false);
             //     }else{
             //         $("#requesToolstBtn").prop('disabled', true);
-                    
+
             //     }
             // })
 
-            
+
             // $("#requesToolstBtn").click(function(){
             //     const data = table.rows({ selected: true }).data();
-           
+
             //     // const arrItem = []
 
 
             //     for(var i = 0; i < data.length; i++ ){
             //         // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
-                    
+
             //     $("#tbodyModal").append(`<tr><td>${data[i].item_code}</td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`);
             //         // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
             //     }
@@ -325,7 +380,7 @@
             // $(".closeModalRfteis").click(function(){
             //     $("#tbodyModal").empty()
             // })
-            
+
         })
     </script>
 @endsection

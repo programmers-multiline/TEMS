@@ -34,8 +34,10 @@ class PullOutController extends Controller
         ->get();  
 
 
+        if(Auth::user()->user_type_id == 4){
 
-        // $pullout_tools = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->get();
+            $pullout_tools = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->get();
+        }
 
         
         return DataTables::of($pullout_tools)
@@ -67,11 +69,11 @@ class PullOutController extends Controller
         })
 
         ->setRowClass(function ($row) { 
-            $tool = PulloutRequest::where('status', 1)
-            ->where('pullout_requests.request_status', 'approved')
-            ->get();
+            $tool = PulloutRequest::where('status', 1)->get();
+            $status = collect($tool)->pluck('request_status')->toArray();
 
-            return 'bg-gray';
+            return in_array('approved', $status) ? 'bg-gray' : '';
+
         })
 
         ->rawColumns(['view_tools', 'action'])
@@ -125,13 +127,13 @@ class PullOutController extends Controller
         
         ->addColumn('view_tools', function($row){
             
-            return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">view</button>';
+            return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">view</button>';
         })
         ->addColumn('action', function($row){
             // $user_type = Auth::user()->user_type_id;
 
             $action =  '<div class="d-flex align-items-center gap-2">
-            <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
+            <button data-pulloutnum="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#showCalendar" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
             <button data-pulloutnum="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
             ';
 
@@ -184,6 +186,38 @@ class PullOutController extends Controller
         $pullout_request->request_status = "approved";
 
         $pullout_request->update();
+    }
+
+
+
+    public function fetch_completed_pullout(){
+
+    $pullout_tools = PulloutRequest::where('status', 1)->where('progress', 'completed')->get();
+        
+        return DataTables::of($pullout_tools)
+        
+        ->addColumn('view_tools', function($row){
+            
+            return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="pulloutNumber btn text-primary fs-6 d-block">View</button>';
+        })
+        ->addColumn('action', function($row){
+
+            $user_type = Auth::user()->user_type_id;
+
+    
+            if($user_type == 4){
+                $action =  '<button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                ';
+            }else if($user_type == 3 || $user_type == 5){
+                $action =  '<div class="d-flex"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                <button type="button" data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" '.$isApproved.' class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
+                </div>';
+            };
+            return $action;
+        })
+
+        ->rawColumns(['view_tools', 'action'])
+        ->toJson();
     }
 
 

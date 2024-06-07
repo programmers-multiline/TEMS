@@ -229,20 +229,50 @@
                                 const id = $(this).data('id');
                                 const teis_num = $(this).data('teis');
 
-                                $.ajax({
-                                    url: '{{ route('scanned_teis_received') }}',
-                                    method: 'post',
-                                    data: {
-                                        id,
-                                        teis_num,
-                                        _token: '{{ csrf_token() }}',
+                                const confirm = Swal.mixin({
+                                    customClass: {
+                                        confirmButton: "btn btn-success ms-2",
+                                        cancelButton: "btn btn-danger"
                                     },
-                                    success(result) {
-                                        scannedToolsTable.ajax.reload();
-                                        showToast("success", "Tool Received Successfully");
+                                    buttonsStyling: false
+                                });
+
+                                confirm.fire({
+                                    title: "Recieved?",
+                                    text: "Are you sure you want to Received this tool?",
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonText: "Yes!",
+                                    cancelButtonText: "Cancel",
+                                    reverseButtons: true
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+
+                                        $.ajax({
+                                            url: '{{ route('scanned_teis_received') }}',
+                                            method: 'post',
+                                            data: {
+                                                id,
+                                                teis_num,
+                                                _token: '{{ csrf_token() }}',
+                                            },
+                                            success(result) {
+                                                scannedToolsTable.ajax.reload();
+                                                showToast("success",
+                                                    "Tool Received");
+
+                                            }
+                                        })
+
+                                    } else if (
+                                        /* Read more about handling dismissals below */
+                                        result.dismiss === Swal.DismissReason.cancel
+                                    ) {
 
                                     }
-                                })
+                                });
+
+
                             })
                         } else {
                             // Barcode already scanned
