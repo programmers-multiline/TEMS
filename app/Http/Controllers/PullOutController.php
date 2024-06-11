@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TeisUploads;
+use App\Models\TersUploads;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
@@ -121,7 +122,13 @@ class PullOutController extends Controller
 
     public function fetch_pullout_request(){
 
-        $request_tools = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->get();
+        $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+        ->select('pullout_requests.*', 'users.fullname')
+        ->where('pullout_requests.status', 1)
+        ->where('users.status', 1)
+        ->where('progress', 'ongoing')
+        ->where('request_status', 'approved')
+        ->get();
         
         return DataTables::of($request_tools)
         
@@ -133,8 +140,8 @@ class PullOutController extends Controller
             // $user_type = Auth::user()->user_type_id;
 
             $action =  '<div class="d-flex align-items-center gap-2">
-            <button data-pulloutnum="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#showCalendar" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
-            <button data-pulloutnum="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
+            <button id="addSchedBtn" data-pulloutnum="'.$row->pullout_number.'" data-pe="'.$row->fullname.'" data-location="'.$row->project_address.'" data-pickupdate="'.$row->pickup_date.'" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
+            <button data-pulloutnum="'.$row->pullout_number.'" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
             ';
 
             // if($user_type == 1){
@@ -153,10 +160,23 @@ class PullOutController extends Controller
             // }
             return $action;
         })
-        ->addColumn('uploads', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
+        ->addColumn('ters', function ($row) {
+            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->get()->toArray();
+            $uploads_file = [];
+            $uploads_file ='<div class="row mx-auto">';
+            foreach($ters_uploads as $item) {
+                
+                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/ters_form/'.$item['uploads']['name'].'">
+                    <span>TERS.pdf</span>
+                    </a>
+                </div>';
+                
+            }
+            $uploads_file .= '</div>';
+            return $uploads_file;
         })
-        ->rawColumns(['view_tools','action','uploads'])
+        ->rawColumns(['view_tools','action','ters'])
         ->toJson();
     }
 

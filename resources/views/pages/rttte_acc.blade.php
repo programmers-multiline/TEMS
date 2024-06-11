@@ -181,6 +181,8 @@
 
             $("#AddPriceBtn").click(function() {
 
+                const table = $("#table").DataTable()
+
                 const allData = [];
 
                 $('.price').each(function(i, obj) {
@@ -210,7 +212,9 @@
                         _token: "{{ csrf_token() }}"
                     },
                     success() {
-                        // table.ajax.reload();
+                        showToast("success", "Price Added!");
+                        $("#psOngoingTeisRequestModal").modal('hide')
+                        table.ajax.reload();
                     }
                 })
 

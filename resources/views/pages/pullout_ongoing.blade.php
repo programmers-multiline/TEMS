@@ -186,7 +186,7 @@
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
-                    cancelButtonText: "Cancel!",
+                    cancelButtonText: "Back",
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {

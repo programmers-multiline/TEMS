@@ -34,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/datatables', 'pages.datatables');
     Route::view('/pages/request_ongoing', 'pages.request_ongoing');
     Route::view('/pages/request_completed', 'pages.request_completed');
-    Route::view('/pages/my_te', 'pages.my_te');
+    // Route::view('/pages/my_te', 'pages.my_te');
     Route::view('/pages/pullout_ongoing', 'pages.pullout_ongoing');
     Route::view('/pages/rftte', 'pages.rftte');
     Route::view('/pages/pullout_warehouse', 'pages.pullout_warehouse');
@@ -92,6 +92,7 @@ Route::controller(TransferRequestController::class)->group(function () {
 });
 
 Route::controller(MyToolsAndEquipmentController::class)->group(function () {
+    Route::get('view_my_te', 'view_my_te')->name('view_my_te');
     Route::get('my_te', 'fetch_my_te')->name('fetch_my_te');
     Route::post('pullout_tools', 'pullout_request')->name('pullout_request');
     Route::post('add_state', 'add_state')->name('add_state');

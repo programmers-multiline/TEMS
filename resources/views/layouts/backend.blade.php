@@ -1,6 +1,6 @@
 @php
 
-    if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3) {
+    if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3 || (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)) {
         $series = 1;
 
         $approver = App\Models\RequestApprover::where('status', 1)
@@ -138,6 +138,73 @@
                     ->count();
             } else {
                 $tools_approver_dafs = [];
+            }
+        }
+    }
+
+    if( Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5 ){
+        $series = 1;
+
+        if(Auth::user()->user_type_id == 4){
+            $ps_request_tools = App\Models\PsTransferRequests::leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+            ->select('users.fullname','request_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
+            ->where('ps_transfer_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('progress', 'ongoing')
+            ->where('current_pe', Auth::user()->id)
+            ->count();
+        }else{
+
+            $approver = App\Models\RequestApprover::where('status', 1)
+            ->where('approver_id', Auth::user()->id)
+            ->where('series', $series)
+            ->where('request_type', 2)
+            ->first();
+            
+
+            if($approver->sequence == 1){
+                $ps_request_tools = App\Models\PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
+                ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+                ->select('users.fullname','request_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                ->where('ps_transfer_requests.status', 1)
+                ->where('request_approvers.status', 1)
+                // ->where('current_pe', Auth::user()->id)
+                ->where('request_approvers.approver_id', Auth::user()->id)
+                ->where('progress', 'ongoing')
+                // ->where('series', $series)
+                ->where('approver_status', 0)
+                ->where('request_type', 2)
+                ->count();
+
+            }else{
+
+                $prev_sequence = $approver->sequence - 1;
+
+                $prev_approver = App\Models\RequestApprover::where('status', 1)
+                ->where('request_id', $approver->request_id)
+                ->where('sequence', $prev_sequence)
+                ->where('series', $series)
+                ->where('request_type', 2)
+                ->first();
+
+
+                if($prev_approver->approver_status == 1){
+                    $ps_request_tools = App\Models\PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
+                    ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+                    ->select('users.fullname','request_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                    ->where('ps_transfer_requests.status', 1)
+                    ->where('request_approvers.status', 1)
+                    // ->where('current_pe', Auth::user()->id)
+                    ->where('request_approvers.approver_id', Auth::user()->id)
+                    ->where('progress', 'ongoing')
+                    // ->where('series', $series)
+                    ->where('approver_status', 0)
+                    ->where('request_type', 2)
+                    ->count();
+                }
+                else{
+                    $ps_request_tools = 0;
+                }
             }
         }
     }
@@ -302,18 +369,25 @@
 
                             @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
                                 <li class="nav-main-item">
-                                    <a class="nav-main-link{{ request()->is('pages/my_te') ? ' active' : '' }}"
-                                        href="/pages/my_te">
+                                    <a class="nav-main-link{{ request()->is('view_my_te') ? ' active' : '' }}"
+                                        href="/view_my_te">
                                         <i class="nav-main-link-icon fa fa-screwdriver-wrench"></i>
                                         <span class="nav-main-link-name">
-                                            My Tools and Equipment</span>
+                                            @if (Auth::user()->user_type_id == 4)
+                                                My
+                                            @endif 
+                                        Tools and Equipment</span>
                                     </a>
                                 </li>
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/pullout_ongoing', 'pages/pullout_completed') ? ' active' : '' }}"
                                         data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                                         <i class="nav-main-link-icon fa fa-arrows-turn-right"></i>
-                                        <span class="nav-main-link-name">My Pull-Out Request</span>
+                                        <span class="nav-main-link-name"> 
+                                        @if (Auth::user()->user_type_id == 4)
+                                            My
+                                        @endif  
+                                        Pull-Out Request</span>
                                     </a>
                                     <ul class="nav-main-submenu">
                                         <li class="nav-main-item">
@@ -334,7 +408,11 @@
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/request_ongoing', 'pages/request_completed') ? ' active' : '' }}"
                                         data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                                         <i class="nav-main-link-icon fa fa-file-pen"></i>
-                                        <span class="nav-main-link-name">My TEIS Request</span>
+                                        <span class="nav-main-link-name"> 
+                                        @if (Auth::user()->user_type_id == 4)
+                                            My
+                                        @endif  
+                                        TEIS Request</span>
                                     </a>
                                     <ul class="nav-main-submenu">
                                         <li class="nav-main-item">
@@ -351,13 +429,35 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li class="nav-main-item">
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/site_to_site_transfer') ? ' active' : '' }}"
                                         href="/pages/site_to_site_transfer">
                                         <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
                                         <span class="nav-main-link-name">Site to Site Transfer</span>
                                     </a>
+                                    <span
+                                    @php
+                                        if(Auth::user()->user_type_id == 4){$ps_request_tools = 0;}
+                                    @endphp
+                                        class="countContainer nav-main-link text-light {{ $ps_request_tools == 0 ? 'd-none' : '' }}"><span
+                                        id="siteToSiteCount" class="bg-info"
+                                        style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>
+                                    </span>
                                 </li>
+                                @if (Auth::user()->user_type_id !== 4)
+                                    <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                        <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
+                                            href="/pages/rfteis">
+                                            <i class="nav-main-link-icon fa fa-box-open"></i>
+                                            <span class="nav-main-link-name">RFTEIS</span>
+                                        </a>
+                                        <span
+                                            class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
+                                                id="rfteisCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
+                                        </span>
+                                    </li>
+                                @endif
                             @endif
 
                             @if (Auth::user()->user_type_id == 4)
@@ -753,7 +853,7 @@
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonText: "Yes!",
-                cancelButtonText: "Cancel!",
+                cancelButtonText: "Back",
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {

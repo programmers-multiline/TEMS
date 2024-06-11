@@ -36,6 +36,7 @@
                             <th>Status</th>
                             <th>Type</th>
                             <th>TEIS</th>
+                            <th>TERS</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -110,7 +111,10 @@
                         data: 'request_type'
                     },
                     {
-                        data: 'uploads'
+                        data: 'teis'
+                    },
+                    {
+                        data: 'ters'
                     },
                     {
                         data: 'action'
@@ -121,10 +125,12 @@
                 }
             });
 
+            let type;
+
             $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
-                const type = $(this).data("transfertype");
+                type = $(this).data("transfertype");
 
 
                 const modalTable = $("#modalTable").DataTable({
@@ -195,7 +201,7 @@
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
-                    cancelButtonText: "Cancel",
+                    cancelButtonText: "Back",
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -206,6 +212,7 @@
                             data: {
                                 id,
                                 teis_num,
+                                type,
                                 _token: '{{ csrf_token() }}',
                             },
                             success(result) {

@@ -1,4 +1,5 @@
-<div class="modal fade" id="pulloutRequestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
+<div class="modal fade" id="pulloutRequestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
         <div class="modal-content">
             <div class="block block-rounded shadow-none mb-0">
@@ -16,19 +17,28 @@
                         <div class="row mb-3">
                             <div class="col-3">
                                 <label class="form-label" for="client">Client <span
-                                    class="text-danger">*</span></label>
+                                        class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="client" name="client"
                                     placeholder="Enter Client">
                             </div>
                             <div class="col-5">
-                                <label class="form-label" for="projectName">Project <span
-                                    class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="projectName" name="projectName"
-                                    placeholder="Enter Project Name">
+                                <label class="form-label" for="projectName">Project Name <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="projectName" name="projectName" size="1">
+                                    <option disabled selected>Select Project Name</option>
+                                    @foreach ($pg as $project_detail)
+                                        <option data-pcode="{{ Str::title($project_detail->project_code) }}"
+                                            data-custname="{{Str::title($project_detail->customer_name)}}"
+                                            data-paddress="{{ Str::title($project_detail->project_address) }}"
+                                            value="{{ $project_detail->project_name }}">
+                                            {{ $project_detail->project_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="col-2">
                                 <label class="form-label" for="contact">Contact No. <span
-                                    class="text-danger">*</span></label>
+                                        class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="contact" name="contact"
                                     placeholder="Enter Contact No.">
                             </div>
@@ -42,9 +52,9 @@
                         <div class="row mb-3">
                             <div class="col-3">
                                 <label class="form-label" for="projectCode">Project Code <span
-                                class="text-danger">*</span></label>
+                                        class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectCode" name="projectCode"
-                                placeholder="Enter Project code">
+                                    placeholder="Enter Project code">
                             </div>
                             <div class="col-3">
                                 <label class="form-label" for="subcon">SubContractor</label>
@@ -59,8 +69,7 @@
                             </div>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label" for="reason">Reason <span
-                                class="text-danger">*</span></label>
+                            <label class="form-label" for="reason">Reason <span class="text-danger">*</span></label>
                             <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Enter Your Reason.."></textarea>
                         </div>
                     </form>
@@ -68,19 +77,20 @@
                     <h3 class="mb-1 text-secondary">Selected Tools</h3>
                     <table class="table table-hover table-bordered table-vcenter">
                         <thead>
-                          <tr>
-                            <th>TEIS</th>
-                            <th>Item Code</th>
-                            <th>Item Description</th>
-                            <th>PM/TL/PE Recommendation</th>
-                          </tr>
+                            <tr>
+                                <th>TEIS</th>
+                                <th>Item Code</th>
+                                <th>Item Description</th>
+                                <th>PM/TL/PE Recommendation</th>
+                            </tr>
                         </thead>
                         <tbody id="tbodyPulloutModal">
                         </tbody>
-                      </table>
+                    </table>
                 </div>
                 <div class="block-content block-content-full block-content-sm text-end border-top">
-                    <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis" data-bs-dismiss="modal">
+                    <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis"
+                        data-bs-dismiss="modal">
                         Close
                     </button>
                     <button id="requestPulloutModalBtn" type="button" class="btn btn-alt-primary">

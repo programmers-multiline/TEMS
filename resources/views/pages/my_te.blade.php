@@ -23,7 +23,7 @@
             <div class="d-flex mb-3 justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                     <i class="fa fa-filter fs-2 me-2 text-secondary"></i>
-                    <select class="form-select" id="projectCode" name="example-select">
+                    <select class="form-select" id="selectProjectCode" name="example-select">
                         <option disabled selected="">Project Site</option>
                         <option value="pn-1">Project Site 1</option>
                         <option value="pn-2">Project Site 2</option>
@@ -298,11 +298,12 @@
 
 
             $("#pulloutRequestBtn").click(function() {
+
+                $("#tbodyPulloutModal").empty()
+
                 const data = table.rows({
                     selected: true
                 }).data();
-
-                console.log(data);
 
 
                 for (var i = 0; i < data.length; i++) {
@@ -410,6 +411,19 @@
                 })
 
             })
+
+
+            $('#projectName').change(function() {
+                const selectedPname = $(this).find(':selected')
+                const custName = selectedPname.data('custname');
+                const pCode = selectedPname.data('pcode');
+                const pAddress = selectedPname.data('paddress');
+
+                $("#projectCode").val(pCode)
+                $("#client").val(custName)
+                $("#projectAddress").val(pAddress)
+
+            });
 
 
         })

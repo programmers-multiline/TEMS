@@ -135,7 +135,7 @@ class ProjectSiteController extends Controller
             }else if($user_type == 2){
                 $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
                 <i class="fa fa-pencil-alt"></i></button>';
-            }else if($user_type == 3 || $user_type == 4){
+            }else if($user_type == 3 || $user_type == 4 || $user_type == 5){
                 $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
                 <i class="fa fa-file-pen"></i></button>';
             }
@@ -224,12 +224,28 @@ class ProjectSiteController extends Controller
             })
             ->addColumn('action', function($row){
                 $user_type = Auth::user()->user_type_id;
+
+                $price = [];
+                
+                $ps_tools = PsTransferRequestItems::where('status', 1)->where('ps_transfer_request_id', $row->id)->get();
+                foreach ($ps_tools as $tools) {
+        
+                    array_push($price, $tools->price);
+                }
+
+                if( Auth::user()->dept_id !== 1){
+                    $price = [''];
+                }
+        
+                $has_null = in_array(null, $price, true);
+        
+                $has_price = $has_null ? 'disabled' : '';
                 
 
                 if($user_type == 2){
                     $action =  '<button data-requestnum="'.$row->request_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload me-1"></i>TEIS</button>';
                 }else if($user_type == 7){
-                    $action =  '<button data-requestnum="'.$row->request_number.'" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
+                    $action =  '<button data-requestnum="'.$row->request_number.'" '.$has_price.' type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
                 }else{
                     $action == '';
                 }
@@ -301,7 +317,7 @@ class ProjectSiteController extends Controller
 
                 $is_have_value = $row->price ? 'disabled' : '';
 
-                $add_price = '<input value="'.$row->price.'" data-id="'.$row->pstri_id.'" '.$is_have_value.' style="width: 100px;" type="number" class="price" name="price" min="1">';
+                $add_price = '<input value="'.$row->price.'" data-id="'.$row->pstri_id.'" style="width: 100px;" type="number" class="price" name="price" min="1">';
                 return $add_price;
             })
 

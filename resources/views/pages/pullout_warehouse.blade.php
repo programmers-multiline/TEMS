@@ -64,16 +64,54 @@
     </div>
     <!-- END Page Content -->
 
-    <div class="modal fade" id="showCalendar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
-    aria-labelledby="modal-popin" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
+    <div class="modal fade" id="addSched" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-popin"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
         <div class="modal-content">
-            <div class="block block-rounded">
-                <div id="calendarModal"></div>
+            <div class="block block-rounded shadow-none mb-0">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">ADD SCHEDULE</h3>
+                    <div class="block-options">
+                        <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="block-content fs-sm">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label" for="pe">Project Enginner <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="pe" name="pe"
+                                 disabled placeholder="Enter PE" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="pickupDate">Pick-up Date <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="pickupDate" name="pickupDate"
+                                placeholder="Enter Pick-up Date">
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="location">Location <span
+                                class="text-danger">*</span></label>
+                        <input disabled type="text" class="form-control" id="location" name="location"
+                            placeholder="Enter Location">
+                    </div>
+                </div>
+                <div class="block-content block-content-full block-content-sm text-end border-top">
+                    <button type="button" id="closeModal" class="btn btn-alt-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button id="btnAddTools" type="button" class="btn btn-alt-primary">
+                        Done
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 
 
 
@@ -133,17 +171,17 @@
             });
             calendar.render();
 
-            var calendarModal = document.getElementById('calendarModal');
-            var calendar = new FullCalendar.Calendar(calendarModal, {
-                initialView: 'dayGridMonth',
-                editable: true, 
-                selectable: true,
-                dateClick: function(info) {
-                    alert('Date clicked: ' + info.dateStr);
-                },
+            // var calendarModal = document.getElementById('calendarModal');
+            // var calendar = new FullCalendar.Calendar(calendarModal, {
+            //     initialView: 'dayGridMonth',
+            //     editable: true, 
+            //     selectable: true,
+            //     dateClick: function(info) {
+            //         alert('Date clicked: ' + info.dateStr);
+            //     },
                 
-            });
-            calendar.render();
+            // });
+            // calendar.render();
             
 
 
@@ -184,6 +222,9 @@
                     },
                     {
                         data: 'reason'
+                    },
+                    {
+                        data: 'ters'
                     },
                     {
                         data: 'action'
@@ -238,6 +279,17 @@
                         },
                     ],
                 });
+            })
+
+            $(document).on('click', '#addSchedBtn', function(){
+                const pe = $(this).data('pe');
+                const location = $(this).data('location');
+                const pickUpdate = $(this).data('pickupdate');
+
+                $("#pe").val(pe)
+                $("#pickupDate").val(pickUpdate)
+                $("#location").val(location)
+
             })
 
 

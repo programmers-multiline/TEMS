@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DataTables;
 use Carbon\Carbon;
 use App\Mail\ApproverEmail;
+use App\Models\PmGroupings;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
@@ -17,6 +18,22 @@ use Illuminate\Support\Facades\Mail;
 
 class MyToolsAndEquipmentController extends Controller
 {
+
+    public function view_my_te(){
+        $pg = PmGroupings::leftjoin('assigned_projects', 'assigned_projects.pm_group_id', 'pm_groupings.id')
+        ->leftjoin('project_sites', 'project_sites.id','assigned_projects.project_id')
+        ->select('project_sites.customer_name','project_sites.project_name','project_sites.project_code','project_sites.project_address',)
+        ->where('assigned_projects.status', 1)
+        ->where('pm_groupings.status', 1)
+        ->where('project_sites.status', 1)
+        ->where('pm_groupings.pe_code', Auth::user()->emp_id)
+        ->orwhere('pm_groupings.pm_code', Auth::user()->emp_id)
+        ->get();
+
+        return view('/pages/my_te', compact('pg'));
+    }
+
+
     public function fetch_my_te(Request $request){
       
         // $tools = TransferRequest::leftJoin('transfer_request_items', 'transfer_request_items.teis_number', 'transfer_requests.teis_number')
@@ -41,30 +58,39 @@ class MyToolsAndEquipmentController extends Controller
         //                             ->where('transfer_request_items.status', 1)
         //                             ->where('transfer_requests.progress', 'completed')
         //                             ->get();
-        if($request->id){
+        // if($request->id){
 
-            $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+        //     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+        //     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+        //     ->leftJoin('transfer_requests','transfer_requests.id','transfer_request_items.transfer_request_id')
+        //     ->select('tools_and_equipment.*', 'transfer_request_items.teis_number', 'warehouses.warehouse_name')
+        //     ->where('transfer_requests.pe', Auth::user()->id)
+        //     ->where('transfer_request_items.status', 1)
+        //     ->where('transfer_requests.progress', 'completed')
+        //     ->where('transfer_requests.project_code', $request->id)
+        //     ->get();
+        // }else{
+        //     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+        //     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+        //     ->leftJoin('transfer_requests','transfer_requests.id','transfer_request_items.transfer_request_id')
+        //     ->select('transfer_request_items.teis_number','tools_and_equipment.*', 'warehouses.warehouse_name')
+        //     ->where('transfer_requests.pe', Auth::user()->id)
+        //     ->where('transfer_request_items.status', 1)
+        //     ->where('tools_and_equipment.status', 1)
+        //     ->where('transfer_requests.status', 1)
+        //     ->where('transfer_request_items.item_status', 1)
+        //     ->get();
+
+        // }
+
+        $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
             ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-            ->leftJoin('transfer_requests','transfer_requests.id','transfer_request_items.transfer_request_id')
-            ->select('tools_and_equipment.*', 'transfer_request_items.teis_number', 'warehouses.warehouse_name')
-            ->where('transfer_requests.pe', Auth::user()->id)
-            ->where('transfer_request_items.status', 1)
-            ->where('transfer_requests.progress', 'completed')
-            ->where('transfer_requests.project_code', $request->id)
-            ->get();
-        }else{
-            $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-            ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-            ->leftJoin('transfer_requests','transfer_requests.id','transfer_request_items.transfer_request_id')
             ->select('transfer_request_items.teis_number','tools_and_equipment.*', 'warehouses.warehouse_name')
-            ->where('transfer_requests.pe', Auth::user()->id)
+            ->where('tools_and_equipment.current_pe', Auth::user()->id)
             ->where('transfer_request_items.status', 1)
             ->where('tools_and_equipment.status', 1)
-            ->where('transfer_requests.status', 1)
             ->where('transfer_request_items.item_status', 1)
             ->get();
-
-        }
 
         // return $tools[0]->teis_number;
 

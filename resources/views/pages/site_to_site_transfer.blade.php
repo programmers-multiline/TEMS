@@ -186,6 +186,8 @@
                 const requestId = $(this).data('requestid');
                 const series = $(this).data('series');
 
+                const prevCount = parseInt($("#siteToSiteCount").text());
+
                 const confirm = Swal.mixin({
                     customClass: {
                         confirmButton: "btn btn-success ms-2",
@@ -225,6 +227,12 @@
                                     text: "Items Approved Successfully.",
                                     icon: "success"
                                 });
+                                
+                                if(prevCount == 1){
+                                    $(".countContainer").addClass("d-none")
+                                }else{
+                                    $("#rfteisCount").text(prevCount - 1);
+                                }
                             }
                         })
 

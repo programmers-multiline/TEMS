@@ -89,7 +89,7 @@ $("#psUploadTersForm").on("submit", function (e) {
     for (var i = 0; i < pondters.length; i++) {
         form_data.append("ters_upload[]", pondters[i].file);
     }
-    console.log(...form_data);
+    const table = $("#table").DataTable();
 
     $.ajax({
         type: "POST",
@@ -98,7 +98,11 @@ $("#psUploadTersForm").on("submit", function (e) {
         contentType: false,
         cache: false,
         data: form_data,
-        success: function (response) {},
+        success: function (response) {
+            $("#uploadTers").modal("hide");
+            table.ajax.reload();
+            showToast("success", "TERS Uploaded");
+        },
     });
 });
 
@@ -115,8 +119,10 @@ var tersFormPond = FilePond.create(document.querySelector("#ters-fileupload"), {
 
 $(document).on("click", ".uploadTersBtn", function () {
     const pulloutnum = $(this).data("pulloutnum");
+    const trType = $(this).data("type");
 
     $("#tersNumModalhidden").val(pulloutnum);
+    $("#trTypeModalhidden").val(trType);
 });
 
 // SUBMIT FORM

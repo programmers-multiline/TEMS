@@ -20,7 +20,7 @@
                         <div class="block block-rounded">
                             <div class="block-content">
                                 <input type="file" id="ps-ters-fileupload" multiple
-                                    data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept=".pdf">
+                                    data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept="application/pdf">
 
                             </div>
                         </div>

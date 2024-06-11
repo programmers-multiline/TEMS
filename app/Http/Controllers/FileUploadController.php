@@ -121,6 +121,7 @@ class FileUploadController extends Controller
                 TersUploads::create([
                     'pullout_number' => $request->tersNum,
                     'upload_id' => $uploads->id,
+                    'tr_type' => $request->trType,
                 ]);
             }
         }

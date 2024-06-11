@@ -22,7 +22,7 @@
 </style>
 @endsection
 
-@section('content-title', 'List of RFTTE')
+@section('content-title', 'List of Request for Transfer')
 
 @section('content')
     <!-- Page Content -->
@@ -34,7 +34,8 @@
                     class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
-                            <th>TEIS#</th>
+                            <th>Items</th>
+                            <th>Type</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -107,32 +108,35 @@
                     data: 'view_tools'
                 },
                 {
-                        data: 'subcon'
-                    },
-                    {
-                        data: 'customer_name'
-                    },
-                    {
-                        data: 'project_name'
-                    },
-                    {
-                        data: 'project_code'
-                    },
-                    {
-                        data: 'project_address'
-                    },
-                    {
-                        data: 'date_requested'
-                    },
-                    {
-                        data: 'teis'
-                    },
-                    {
-                        data: 'ters'
-                    },
-                    {
-                        data: 'action'
-                    },
+                    data: 'tr_type'
+                },
+                {
+                    data: 'subcon'
+                },
+                {
+                    data: 'customer_name'
+                },
+                {
+                    data: 'project_name'
+                },
+                {
+                    data: 'project_code'
+                },
+                {
+                    data: 'project_address'
+                },
+                {
+                    data: 'date_requested'
+                },
+                {
+                    data: 'teis'
+                },
+                {
+                    data: 'ters'
+                },
+                {
+                    data: 'action'
+                },
                 ],
             });
             
@@ -179,10 +183,70 @@
                         {
                             data: 'tools_status'
                         },
+                        {
+                            data: 'action'
+                        },
                     ],
                 });
             })
             
+
+
+            // $(document).on('click', '.approveBtn', function() {
+            //     const requestNum = $(this).data('num');
+            //     const type = $(this).data('type');
+
+            //     const confirm = Swal.mixin({
+            //         customClass: {
+            //             confirmButton: "btn btn-success ms-2",
+            //             cancelButton: "btn btn-danger"
+            //         },
+            //         buttonsStyling: false
+            //     });
+
+            //     confirm.fire({
+            //         title: "Approve?",
+            //         text: "Are you sure you want to approved this tools?",
+            //         icon: "warning",
+            //         showCancelButton: true,
+            //         confirmButtonText: "Yes!",
+            //         cancelButtonText: "Close",
+            //         reverseButtons: true
+            //     }).then((result) => {
+            //         if (result.isConfirmed) {
+
+            //             $.ajax({
+            //                 url: '{{ route('ps_approve_rttte') }}',
+            //                 method: 'post',
+            //                 data: {
+            //                     requestNum,
+            //                     type,
+            //                     _token: '{{ csrf_token() }}'
+            //                 },
+            //                 beforeSend(){
+            //                     $("#loader").show()
+            //                 },
+            //                 success() {
+            //                     $("#loader").hide()
+            //                     table.ajax.reload();
+            //                     confirm.fire({
+            //                         title: "Approved!",
+            //                         text: "Items Approved Successfully.",
+            //                         icon: "success"
+            //                     });
+            //                 }
+            //             })
+
+            //         } else if (
+            //             /* Read more about handling dismissals below */
+            //             result.dismiss === Swal.DismissReason.cancel
+            //         ) {
+
+            //         }
+            //     });
+
+
+            // })
             
             
             
