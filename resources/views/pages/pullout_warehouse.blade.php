@@ -49,6 +49,7 @@
                             <th>Pickup Date</th>
                             <th>Contact</th>
                             <th>Reason</th>
+                            <th>TERS</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -64,53 +65,52 @@
     </div>
     <!-- END Page Content -->
 
-    <div class="modal fade" id="addSched" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-popin"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
-        <div class="modal-content">
-            <div class="block block-rounded shadow-none mb-0">
-                <div class="block-header block-header-default">
-                    <h3 class="block-title">ADD SCHEDULE</h3>
-                    <div class="block-options">
-                        <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
-                            <i class="fa fa-times"></i>
+    <div class="modal fade" id="addSched" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
+        aria-labelledby="modal-popin" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+            <div class="modal-content">
+                <div class="block block-rounded shadow-none mb-0">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">ADD SCHEDULE</h3>
+                        <div class="block-options">
+                            <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="block-content fs-sm">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label" for="pe">Project Enginner <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="pe" name="pe" disabled
+                                    placeholder="Enter PE" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label" for="pickupDate">Pick-up Date <span
+                                        class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="pickupDate" name="pickupDate"
+                                    placeholder="Enter Pick-up Date">
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label" for="location">Location <span class="text-danger">*</span></label>
+                            <input disabled type="text" class="form-control" id="location" name="location"
+                                placeholder="Enter Location">
+                        </div>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm text-end border-top">
+                        <button type="button" id="closeModal" class="btn btn-alt-secondary" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <button id="btnAddSched" type="button" class="btn btn-alt-primary">
+                            Add
                         </button>
                     </div>
-                </div>
-                <div class="block-content fs-sm">
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label" for="pe">Project Enginner <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="pe" name="pe"
-                                 disabled placeholder="Enter PE" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label" for="pickupDate">Pick-up Date <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="pickupDate" name="pickupDate"
-                                placeholder="Enter Pick-up Date">
-                        </div>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label" for="location">Location <span
-                                class="text-danger">*</span></label>
-                        <input disabled type="text" class="form-control" id="location" name="location"
-                            placeholder="Enter Location">
-                    </div>
-                </div>
-                <div class="block-content block-content-full block-content-sm text-end border-top">
-                    <button type="button" id="closeModal" class="btn btn-alt-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
-                    <button id="btnAddTools" type="button" class="btn btn-alt-primary">
-                        Done
-                    </button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
 
@@ -146,7 +146,7 @@
     <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
     </script>
 
-    <script src="{{asset('js/plugins/fullcalendar/index.global.min.js')}}"></script>
+    <script src="{{ asset('js/plugins/fullcalendar/index.global.min.js') }}"></script>
 
     <!-- Fileupload JS -->
     <script src="{{ asset('js\lib\fileupload.js') }}"></script>
@@ -159,30 +159,81 @@
     <script>
         $(document).ready(function() {
 
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            var calendar = new FullCalendar.Calendar($("#calendar")[0], {
                 initialView: 'dayGridMonth',
-                editable: true, 
+                editable: true,
                 selectable: true,
                 dateClick: function(info) {
                     alert('Date clicked: ' + info.dateStr);
                 },
-                
+                events: function(start, callback) {
+                    $.ajax({
+                        url: '{{ route('fetch_sched_date') }}',
+                        // method: 'post'
+                        dataType: 'json',
+                        success: function(data) {
+                            events = data.map(function(event) {
+                                return {
+                                    title: event.project_address,
+                                    start: event.approved_sched_date,
+                                    pe: event.fullname,
+                                    contact: event.contact_number,
+                                    client: event.client,
+                                    project_name: event.project_name,
+                                    project_address: event.project_address
+                                };
+                            });
+                            console.log(data)
+                            callback(events);
+                        }
+                    });
+                },
+                eventMouseEnter: function(info) {
+                    $(info.el).popover({
+                        title: info.event.extendedProps.project_name,
+                        placement: 'top',
+                        trigger: 'hover',
+                        content: '<div class="event-details">' +
+                            '<p><strong>Project Name:</strong> ' + info.event.extendedProps.project_name + '</p>' +
+                            '<p><strong>Project PE:</strong> ' + info.event.extendedProps.pe + '</p>' +
+                            '<p><strong>Client:</strong> ' + info.event.extendedProps.client + '</p>' +
+                            '<p><strong>Address:</strong> ' + info.event.extendedProps.project_address + '</p>' +
+                            '<p><strong>Contact Number:</strong> ' + info.event.extendedProps.contact + '</p>' +
+                            '</div>',
+                        container: 'body',
+                        html: true
+                    }).popover('show');
+                }
             });
+
             calendar.render();
 
-            // var calendarModal = document.getElementById('calendarModal');
-            // var calendar = new FullCalendar.Calendar(calendarModal, {
-            //     initialView: 'dayGridMonth',
-            //     editable: true, 
-            //     selectable: true,
-            //     dateClick: function(info) {
-            //         alert('Date clicked: ' + info.dateStr);
-            //     },
-                
-            // });
-            // calendar.render();
-            
+
+            let pulloutNum;
+
+            $(document).on('click', '#addSchedBtn', function() {
+                pulloutNum = $(this).data('pulloutnum')
+            })
+
+
+            $("#btnAddSched").click(function() {
+                const pickupDate = $("#pickupDate").val();
+
+                $.ajax({
+                    url: '{{ route('add_schedule') }}',
+                    method: 'post',
+                    data: {
+                        pickupDate,
+                        pulloutNum,
+                        _token: '{{ csrf_token() }}',
+
+                    },
+                    success() {
+                        calendar.refetchEvents();
+                        $("#addSched").modal('hide')
+                    }
+                })
+            })
 
 
 
@@ -281,7 +332,7 @@
                 });
             })
 
-            $(document).on('click', '#addSchedBtn', function(){
+            $(document).on('click', '#addSchedBtn', function() {
                 const pe = $(this).data('pe');
                 const location = $(this).data('location');
                 const pickUpdate = $(this).data('pickupdate');

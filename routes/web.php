@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     // Route::view('/pages/my_te', 'pages.my_te');
     Route::view('/pages/pullout_ongoing', 'pages.pullout_ongoing');
     Route::view('/pages/rftte', 'pages.rftte');
+    Route::view('/pages/rfteis_approved', 'pages.rfteis_approved');
     Route::view('/pages/pullout_warehouse', 'pages.pullout_warehouse');
     Route::view('/pages/rfteis', 'pages.rfteis');
     Route::view('/pages/barcode_scanner', 'pages.barcode_scanner');
@@ -44,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/daf', 'pages.daf');
     Route::view('/pages/site_to_site_transfer', 'pages.site_to_site_transfer');
     Route::view('/pages/pullout_completed', 'pages.pullout_completed');
+    Route::view('/pages/approved_pullout', 'pages.approved_pullout');
 
     
 
@@ -75,7 +77,7 @@ Route::controller(TransferRequestController::class)->group(function () {
     Route::get('ongoing_teis_request', 'ongoing_teis_request')->name('ongoing_teis_request');
     Route::match(['GET', 'POST'], '/ongoing_teis_request_modal', 'ongoing_teis_request_modal')->name('ongoing_teis_request_modal');
     Route::get('teis_request', 'fetch_teis_request')->name('fetch_teis_request');
-    Route::get('rfteis_approver', 'fetch_rfteis_approver')->name('fetch_rfteis_approver');
+    Route::post('rfteis_approver', 'fetch_rfteis_approver')->name('fetch_rfteis_approver');
     Route::post('approve_tools', 'approve_tools')->name('approve_tools');
     Route::get('barcode_scanner', 'scanned_teis')->name('scanned_teis');
     Route::post('barcode_scanner_received', 'scanned_teis_received')->name('scanned_teis_received');
@@ -104,6 +106,9 @@ Route::controller(PullOutController::class)->group(function () {
     Route::post('tobe_approve_tools', 'tobe_approve_tools')->name('tobe_approve_tools');
     Route::get('pullout_request', 'fetch_pullout_request')->name('fetch_pullout_request');
     Route::get('completed_pullout_request', 'fetch_completed_pullout')->name('fetch_completed_pullout');
+    Route::get('fetch_sched_date', 'fetch_sched_date')->name('fetch_sched_date');
+    Route::post('add_schedule', 'add_schedule')->name('add_schedule');
+    Route::get('fetch_approved_pullout', 'fetch_approved_pullout')->name('fetch_approved_pullout');
     
 });
 

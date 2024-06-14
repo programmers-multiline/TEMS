@@ -2,6 +2,10 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
+    <link rel="stylesheet"
+        href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -11,12 +15,19 @@
         #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
+
+        .filepond--credits {
+            display: none;
+        }
     </style>
 @endsection
 
-@section('content-title', 'Ongoing Pull-Out Request')
+@section('content-title', 'List of RFTEIS')
 
 @section('content')
+<div class="loader-container" id="loader" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+    <dotlottie-player src="{{asset('js/loader.json')}}" background="transparent" speed="1" style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal" loop autoplay>Loading</dotlottie-player>
+</div>
     <!-- Page Content -->
     <div class="content">
         <div id="tableContainer" class="block block-rounded">
@@ -27,16 +38,13 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Subcon</th>
                             <th>Customer Name</th>
-                            <th>Project Name</th>
                             <th>Project Code</th>
+                            <th>Project Name</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
-                            <th>Subcon</th>
-                            <th>Pickup Date</th>
-                            <th>Assign Sched</th>
-                            <th>Contact Number</th>
-                            <th>Reason</th>
+                            {{-- <th>Status</th> --}}
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -49,7 +57,7 @@
     </div>
     <!-- END Page Content -->
 
-    @include('pages.modals.ongoing_pullout_request_modal')
+    @include('pages.modals.ongoing_teis_request_modal')
 
 @endsection
 
@@ -63,6 +71,27 @@
     <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
     <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
 
+    <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
+    <script
+        src="{{ asset('js/plugins/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-encode/filepond-plugin-file-encode.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
+    </script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+
+
+    <!-- Fileupload JS -->
+    <script src="{{ asset('js\lib\fileupload.js') }}"></script>
+
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
   </script> --}}
@@ -74,14 +103,21 @@
                 processing: true,
                 serverSide: false,
                 ajax: {
-                    type: 'get',
-                    url: '{{ route('fetch_ongoing_pullout') }}'
+                    type: 'post',
+                    url: '{{ route('fetch_rfteis_approver') }}',
+                    data: {
+                        path: $("#path").val(),
+                        _token : '{{ csrf_token() }}'
+                    }
                 },
                 columns: [{
                         data: 'view_tools'
                     },
                     {
-                        data: 'client'
+                        data: 'subcon'
+                    },
+                    {
+                        data: 'customer_name'
                     },
                     {
                         data: 'project_name'
@@ -96,27 +132,12 @@
                         data: 'date_requested'
                     },
                     {
-                        data: 'subcon'
-                    },
-                    {
-                        data: 'pickup_date'
-                    },
-                    {
-                        data: 'approved_sched_date'
-                    },
-                    {
-                        data: 'contact_number'
-                    },
-                    {
-                        data: 'reason'
-                    },
-                    {
                         data: 'action'
                     },
                 ],
             });
 
-            $(document).on('click', '.pulloutNumber', function() {
+            $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
 
@@ -127,15 +148,14 @@
                     destroy: true,
                     ajax: {
                         type: 'get',
-                        url: '{{ route('ongoing_pullout_request_modal') }}',
+                        url: '{{ route('ongoing_teis_request_modal') }}',
                         data: {
                             id,
                             _token: '{{ csrf_token() }}'
                         }
 
                     },
-                    columns: [
-                        {
+                    columns: [{
                             data: 'po_number'
                         },
                         {
@@ -165,63 +185,6 @@
                     ],
                 });
             })
-
-
-            $(document).on('click', '.pulloutApproveBtn', function() {
-                const id = $(this).data('id');
-                const requestId = $(this).data('requestid');
-                const series = $(this).data('series');
-
-                const confirm = Swal.mixin({
-                    customClass: {
-                        confirmButton: "btn btn-success ms-2",
-                        cancelButton: "btn btn-danger"
-                    },
-                    buttonsStyling: false
-                });
-
-                confirm.fire({
-                    title: "Approve?",
-                    text: "Are you sure you want to approved this tools?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes!",
-                    cancelButtonText: "Back",
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        $.ajax({
-                            url: '{{ route('tobe_approve_tools') }}',
-                            method: 'post',
-                            data: {
-                                id,
-                                requestId, 
-                                series,
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success() {
-                                table.ajax.reload();
-                                confirm.fire({
-                                    title: "Approved!",
-                                    text: "Items Approved Successfully.",
-                                    icon: "success"
-                                });
-                            }
-                        })
-
-                    } else if (
-                        /* Read more about handling dismissals below */
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-
-                    }
-                });
-
-
-            })
-            
-
 
         })
     </script>

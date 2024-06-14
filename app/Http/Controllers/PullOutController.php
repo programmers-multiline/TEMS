@@ -30,7 +30,7 @@ class PullOutController extends Controller
         ->where('request_approvers.status', 1)
         ->where('request_approvers.approver_id', Auth::user()->id)
         ->where('series', $series)
-        // ->where('approver_status', 0)
+        ->where('approver_status', 0)
         ->where('request_type', 3)
         ->get();  
 
@@ -69,13 +69,13 @@ class PullOutController extends Controller
             return $action;
         })
 
-        ->setRowClass(function ($row) { 
-            $tool = PulloutRequest::where('status', 1)->get();
-            $status = collect($tool)->pluck('request_status')->toArray();
+        // ->setRowClass(function ($row) { 
+        //     $tool = PulloutRequest::where('status', 1)->get();
+        //     $status = collect($tool)->pluck('request_status')->toArray();
 
-            return in_array('approved', $status) ? 'bg-gray' : '';
+        //     return in_array('approved', $status) ? 'bg-gray' : '';
 
-        })
+        // })
 
         ->rawColumns(['view_tools', 'action'])
         ->toJson();
@@ -114,6 +114,34 @@ class PullOutController extends Controller
             return $status;
         })
         ->rawColumns(['tools_status', 'action'])
+        ->toJson();
+    }
+
+
+    public function fetch_approved_pullout(){
+
+        $pullout_tools = RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
+        ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.approved_by')
+        ->where('pullout_requests.status', 1)
+        ->where('request_approvers.status', 1)
+        ->where('request_approvers.approved_by', Auth::user()->id)
+        ->where('request_type', 3)
+        ->get();  
+        
+        return DataTables::of($pullout_tools)
+        
+        ->addColumn('view_tools', function($row){
+            
+            return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="pulloutNumber btn text-primary fs-6 d-block">View</button>';
+        })
+        ->addColumn('action', function($row){
+
+            $action = '';
+
+            return $action;
+        })
+
+        ->rawColumns(['view_tools', 'action'])
         ->toJson();
     }
 
@@ -238,6 +266,21 @@ class PullOutController extends Controller
 
         ->rawColumns(['view_tools', 'action'])
         ->toJson();
+    }
+
+    public function fetch_sched_date(){
+        $pullout_request = PulloutRequest::leftjoin('users','users.id','pullout_requests.user_id')
+        ->select('pullout_requests.pullout_number', 'pullout_requests.project_address', 'pullout_requests.approved_sched_date','pullout_requests.contact_number', 'users.fullname', 'pullout_requests.project_name', 'pullout_requests.client')
+        ->where('pullout_requests.status', 1)->whereNotNull('approved_sched_date')->get();
+        return $pullout_request;
+    }
+
+    public function add_schedule(Request $request){
+        $pullout_request = PulloutRequest::where('status', 1)->where('pullout_number', $request->pulloutNum)->first();
+
+        $pullout_request->approved_sched_date = $request->pickupDate;
+
+        $pullout_request->update();
     }
 
 

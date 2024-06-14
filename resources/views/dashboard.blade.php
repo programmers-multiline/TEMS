@@ -72,11 +72,11 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-primary">{{ $approved_rttte }}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved RFTTE</div>
+                                <div class="fs-3 fw-semibold text-earth">{{ $teis }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total TEIS</div>
                             </div>
                             <div class="text-end">
-                                <i class="si si-check fa-2x text-primary-light"></i>
+                                <i class="si si-doc fa-2x text-earth-light"></i>
                             </div>
                         </div>
                     </a>
@@ -85,11 +85,11 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-earth">{{ $teis }}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total TEIS</div>
+                                <div class="fs-3 fw-semibold text-primary">{{ $pending_teis }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending RFTEIS</div>
                             </div>
                             <div class="text-end">
-                                <i class="si si-doc fa-2x text-earth-light"></i>
+                                <i class="si si-close fa-2x text-primary-light"></i>
                             </div>
                         </div>
                     </a>
@@ -177,6 +177,21 @@
                     </a>
                 </div>
                 <!-- END Row #1 -->
+            </div>
+            <div class="row">
+                <div class="col-6 col-xl-3">
+                    <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                        <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                            <div class="d-none d-sm-block">
+                                <div class="fs-3 fw-semibold text-primary">{{ $approved_rttte }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved RTTTE</div>
+                            </div>
+                            <div class="text-end">
+                                <i class="si si-check fa-2x text-primary-light"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
         @endif
         @if ($user_type_id == 6 || $user_type_id == 7)

@@ -21,14 +21,15 @@ class DashboardController extends Controller
 
 
         // requestor
-        $approved_rttte = PsTransferRequests::where('status', 1)->where('request_status', 'approved')->count();
+        $approved_rttte = PsTransferRequests::where('status', 1)->where('request_status', 'approved')->where('user_id', Auth::user()->id)->count();
         $teis = TransferRequest::where('status', 1)->where('request_status', 'approved')->where('pe', Auth::user()->id)->count();
-        $total_pullout = PulloutRequest::where('status', 1)->count();
-        $pending_pullout = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->count();
-        $approved_pullout = PulloutRequest::where('status', 1)->where('request_status', 'approved')->count();
-        $request_daf = Daf::where('status', 1)->count();
-        $pending_daf = Daf::where('status', 1)->where('request_status', 'pending')->count();
-        $approved_daf = Daf::where('status', 1)->where('request_status', 'approved')->count();
+        $pending_teis = TransferRequest::where('status', 1)->where('request_status', 'pending')->where('pe', Auth::user()->id)->count();
+        $total_pullout = PulloutRequest::where('status', 1)->where('user_id', Auth::user()->id)->count();
+        $pending_pullout = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->where('user_id', Auth::user()->id)->count();
+        $approved_pullout = PulloutRequest::where('status', 1)->where('request_status', 'approved')->where('user_id', Auth::user()->id)->count();
+        $request_daf = Daf::where('status', 1)->where('user_id', Auth::user()->id)->count();
+        $pending_daf = Daf::where('status', 1)->where('request_status', 'pending')->where('user_id', Auth::user()->id)->count();
+        $approved_daf = Daf::where('status', 1)->where('request_status', 'approved')->where('user_id', Auth::user()->id)->count();
 
 
         // $pending_daf = Daf::leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
@@ -38,7 +39,7 @@ class DashboardController extends Controller
         // ->count();
 
 
-        return view('/dashboard', compact('total_tools','issued','pending_rttte', 'rttte_approval', 'approved_rttte', 'teis', 'total_pullout', 'pending_pullout', 'request_daf', 'approved_pullout', 'pending_daf'));
+        return view('/dashboard', compact('total_tools','issued','pending_rttte', 'rttte_approval', 'approved_rttte', 'teis', 'pending_teis', 'total_pullout', 'pending_pullout', 'request_daf', 'approved_pullout', 'pending_daf'));
 
     }
 }

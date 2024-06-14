@@ -19,6 +19,12 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
+        <div class="loader-container" id="loader"
+            style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+            <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+                style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1"
+                playMode="normal" loop autoplay>Loading</dotlottie-player>
+        </div>
         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4)
             <div class="d-flex mb-3 justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
@@ -31,7 +37,8 @@
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" id="changeStateBtn" class="btn btn-success" data-bs-toggle="modal"
-                        data-bs-target="#changeTransferStateModal" disabled><i class="fa fa-arrows-rotate me-1"></i>Change Transfer
+                        data-bs-target="#changeTransferStateModal" disabled><i class="fa fa-arrows-rotate me-1"></i>Change
+                        Transfer
                         State</button>
                     <button type="button" id="pulloutRequestBtn" class="btn btn-danger" data-bs-toggle="modal"
                         data-bs-target="#pulloutRequestModal" disabled><i
@@ -86,7 +93,7 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
     <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
-
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
   </script> --}}
@@ -316,7 +323,7 @@
 
             })
 
-          
+
 
 
 
@@ -359,9 +366,13 @@
                     url: '{{ route('pullout_request') }}',
                     method: 'post',
                     data: finalData,
-                    success() {
-                        table.ajax.reload();
+                    beforeSend() {
+                        $("#loader").show();
                         $("#pulloutRequestModal").modal("hide")
+                    },
+                    success() {
+                        $("#loader").hide();
+                        table.ajax.reload();
                         showToast("success", "Request Pullout Successfully");
 
                     }
@@ -377,7 +388,7 @@
 
                 $('.selectState').each(function(i, obj) {
 
-                const id = $(this).data('id')
+                    const id = $(this).data('id')
 
                     const state = obj.value
 

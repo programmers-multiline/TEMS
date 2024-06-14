@@ -115,8 +115,10 @@ class ProjectSiteController extends Controller
 
         ->addColumn('transfer_state', function($row){
             $state = '';
-            if($row->transfer_state){
+            if($row->transfer_state == 1){
                 $state = '<span class="btn btn-sm btn-alt-success" style="font-size: 12px;">Available to transfer</span>';
+            }else if($row->transfer_state == 2){
+                $state = '<span class="btn btn-sm btn-alt-primary" style="font-size: 12px;">Pullout Ongoing</span>';
             }else{
                 $state =  '<span class="btn btn-sm btn-alt-danger" style="font-size: 12px;">Currently Using</span>';
             }

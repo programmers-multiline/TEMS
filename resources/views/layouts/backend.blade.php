@@ -11,7 +11,7 @@
 
         if (!$approver) {
             $tool_approvers = 0;
-        } elseif ($approver->sequence == 1) {
+        } elseif ($approver->sequence == 0) {
             // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
             $tool_approvers = App\Models\RequestApprover::leftjoin(
                 'transfer_requests',
@@ -31,6 +31,37 @@
                 ->where('approver_status', 0)
                 ->where('request_type', 1)
                 ->count();
+        }elseif ($approver->sequence == 1) {
+            $prev_approver = App\Models\RequestApprover::where('status', 1)
+                ->where('request_id', $approver->request_id)
+                ->where('sequence', 0)
+                ->where('series', $series)
+                ->where('request_type', 1)
+                ->orderBy('approver_status', 'desc')
+                ->first();
+
+            if ($prev_approver->approver_status == 1) {
+                $tool_approvers = App\Models\RequestApprover::leftjoin(
+                    'transfer_requests',
+                    'transfer_requests.id',
+                    'request_approvers.request_id',
+                )
+                    ->select(
+                        'transfer_requests.*',
+                        'request_approvers.id as approver_id',
+                        'request_approvers.request_id',
+                        'request_approvers.series',
+                    )
+                    ->where('transfer_requests.status', 1)
+                    ->where('request_approvers.status', 1)
+                    ->where('approver_id', Auth::user()->id)
+                    ->where('series', $series)
+                    ->where('approver_status', 0)
+                    ->where('request_type', 1)
+                    ->count();
+            } else {
+                $tool_approvers = 0;
+            }
         } else {
             $prev_sequence = $approver->sequence - 1;
 
@@ -207,6 +238,21 @@
                 }
             }
         }
+        // tignan sa upload kung andun ang number niya, pag andun wag isama sa bilang
+        // if(request()->path() == 'pages/rftte'){
+        //     $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
+        //     ->where('status', 1)
+        //     ->where('progress', 'ongoing')
+        //     ->where('request_status', 'approved');
+
+        //     $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
+        //     ->where('status', 1)
+        //     ->where('progress', 'ongoing')
+        //     ->where('request_status', 'approved')
+        //     ->whereNotNull('acc');
+
+        //     $unioned_tables = $request_tools->union($ps_request_tools)->get();
+        // }
     }
 
 @endphp
@@ -396,6 +442,14 @@
                                                 <span class="nav-main-link-name">Ongoing</span>
                                             </a>
                                         </li>
+                                        @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
+                                        <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/approved_pullout') ? ' active' : '' }}"
+                                                href="/pages/approved_pullout">
+                                                <span class="nav-main-link-name">Approved Pullout</span>
+                                            </a>
+                                        </li>
+                                        @endif
                                         <li class="nav-main-item">
                                             <a class="nav-main-link{{ request()->is('pages/pullout_completed') ? ' active' : '' }}"
                                                 href="/pages/pullout_completed">
@@ -445,17 +499,33 @@
                                     </span>
                                 </li>
                                 @if (Auth::user()->user_type_id !== 4)
-                                    <li class="nav-main-item d-flex align-items-center justify-content-between">
-                                        <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
-                                            href="/pages/rfteis">
+                                    <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
+                                        <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/rfteis', 'pages/rfteis_approved') ? ' active' : '' }}"
+                                            data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                                             <i class="nav-main-link-icon fa fa-box-open"></i>
-                                            <span class="nav-main-link-name">RFTEIS</span>
+                                            <span class="nav-main-link-name"> 
+                                                RFTEIS
+                                            </span>
                                         </a>
-                                        <span
-                                            class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
-                                                id="rfteisCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
-                                        </span>
+                                        <ul class="nav-main-submenu">
+                                            <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                                <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
+                                                    href="/pages/rfteis">
+                                                    <span class="nav-main-link-name">To Approve</span>
+                                                </a>
+                                                <span
+                                                    class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
+                                                    id="rfteisCount" class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
+                                                </span>
+                                            </li>
+                                            <li class="nav-main-item">
+                                                <a class="nav-main-link{{ request()->is('pages/rfteis_approved') ? ' active' : '' }}"
+                                                    href="/pages/rfteis_approved">
+                                                    <span class="nav-main-link-name">Approved</span>
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </li>
                                 @endif
                             @endif
@@ -472,17 +542,33 @@
                             @endif
 
                             @if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3)
-                                <li class="nav-main-item d-flex align-items-center justify-content-between">
-                                    <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
-                                        href="/pages/rfteis">
+                                <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
+                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/rfteis', 'pages/rfteis_approved') ? ' active' : '' }}"
+                                        data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                                         <i class="nav-main-link-icon fa fa-box-open"></i>
-                                        <span class="nav-main-link-name">RFTEIS</span>
+                                        <span class="nav-main-link-name"> 
+                                            RFTEIS
+                                        </span>
                                     </a>
-                                    <span
-                                        class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
-                                            id="rfteisCount" class="bg-info"
-                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
-                                    </span>
+                                    <ul class="nav-main-submenu">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
+                                                href="/pages/rfteis">
+                                                <span class="nav-main-link-name">To Approve</span>
+                                            </a>
+                                            <span
+                                                class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
+                                                id="rfteisCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
+                                            </span>
+                                        </li>
+                                        <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/rfteis_approved') ? ' active' : '' }}"
+                                                href="/pages/rfteis_approved">
+                                                <span class="nav-main-link-name">Approved</span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             @endif
 

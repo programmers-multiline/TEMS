@@ -30,6 +30,7 @@
 </div>
     <!-- Page Content -->
     <div class="content">
+        <input type="hidden" id="path" value="{{ request()->path() }}">
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -103,8 +104,12 @@
                 processing: true,
                 serverSide: false,
                 ajax: {
-                    type: 'get',
-                    url: '{{ route('fetch_rfteis_approver') }}'
+                    type: 'post',
+                    url: '{{ route('fetch_rfteis_approver') }}',
+                    data: {
+                        path: $("#path").val(),
+                        _token : '{{ csrf_token() }}'
+                    }
                 },
                 columns: [{
                         data: 'view_tools'

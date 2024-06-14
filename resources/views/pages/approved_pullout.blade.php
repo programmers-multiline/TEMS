@@ -33,8 +33,8 @@
                             <th>Project Address</th>
                             <th>Date Requested</th>
                             <th>Subcon</th>
+                            <th>Date Requested</th>
                             <th>Pickup Date</th>
-                            <th>Assign Sched</th>
                             <th>Contact Number</th>
                             <th>Reason</th>
                             <th>Action</th>
@@ -75,7 +75,7 @@
                 serverSide: false,
                 ajax: {
                     type: 'get',
-                    url: '{{ route('fetch_ongoing_pullout') }}'
+                    url: '{{ route('fetch_approved_pullout') }}'
                 },
                 columns: [{
                         data: 'view_tools'
@@ -102,7 +102,7 @@
                         data: 'pickup_date'
                     },
                     {
-                        data: 'approved_sched_date'
+                        data: 'date_requested'
                     },
                     {
                         data: 'contact_number'
@@ -164,65 +164,7 @@
                         }
                     ],
                 });
-            })
-
-
-            $(document).on('click', '.pulloutApproveBtn', function() {
-                const id = $(this).data('id');
-                const requestId = $(this).data('requestid');
-                const series = $(this).data('series');
-
-                const confirm = Swal.mixin({
-                    customClass: {
-                        confirmButton: "btn btn-success ms-2",
-                        cancelButton: "btn btn-danger"
-                    },
-                    buttonsStyling: false
-                });
-
-                confirm.fire({
-                    title: "Approve?",
-                    text: "Are you sure you want to approved this tools?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes!",
-                    cancelButtonText: "Back",
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        $.ajax({
-                            url: '{{ route('tobe_approve_tools') }}',
-                            method: 'post',
-                            data: {
-                                id,
-                                requestId, 
-                                series,
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success() {
-                                table.ajax.reload();
-                                confirm.fire({
-                                    title: "Approved!",
-                                    text: "Items Approved Successfully.",
-                                    icon: "success"
-                                });
-                            }
-                        })
-
-                    } else if (
-                        /* Read more about handling dismissals below */
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-
-                    }
-                });
-
-
-            })
-            
-
-
+            })    
         })
     </script>
 @endsection
