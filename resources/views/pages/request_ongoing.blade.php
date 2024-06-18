@@ -132,8 +132,6 @@
                 const id = $(this).data("id");
                 type = $(this).data("transfertype");
 
-                if($("#path").val() == "pages/request_ongoing")
-
 
                 const modalTable = $("#modalTable").DataTable({
                     processing: true,

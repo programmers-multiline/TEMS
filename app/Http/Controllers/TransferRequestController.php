@@ -24,7 +24,7 @@ use App\Models\PsTransferRequestItems;
 
 class TransferRequestController extends Controller
 {
-    public function ongoing_teis_request(){ 
+    public function ongoing_teis_request(Request $request){ 
 
 
         $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
@@ -36,6 +36,21 @@ class TransferRequestController extends Controller
         ->where('status', 1)
         ->where('progress', 'ongoing')
         ->where('user_id', Auth::user()->id);
+
+
+        if($request->path == 'pages/request_for_receiving'){
+            $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->where('pe', Auth::user()->id);
+
+            $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->where('user_id', Auth::user()->id);
+        }
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
         
@@ -266,7 +281,7 @@ class TransferRequestController extends Controller
             }
             
 
-            if( $user_type == 4){
+            if( $user_type == 4 && $request->path == 'pages/request_for_receiving'){
                 $action =  '
                 <button '.$isPending.' '.$isApproved.' data-triid="'.$row->tri_id.'" data-number="'.$row->r_number.'" type="button" class="receivedBtn btn btn-sm btn-alt-success d-block mx-auto" data-bs-toggle="tooltip" aria-label="Receive Tool" data-bs-original-title="Receive Tool"><i class="fa fa-file-circle-check"></i></button>
                 ';

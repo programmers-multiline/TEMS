@@ -33,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/datatables', 'pages.datatables');
     Route::view('/pages/datatables', 'pages.datatables');
     Route::view('/pages/request_ongoing', 'pages.request_ongoing');
+    Route::view('/pages/request_for_receiving', 'pages.request_for_receiving');
     Route::view('/pages/request_completed', 'pages.request_completed');
     // Route::view('/pages/my_te', 'pages.my_te');
     Route::view('/pages/pullout_ongoing', 'pages.pullout_ongoing');

@@ -439,7 +439,14 @@
                                         <li class="nav-main-item">
                                             <a class="nav-main-link{{ request()->is('pages/pullout_ongoing') ? ' active' : '' }}"
                                                 href="/pages/pullout_ongoing">
-                                                <span class="nav-main-link-name">Ongoing</span>
+                                                <span class="nav-main-link-name">
+                                                    @if (Auth::user()->user_type_id == 4)
+                                                    Ongoing
+                                                    @endif
+                                                    @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
+                                                        For Approval
+                                                    @endif
+                                                </span>
                                             </a>
                                         </li>
                                         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
@@ -473,6 +480,12 @@
                                             <a class="nav-main-link{{ request()->is('pages/request_ongoing') ? ' active' : '' }}"
                                                 href="/pages/request_ongoing">
                                                 <span class="nav-main-link-name">Ongoing</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/request_for_receiving') ? ' active' : '' }}"
+                                                href="/pages/request_for_receiving">
+                                                <span class="nav-main-link-name">For Receiving</span>
                                             </a>
                                         </li>
                                         <li class="nav-main-item">
@@ -511,7 +524,7 @@
                                             <li class="nav-main-item d-flex align-items-center justify-content-between">
                                                 <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
                                                     href="/pages/rfteis">
-                                                    <span class="nav-main-link-name">To Approve</span>
+                                                    <span class="nav-main-link-name">For Approval</span>
                                                 </a>
                                                 <span
                                                     class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
@@ -554,7 +567,7 @@
                                         <li class="nav-main-item d-flex align-items-center justify-content-between">
                                             <a class="nav-main-link{{ request()->is('pages/rfteis') ? ' active' : '' }}"
                                                 href="/pages/rfteis">
-                                                <span class="nav-main-link-name">To Approve</span>
+                                                <span class="nav-main-link-name">For Approval</span>
                                             </a>
                                             <span
                                                 class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
