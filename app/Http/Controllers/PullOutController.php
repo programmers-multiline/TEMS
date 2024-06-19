@@ -29,7 +29,7 @@ class PullOutController extends Controller
         ->where('pullout_requests.status', 1)
         ->where('request_approvers.status', 1)
         ->where('request_approvers.approver_id', Auth::user()->id)
-        ->where('series', $series)
+        // ->where('series', $series)
         ->where('approver_status', 0)
         ->where('request_type', 3)
         ->get();  
@@ -86,7 +86,8 @@ class PullOutController extends Controller
     public function ongoing_pullout_request_modal(Request $request){
 
         $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
-                                     ->select('tools_and_equipment.*','pullout_request_items.tool_id')
+                                     ->leftjoin('warehouses','warehouses.id','tools_and_equipment.location')
+                                     ->select('tools_and_equipment.*','pullout_request_items.tool_id', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval')
                                      ->where('pullout_request_items.status', 1)
                                      ->where('pullout_request_items.pullout_number', $request->id)
                                      ->get();
@@ -113,7 +114,20 @@ class PullOutController extends Controller
             }
             return $status;
         })
-        ->rawColumns(['tools_status', 'action'])
+
+        ->addColumn('new_tools_status', function($row){
+            $status = $row->tools_status;
+            if($status == 'good'){
+                $status = '<span class="badge bg-success">'.$status.'</span>';
+            }else if($status == 'repair'){
+                $status =  '<span class="badge bg-warning">'.$status.'</span>';
+            }else{
+                $status =  '<span class="badge bg-danger">'.$status.'</span>';
+            }
+            return $status;
+        })
+
+        ->rawColumns(['tools_status', 'action', 'new_tools_status'])
         ->toJson();
     }
 

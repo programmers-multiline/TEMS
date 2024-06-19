@@ -13,7 +13,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="block-content fs-sm">
+                    <div id="aaa" class="block-content fs-sm">
                         @if (Request::is('pages/request_for_receiving'))
                             <button type="button" id="receiveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Receive</button>
                         @endif
@@ -22,7 +22,7 @@
                         <thead>
                             <tr>
                                 @if (Request::is('pages/request_for_receiving'))
-                                    <th style="padding-right: 10px;"></th>
+                                    <th id="selectToolsContainer" style="padding-right: 10px;"></th>
                                 @endif
                                 <th>PO Number</th>
                                 <th class="test">Asset Code</th>

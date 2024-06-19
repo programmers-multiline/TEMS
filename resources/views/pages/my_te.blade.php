@@ -316,9 +316,9 @@
                 for (var i = 0; i < data.length; i++) {
 
                     $("#tbodyPulloutModal").append(
-                        `<tr><td>${data[i].teis_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option disabled selected="">Select Status</option><option value="good">Good</option><option value="repair">Need Repair</option><option value="dispose">Disposal</option></select></td></tr>`
+                        `<tr><td>${data[i].teis_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option disabled selected="">Select Status</option><option value="good">Good</option><option value="repair">Need Repair</option></select></td></tr>`
                     );
-
+                    //<option value="dispose">Disposal</option>
                 }
 
             })

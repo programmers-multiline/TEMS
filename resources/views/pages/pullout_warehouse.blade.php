@@ -89,7 +89,7 @@
                             <div class="col-6">
                                 <label class="form-label" for="pickupDate">Pick-up Date <span
                                         class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="pickupDate" name="pickupDate"
+                                <input type="date" class="form-control" id="pickupDate" name="pickupDate" min="{{ date('Y-m-d') }}"
                                     placeholder="Enter Pick-up Date">
                             </div>
                         </div>
@@ -320,10 +320,13 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'
+                        },
+                        {
+                            data: 'new_tools_status'
                         },
                         {
                             data: 'action'

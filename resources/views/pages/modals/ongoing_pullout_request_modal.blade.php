@@ -23,6 +23,7 @@
                                 <th>Brand</th>
                                 <th>Location</th>
                                 <th>Status</th>
+                                <th>User Evaluation</th>
                                 <th>Action</th>
                             </tr>
                         </thead>

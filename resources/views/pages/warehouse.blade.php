@@ -590,6 +590,8 @@
                     selected: true
                 }).data();
 
+                console.log(data);
+
                 // const arrItem = []
 
 

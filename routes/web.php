@@ -48,7 +48,9 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/pullout_completed', 'pages.pullout_completed');
     Route::view('/pages/approved_pullout', 'pages.approved_pullout');
 
-    
+
+    Route::view('/pages/pullout_receiving', 'pages.pullout_receiving');
+    Route::view('/pages/pullout_completed_warehouse', 'pages.pullout_completed_warehouse');
 
 
     // Route::view('/pages/slick', 'pages.slick');

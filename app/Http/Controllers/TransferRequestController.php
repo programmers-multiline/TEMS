@@ -215,6 +215,16 @@ class TransferRequestController extends Controller
                 ->where('transfer_request_items.teis_number', $request->id)
                 ->get();
 
+                if($request->path == "pages/request_for_receiving"){
+                    $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+                    ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*','transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
+                    ->where('transfer_request_items.status', 1)
+                    ->where('transfer_request_items.item_status', 0)
+                    ->where('transfer_request_items.teis_number', $request->id)
+                    ->get();
+                }
+
             }else{
                 $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
                 ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
@@ -222,6 +232,16 @@ class TransferRequestController extends Controller
                 ->where('ps_transfer_request_items.status', 1)
                 ->where('ps_transfer_request_items.request_number', $request->id)
                 ->get();
+
+                if($request->path == "pages/request_for_receiving"){
+                    $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+                    ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*','ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number')
+                    ->where('ps_transfer_request_items.status', 1)
+                    ->where('ps_transfer_request_items.item_status', 0)
+                    ->where('ps_transfer_request_items.request_number', $request->id)
+                    ->get();
+                }
             }
         }else{
             $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
@@ -283,6 +303,7 @@ class TransferRequestController extends Controller
 
             if( $user_type == 4 && $request->path == 'pages/request_for_receiving'){
                 $action =  '
+                <input type="hidden" class="selected_item_id" value="'.$row->id.'">
                 <button '.$isPending.' '.$isApproved.' data-triid="'.$row->tri_id.'" data-number="'.$row->r_number.'" type="button" class="receivedBtn btn btn-sm btn-alt-success d-block mx-auto" data-bs-toggle="tooltip" aria-label="Receive Tool" data-bs-original-title="Receive Tool"><i class="fa fa-file-circle-check"></i></button>
                 ';
             }else{
@@ -737,27 +758,57 @@ class TransferRequestController extends Controller
                 $tool_requests->update();
             }
         }else{
-            $scannedTools = TransferRequestItems::find($request->id);
 
-            $scannedTools->item_status = 1;
+            if($request->multi){
+
+                $triIds = json_decode($request->triIdArray);
+
+                
+                foreach($triIds as $tri_id){
+                    
+                    $scannedTools = TransferRequestItems::find($tri_id);
     
-            $scannedTools->update();
-    
-            $tr = TransferRequest::where('status', 1)->where('id', $scannedTools->transfer_request_id)->first();
-            $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
-    
-    
-            $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
-    
-            $tools->wh_ps = 'ps';
-            $tools->current_pe = $scannedTools->pe;
-            $tools->current_site_id = $project_site->id;
-    
-            $tools->update();
-    
-    
+                    $scannedTools->item_status = 1;
+            
+                    $scannedTools->update();
+            
+                    $tr = TransferRequest::where('status', 1)->where('id', $scannedTools->transfer_request_id)->first();
+                    $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
+            
+            
+                    $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
+            
+                    $tools->wh_ps = 'ps';
+                    $tools->current_pe = $scannedTools->pe;
+                    $tools->current_site_id = $project_site->id;
+            
+                    $tools->update();
+
+                }
+
+            }else{
+                $scannedTools = TransferRequestItems::find($request->id);
+
+                $scannedTools->item_status = 1;
+        
+                $scannedTools->update();
+        
+                $tr = TransferRequest::where('status', 1)->where('id', $scannedTools->transfer_request_id)->first();
+                $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
+        
+        
+                $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
+        
+                $tools->wh_ps = 'ps';
+                $tools->current_pe = $scannedTools->pe;
+                $tools->current_site_id = $project_site->id;
+        
+                $tools->update();  
+
+            }
+
             $tri = TransferRequestItems::where('status', 1)
-            ->where('teis_number', $request->teis_num)
+            ->where('teis_number', $scannedTools->teis_number)
             ->get();
     
             $item_status = collect($tri)->pluck('item_status')->toArray();
@@ -770,6 +821,7 @@ class TransferRequestController extends Controller
                 $tool_requests->progress = 'completed';
                 $tool_requests->update();
             }
+        
         }
       
 
