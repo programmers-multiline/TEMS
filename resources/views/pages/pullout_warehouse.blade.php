@@ -7,11 +7,6 @@
         href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
 
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui-calendar/latest/tui-calendar.css">
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui-date-picker/latest/tui-date-picker.css">
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui-time-picker/latest/tui-time-picker.css">
-
-
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -283,25 +278,41 @@
                 ],
             });
 
+            let type;
+
             $(document).on('click', '.teisNumber', function() {
 
-                const id = $(this).data("id");
 
+                const id = $(this).data("id");
+                type = $(this).data("transfertype");
+                const path = $("#path").val();
 
                 const modalTable = $("#modalTable").DataTable({
                     processing: true,
                     serverSide: false,
                     destroy: true,
+                    "aoColumnDefs": [{
+                            "bSortable": false,
+                            "aTargets": [0]
+                        }
+                    ],
                     ajax: {
                         type: 'get',
                         url: '{{ route('ongoing_pullout_request_modal') }}',
                         data: {
                             id,
+                            type,
+                            path,
                             _token: '{{ csrf_token() }}'
                         }
 
                     },
                     columns: [{
+                            data: null,
+                            render: DataTable.render.select(),
+                            className: 'selectTools'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -330,9 +341,65 @@
                         },
                         {
                             data: 'action'
-                        },
+                        }
                     ],
+                    select: {
+                        style: 'multi+shift',
+                        selector: 'td'
+                    },
+                    scrollX: true,
+                    drawCallback: function() {
+                        $(".receivedBtn").tooltip();
+                    }
                 });
+
+                modalTable.select.selector('td:first-child');
+
+                $(".test").click()
+                $(".test").click()
+                $(".test").click()
+
+                let data;
+
+
+                $(document).on("change", ".selectTools", function() {
+
+                     data = modalTable.rows({
+                        selected: true
+                    }).data();
+
+                })
+
+
+                $(document).on("click", "#receiveBtnModal", function() {
+                        const multi = "multi";
+
+                        const selectedItemId = [];
+
+                        for (var i = 0; i < data.length; i++) {
+                            selectedItemId.push(data[i].pri_id)
+                        }
+
+                        const arrayToString = JSON.stringify(selectedItemId);
+
+                        const modalTable = $("#modalTable").DataTable()
+
+                        $.ajax({
+                            url: '{{ route('received_pullout_tools') }}',
+                            method: 'post',
+                            data: {
+                                id,
+                                multi,
+                                priIdArray: arrayToString,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success() {
+                                modalTable.ajax.reload();
+                                showToast("success", "Received Successful");
+                            }
+                        })
+                    })
+
             })
 
             $(document).on('click', '#addSchedBtn', function() {

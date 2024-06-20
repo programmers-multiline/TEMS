@@ -12,11 +12,18 @@
                     </div>
                 </div>
                 <div class="block-content fs-sm">
+                    @if (Request::is('pages/pullout_warehouse'))
+                        <button type="button" id="receiveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Receive</button>
+                    @endif
+                <input type="hidden" id="path" value="{{ request()->path() }}">
                     <table id="modalTable" class="table fs-sm table-bordered table-hover table-vcenter w-100">
                         <thead>
                             <tr>
+                                @if (Request::is('pages/pullout_warehouse'))
+                                    <th id="selectToolsContainer" style="padding-right: 10px;"></th>
+                                @endif
                                 <th>PO Number</th>
-                                <th>Asset Code</th>
+                                <th class="test">Asset Code</th>
                                 <th>Serial#</th>
                                 <th>Item Code</th>
                                 <th>Item Desc</th>

@@ -45,7 +45,7 @@
                             <div class="col-2">
                                 <label class="form-label" for="dateToPick">Date to Pick-up <span
                                         class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="dateToPick" name="dateToPick"
+                                <input type="date" class="form-control" id="dateToPick" name="dateToPick" min="{{ date('Y-m-d') }}"
                                     placeholder="Enter Date">
                             </div>
                         </div>

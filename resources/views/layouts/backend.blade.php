@@ -313,6 +313,21 @@
         //     $unioned_tables = $request_tools->union($ps_request_tools)->get();
         // }
     }
+
+    // Pullout_ongoing
+    if(Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5) {
+        $pullout_tools = App\Models\RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
+        ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
+        ->where('pullout_requests.status', 1)
+        ->where('request_approvers.status', 1)
+        ->where('request_approvers.approver_id', Auth::user()->id)
+        // ->where('series', $series)
+        ->where('approver_status', 0)
+        ->where('request_type', 3)
+        ->count();  
+    }else {
+        $pullout_tools = 0;
+    }
 @endphp
 
 <!doctype html>
@@ -512,7 +527,7 @@
                                         </span>
                                     </a>
                                     <ul class="nav-main-submenu">
-                                        <li class="nav-main-item">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
                                             <a class="nav-main-link{{ request()->is('pages/pullout_ongoing') ? ' active' : '' }}"
                                                 href="/pages/pullout_ongoing">
                                                 <span class="nav-main-link-name">
@@ -524,6 +539,10 @@
                                                     @endif
                                                 </span>
                                             </a>
+                                            <span class="countContainer nav-main-link text-light {{ $pullout_tools == 0 ? 'd-none' : '' }}"><span
+                                                id="pulloutCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $pullout_tools }}</span>
+                                            </span>
                                         </li>
                                         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
                                             <li class="nav-main-item">
@@ -580,7 +599,7 @@
                                         <span class="nav-main-link-name">Site to Site Transfer</span>
                                     </a>
                                     <span @php
-if(Auth::user()->user_type_id == 4){$ps_request_tools = 0;} @endphp
+                                    if(Auth::user()->user_type_id == 4){$ps_request_tools = 0;} @endphp
                                         class="countContainer nav-main-link text-light {{ $ps_request_tools == 0 ? 'd-none' : '' }}"><span
                                             id="siteToSiteCount" class="bg-info"
                                             style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>

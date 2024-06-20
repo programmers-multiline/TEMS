@@ -9,6 +9,8 @@ use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
 use Yajra\DataTables\DataTables;
 use App\Models\PulloutRequestItems;
+use App\Models\ProjectSites;
+use App\Models\ToolsAndEquipment;
 use Illuminate\Support\Facades\Auth;
 
 class PullOutController extends Controller
@@ -53,7 +55,7 @@ class PullOutController extends Controller
             ->where('pullout_requests.request_status', 'approved')
             ->get();
 
-            $isApproved = $row->request_status == 'approved' ? 'disabled' : '';
+            // $isApproved = $row->request_status == 'approved' ? 'disabled' : '';
 
             $user_type = Auth::user()->user_type_id;
 
@@ -63,7 +65,7 @@ class PullOutController extends Controller
                 ';
             }else if($user_type == 3 || $user_type == 5){
                 $action =  '<div class="d-flex"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
-                <button type="button" data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" '.$isApproved.' class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
+                <button type="button" data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
                 </div>';
             };
             return $action;
@@ -84,13 +86,23 @@ class PullOutController extends Controller
 
 
     public function ongoing_pullout_request_modal(Request $request){
+        if($request->path == "pages/pullout_warehouse"){
+            $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
+            ->leftjoin('warehouses','warehouses.id','tools_and_equipment.location')
+            ->select('tools_and_equipment.*','pullout_request_items.tool_id', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.id as pri_id')
+            ->where('pullout_request_items.status', 1)
+            ->where('pullout_request_items.item_status', 0)
+            ->where('pullout_request_items.pullout_number', $request->id)
+            ->get();
+        }else{
+            $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
+            ->leftjoin('warehouses','warehouses.id','tools_and_equipment.location')
+            ->select('tools_and_equipment.*','pullout_request_items.tool_id', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.id as pri_id')
+            ->where('pullout_request_items.status', 1)
+            ->where('pullout_request_items.pullout_number', $request->id)
+            ->get();
+        }
 
-        $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
-                                     ->leftjoin('warehouses','warehouses.id','tools_and_equipment.location')
-                                     ->select('tools_and_equipment.*','pullout_request_items.tool_id', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval')
-                                     ->where('pullout_request_items.status', 1)
-                                     ->where('pullout_request_items.pullout_number', $request->id)
-                                     ->get();
 
         
         
@@ -116,7 +128,7 @@ class PullOutController extends Controller
         })
 
         ->addColumn('new_tools_status', function($row){
-            $status = $row->tools_status;
+            $status = $row->tool_status_eval;
             if($status == 'good'){
                 $status = '<span class="badge bg-success">'.$status.'</span>';
             }else if($status == 'repair'){
@@ -181,8 +193,10 @@ class PullOutController extends Controller
         ->addColumn('action', function($row){
             // $user_type = Auth::user()->user_type_id;
 
+            $have_sched = $row->approved_sched_date ? 'disabled' : '';
+
             $action =  '<div class="d-flex align-items-center gap-2">
-            <button id="addSchedBtn" data-pulloutnum="'.$row->pullout_number.'" data-pe="'.$row->fullname.'" data-location="'.$row->project_address.'" data-pickupdate="'.$row->pickup_date.'" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
+            <button have_sched id="addSchedBtn" data-pulloutnum="'.$row->pullout_number.'" data-pe="'.$row->fullname.'" data-location="'.$row->project_address.'" data-pickupdate="'.$row->pickup_date.'" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
             <button data-pulloutnum="'.$row->pullout_number.'" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
             ';
 
@@ -295,6 +309,71 @@ class PullOutController extends Controller
         $pullout_request->approved_sched_date = $request->pickupDate;
 
         $pullout_request->update();
+    }
+
+    public function received_pullout_tools(Request $request){
+        if($request->multi){
+
+            $priIds = json_decode($request->priIdArray);
+
+            
+            foreach($priIds as $pri_id){
+                
+                $received_tools = PulloutRequestItems::find($pri_id);
+
+                $received_tools->item_status = 1;
+        
+                $received_tools->update();
+        
+                $tr = PulloutRequest::where('status', 1)->where('id', $received_tools->pullout_request_id)->first();
+                $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
+        
+        
+                $tools = ToolsAndEquipment::where('status', 1)->where('id', $received_tools->tool_id)->first();
+        
+                $tools->wh_ps = 'wh';
+                $tools->current_pe = null;
+                $tools->current_site_id = null;
+        
+                $tools->update();
+
+            }
+
+        }else{
+            $received_tools = PulloutRequestItems::find($request->id);
+
+            $received_tools->item_status = 1;
+    
+            $received_tools->update();
+    
+            $tr = PulloutRequest::where('status', 1)->where('id', $received_tools->pullout_request_id)->first();
+            $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
+    
+    
+            $tools = ToolsAndEquipment::where('status', 1)->where('id', $received_tools->tool_id)->first();
+    
+            $tools->wh_ps = 'wh';
+            $tools->current_pe = null;
+            $tools->current_site_id = null;
+    
+            $tools->update();  
+
+        }
+
+        $pri = PulloutRequestItems::where('status', 1)
+        ->where('pullout_number', $received_tools->pullout_number)
+        ->get();
+
+        $item_status = collect($pri)->pluck('item_status')->toArray();
+
+        $allStatus = array_unique($item_status);
+
+        if(count($allStatus) == 1){
+            $tool_requests = PulloutRequest::find($pri[0]->pullout_request_id);
+            
+            $tool_requests->progress = 'completed';
+            $tool_requests->update();
+        }
     }
 
 

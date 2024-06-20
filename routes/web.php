@@ -112,6 +112,7 @@ Route::controller(PullOutController::class)->group(function () {
     Route::get('fetch_sched_date', 'fetch_sched_date')->name('fetch_sched_date');
     Route::post('add_schedule', 'add_schedule')->name('add_schedule');
     Route::get('fetch_approved_pullout', 'fetch_approved_pullout')->name('fetch_approved_pullout');
+    Route::post('received_pullout_tools', 'received_pullout_tools')->name('received_pullout_tools');
     
 });
 
