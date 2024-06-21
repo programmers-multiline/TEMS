@@ -328,6 +328,43 @@
     }else {
         $pullout_tools = 0;
     }
+
+    //RFTTE - warehouse
+    $request_tools = App\Models\TransferRequest::leftjoin('teis_uploads','teis_uploads.teis_number','transfer_requests.teis_number')
+    ->select('transfer_requests.teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'transfer_requests.tr_type')
+    ->where('transfer_requests.status', 1)
+    // ->where('teis_uploads.status', 1)
+    ->where('progress', 'ongoing')
+    ->where('request_status', 'approved')
+    ->whereNull('teis_uploads.teis_number');
+
+    $ps_request_tools_wh = App\Models\PsTransferRequests::leftjoin('teis_uploads','teis_uploads.teis_number','ps_transfer_requests.request_number')
+    ->leftjoin('ters_uploads','ters_uploads.pullout_number','ps_transfer_requests.request_number')
+    ->select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'ps_transfer_requests.tr_type')
+    ->where('ps_transfer_requests.status', 1)
+    ->where('progress', 'ongoing')
+    ->where('request_status', 'approved')
+    ->whereNotNull('acc')
+    ->whereNull('ters_uploads.pullout_number');
+
+    $unioned_tables = $request_tools->union($ps_request_tools_wh)->count();
+
+
+    //My TEIS Request - for receiving
+    
+    $request_tools_for_receiving = App\Models\TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
+    ->where('status', 1)
+    ->where('progress', 'ongoing')
+    ->where('request_status', 'approved')
+    ->where('pe', Auth::user()->id);
+
+    $ps_request_tools_for_receiving = App\Models\PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
+    ->where('status', 1)
+    ->where('progress', 'ongoing')
+    ->where('request_status', 'approved')
+    ->where('user_id', Auth::user()->id);
+
+    $unioned_tables_for_receiving = $request_tools_for_receiving->union($ps_request_tools_for_receiving)->count();
 @endphp
 
 <!doctype html>
@@ -470,12 +507,16 @@
                             </li>
 
                             @if (Auth::user()->user_type_id == 2)
-                                <li class="nav-main-item">
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/rftte') ? ' active' : '' }}"
                                         href="/pages/rftte">
                                         <i class="nav-main-link-icon fa fa-box-open"></i>
                                         <span class="nav-main-link-name">RFTTE</span>
                                     </a>
+                                    <span class="countContainer nav-main-link text-light {{ $unioned_tables == 0 ? 'd-none' : '' }}"><span
+                                        id="rftteCount" class="bg-info"
+                                        style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables }}</span>
+                                    </span>
                                 </li>
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/pullout_warehouse', 'pages/pullout_completed_warehouse') ? ' active' : '' }}"
@@ -578,11 +619,15 @@
                                                 <span class="nav-main-link-name">Ongoing</span>
                                             </a>
                                         </li>
-                                        <li class="nav-main-item">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
                                             <a class="nav-main-link{{ request()->is('pages/request_for_receiving') ? ' active' : '' }}"
                                                 href="/pages/request_for_receiving">
                                                 <span class="nav-main-link-name">For Receiving</span>
                                             </a>
+                                            <span class="countContainer nav-main-link text-light {{$unioned_tables_for_receiving == 0 ? 'd-none' : '' }}"><span
+                                                id="forReceivingCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables_for_receiving }}</span>
+                                            </span>
                                         </li>
                                         <li class="nav-main-item">
                                             <a class="nav-main-link{{ request()->is('pages/request_completed') ? ' active' : '' }}"

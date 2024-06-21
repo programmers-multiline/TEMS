@@ -92,6 +92,7 @@ Route::controller(TransferRequestController::class)->group(function () {
     Route::post('ps_approve_tools', 'ps_approve_tools')->name('ps_approve_tools');
     Route::post('ps_approve_rttte', 'ps_approve_rttte')->name('ps_approve_rttte');
     Route::get('completed_teis_request', 'completed_teis_request')->name('completed_teis_request');
+    Route::post('tools_deliver', 'tools_deliver')->name('tools_deliver');
     
     
 });

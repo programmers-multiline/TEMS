@@ -29,6 +29,8 @@ $(document).on("click", ".uploadTeisBtn", function () {
 $("#formRequest").on("submit", function (e) {
     e.preventDefault();
 
+    const prevCount = parseInt($("#rftteCount").text());
+
     var routeUrl = $("#formRequest #routeUrl").val();
 
     var frm = document.getElementById("formRequest");
@@ -52,6 +54,12 @@ $("#formRequest").on("submit", function (e) {
             $("#createTeis").modal("hide");
             table.ajax.reload();
             showToast("success", "TEIS Uploaded");
+
+            if(prevCount == 1){
+                $(".countContainer").addClass("d-none")
+            }else{
+                $("#rfteisCount").text(prevCount - 1);
+            }
         },
     });
 });

@@ -357,16 +357,36 @@ class TransferRequestController extends Controller
         
         ->addColumn('view_tools', function($row){
             
-            return $view_tools = '<button data-id="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">Items</button>';
+            return $view_tools = '<button data-id="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
         })
         ->addColumn('action', function($row){
             $user_type = Auth::user()->user_type_id;
 
             if($row->tr_type == 'rfteis'){
-                $action =  '<button data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>';
+                $teis_uploads = TeisUploads::where('status', 1)
+                ->where('tr_type', 'rfteis')->get();
+
+                $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+
+                $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
+
+                $action =  '
+                <div class="d-flex gap-2 align-items-center">
+                    <button '.$have_teis.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto w-100 js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TEIS</span></button>
+                    <button data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="deliverBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
+                </div>
+                ';
             }else{
-                $action =  '<div class="d-flex gap-2"><button data-type="'.$row->tr_type.'" data-num="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
-                <button data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
+
+                $teis_uploads = TeisUploads::where('status', 1)
+                ->where('tr_type', 'rttte')->get();
+
+                $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+
+                $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
+
+                $action =  '<div class="d-flex gap-2"><button '.$have_teis.' data-type="'.$row->tr_type.'" data-num="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
+                <button '.$have_teis.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
                 </div>';
             }
             // <button data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="approvedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
@@ -1284,6 +1304,16 @@ class TransferRequestController extends Controller
 
         $ps_tools->update();
 
+    }
+
+    public function tools_deliver(Request $request){
+        if($request->type == 'rfteis'){
+            $teis_tools = TransferRequest::where('status', 1)->where('teis_number', $request->requestNum)->first();
+    
+            $teis_tools->is_deliver = Carbon::now();
+    
+            $teis_tools->update();
+        }
     }
 
 }

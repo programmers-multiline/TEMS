@@ -63,8 +63,8 @@
 
 
 {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-<script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
-<script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+<script src="{{asset('js/plugins/datatables-select/js/dataTables.select.js')}}"></script>
+<script src="{{asset('js/plugins/datatables-select/js/select.dataTables.js')}}"></script>
 <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
 <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
