@@ -37,7 +37,7 @@
                         Close
                     </button>
                     <button id="AddPriceBtn" type="button" class="btn btn-alt-primary">
-                        Done
+                        Add Price
                     </button>
                 </div>
             </div>

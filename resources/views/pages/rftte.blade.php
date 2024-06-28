@@ -147,6 +147,7 @@
             $(document).on('click','.teisNumber',function(){
                 
                 const id = $(this).data("id");
+                const type = $(this).data("type");
                 
                 
                 const modalTable = $("#modalTable").DataTable({
@@ -158,6 +159,7 @@
                         url: '{{ route('ongoing_teis_request_modal') }}',
                         data: {
                             id, 
+                            type,
                             _token:'{{csrf_token()}}'
                         }
                         
@@ -194,9 +196,11 @@
                 });
             })
             
-            $(document).on('click', '.deliverBtn', function(){
+            $(document).on('click', '.deliverBtn, .proceedBtn', function(){
                 const requestNum = $(this).data('num');
                 const type = $(this).data('type');
+
+                const prevCount = parseInt($("#rftteCount").text());
 
                 const confirm = Swal.mixin({
                     customClass: {
@@ -227,11 +231,24 @@
                             },
                             success() {
                                 table.ajax.reload();
-                                confirm.fire({
-                                    title: "En Route!",
-                                    text: "The tools are out for Delivery.",
-                                    icon: "success"
-                                });
+                                if(type == 'rfteis'){
+                                    confirm.fire({
+                                        title: "En Route!",
+                                        text: "The tools are out for Delivery.",
+                                        icon: "success"
+                                    });
+                                }else{
+                                    confirm.fire({
+                                        title: "Success!",
+                                        icon: "success"
+                                    });
+                                }
+
+                                if(prevCount == 1){
+                                    $(".countContainer").addClass("d-none")
+                                }else{
+                                    $("#rftteCount").text(prevCount - 1);
+                                }
                             }
                         })
 

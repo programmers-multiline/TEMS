@@ -31,12 +31,13 @@
                             <th>Project Name</th>
                             <th>Project Code</th>
                             <th>Project Address</th>
-                            <th>Date Requested</th>
                             <th>Subcon</th>
                             <th>Date Requested</th>
+                            <th>Date Approved</th>
                             <th>Pickup Date</th>
                             <th>Contact Number</th>
                             <th>Reason</th>
+                            <th>TERS</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -93,9 +94,6 @@
                         data: 'project_address'
                     },
                     {
-                        data: 'date_requested'
-                    },
-                    {
                         data: 'subcon'
                     },
                     {
@@ -105,10 +103,16 @@
                         data: 'date_requested'
                     },
                     {
+                        data: 'date_approved'
+                    },
+                    {
                         data: 'contact_number'
                     },
                     {
                         data: 'reason'
+                    },
+                    {
+                        data: 'ters'
                     },
                     {
                         data: 'action'
@@ -119,6 +123,8 @@
             $(document).on('click', '.pulloutNumber', function() {
 
                 const id = $(this).data("id");
+                const path = $("#path").val()
+
 
 
                 const modalTable = $("#modalTable").DataTable({
@@ -130,6 +136,7 @@
                         url: '{{ route('ongoing_pullout_request_modal') }}',
                         data: {
                             id,
+                            path,
                             _token: '{{ csrf_token() }}'
                         }
 

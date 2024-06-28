@@ -44,7 +44,7 @@
                             <th>Project Name</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
-                            {{-- <th>Status</th> --}}
+                            <th>Date Approved</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -130,6 +130,9 @@
                     },
                     {
                         data: 'date_requested'
+                    },
+                    {
+                        data: 'date_approved'
                     },
                     {
                         data: 'action'

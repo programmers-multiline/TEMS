@@ -83,14 +83,31 @@ class MyToolsAndEquipmentController extends Controller
 
         // }
 
-        $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-            ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-            ->select('transfer_request_items.teis_number','tools_and_equipment.*', 'warehouses.warehouse_name')
-            ->where('tools_and_equipment.current_pe', Auth::user()->id)
-            ->where('transfer_request_items.status', 1)
-            ->where('tools_and_equipment.status', 1)
-            ->where('transfer_request_items.item_status', 1)
-            ->get();
+        if($request->pCode){
+            $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+                ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                ->leftJoin('transfer_requests', 'transfer_requests.teis_number', 'transfer_request_items.teis_number')
+                ->select('transfer_request_items.teis_number','tools_and_equipment.*', 'warehouses.warehouse_name')
+                ->where('tools_and_equipment.current_pe', Auth::user()->id)
+                ->where('transfer_request_items.status', 1)
+                ->where('tools_and_equipment.status', 1)
+                ->where('transfer_request_items.item_status', 1)
+               ->where('transfer_requests.project_code', $request->pCode)
+                ->get();
+        }else{
+            $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+                ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                ->select('transfer_request_items.teis_number','tools_and_equipment.*', 'warehouses.warehouse_name')
+                ->where('tools_and_equipment.current_pe', Auth::user()->id)
+                ->where('transfer_request_items.status', 1)
+                ->where('tools_and_equipment.status', 1)
+                ->where('transfer_request_items.item_status', 1)
+                ->get();
+            
+        }
+
+        
+
 
         // return $tools[0]->teis_number;
 

@@ -22,7 +22,7 @@
                                     placeholder="Enter Client">
                             </div>
                             <div class="col-5">
-                                <label class="form-label" for="projectName">Project Name <span
+                                {{-- <label class="form-label" for="projectName">Project Name <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="projectName" name="projectName" size="1">
                                     <option disabled selected>Select Project Name</option>
@@ -34,7 +34,11 @@
                                             {{ $project_detail->project_name }}
                                         </option>
                                     @endforeach
-                                </select>
+                                </select> --}}
+                                <label class="form-label" for="projectName">Project Name <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="projectName" name="projectName"
+                                placeholder="Enter Project Name">
                             </div>
                             <div class="col-2">
                                 <label class="form-label" for="contact">Contact No. <span
@@ -54,7 +58,7 @@
                                 <label class="form-label" for="projectCode">Project Code <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectCode" name="projectCode"
-                                    placeholder="Enter Project code">
+                                    placeholder="Enter Project code" >
                             </div>
                             <div class="col-3">
                                 <label class="form-label" for="subcon">SubContractor</label>
@@ -65,7 +69,7 @@
                                 <label class="form-label" for="projectAddress">Project Address <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectAddress" name="projectAddress"
-                                    placeholder="Enter Project Address">
+                                    placeholder="Enter Project Address" >
                             </div>
                         </div>
                         <div class="mb-4">

@@ -1,9 +1,12 @@
 @extends('layouts.backend')
 
 @section('css')
-    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css"> --}}
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
-    <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
+    <link rel="stylesheet"
+        href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
+
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -13,18 +16,22 @@
         #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
+
+        .filepond--credits {
+            display: none;
+        }
     </style>
 @endsection
 
-@section('content-title', 'For Receiving TEIS Request')
+@section('content-title', 'List of Pullout Request for Receiving')
 
 @section('content')
     <!-- Page Content -->
     <div class="content">
         <div id="tableContainer" class="block block-rounded">
-            <div class="block-content block-content-full overflow-x-auto">
+            <div class="block-content block-content-full overflow-x-scroll">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table" class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table" class="table fs-sm table-bordered hover table-vcenter">
                     <thead>
                         <tr>
                             <th>Items</th>
@@ -34,9 +41,9 @@
                             <th>Project Name</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
-                            <th>Status</th>
-                            <th>Type</th>
-                            <th>TEIS</th>
+                            <th>Pickup Date</th>
+                            <th>Contact</th>
+                            <th>Reason</th>
                             <th>TERS</th>
                             <th>Action</th>
                         </tr>
@@ -50,7 +57,9 @@
     </div>
     <!-- END Page Content -->
 
-    @include('pages.modals.ongoing_teis_request_modal')
+
+    @include('pages.modals.upload_pullout_modal')
+    @include('pages.modals.ongoing_pullout_request_modal')
 
 @endsection
 
@@ -61,36 +70,69 @@
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    {{-- <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
-    <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script> --}}
     <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
-    <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
 
-    <script type="module">
-        Codebase.helpersOnLoad(['jq-magnific-popup']);
+    <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
+    <script
+        src="{{ asset('js/plugins/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-encode/filepond-plugin-file-encode.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
     </script>
 
-    {{-- <script type="module">
-    Codebase.helpersOnLoad('cb-table-tools-checkable');
-  </script> --}}
+    <!-- Fileupload JS -->
+    <script src="{{ asset('js\lib\fileupload.js') }}"></script>
 
 
     <script>
         $(document).ready(function() {
 
 
-            const path = $("#path").val();
+            let pulloutNum;
+
+            $(document).on('click', '#addSchedBtn', function() {
+                pulloutNum = $(this).data('pulloutnum')
+            })
+
+
+            $("#btnAddSched").click(function() {
+                const pickupDate = $("#pickupDate").val();
+
+                $.ajax({
+                    url: '{{ route('add_schedule') }}',
+                    method: 'post',
+                    data: {
+                        pickupDate,
+                        pulloutNum,
+                        _token: '{{ csrf_token() }}',
+
+                    },
+                    success() {
+                        calendar.refetchEvents();
+                        $("#addSched").modal('hide')
+                    }
+                })
+            })
+
+           const path = $("#path").val();
 
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
                 ajax: {
                     type: 'get',
-                    url: '{{ route('ongoing_teis_request') }}',
+                    url: '{{ route('fetch_pullout_request') }}',
                     data: {
-                        path,
-                        _token: '{{ csrf_token() }}'
+                        path
                     }
                 },
                 columns: [{
@@ -100,7 +142,7 @@
                         data: 'subcon'
                     },
                     {
-                        data: 'customer_name'
+                        data: 'client'
                     },
                     {
                         data: 'project_name'
@@ -115,13 +157,13 @@
                         data: 'date_requested'
                     },
                     {
-                        data: 'request_status'
+                        data: 'pickup_date'
                     },
                     {
-                        data: 'request_type'
+                        data: 'contact_number'
                     },
                     {
-                        data: 'teis'
+                        data: 'reason'
                     },
                     {
                         data: 'ters'
@@ -130,38 +172,28 @@
                         data: 'action'
                     },
                 ],
-                drawCallback: function() {
-                    $(".trackBtn").tooltip();
-                }
             });
 
             let type;
 
             $(document).on('click', '.teisNumber', function() {
 
+
                 const id = $(this).data("id");
                 type = $(this).data("transfertype");
                 const path = $("#path").val();
-
-                $("#receiveBtnModal").attr("data-type", type);
 
                 const modalTable = $("#modalTable").DataTable({
                     processing: true,
                     serverSide: false,
                     destroy: true,
                     "aoColumnDefs": [{
-                            "bSortable": false,
-                            "aTargets": [0]
-                        },
-                        {
-                            "targets": [1],
-                            "visible": false,
-                            "searchable": false
-                        }
-                    ],
+                        "bSortable": false,
+                        "aTargets": [0]
+                    }],
                     ajax: {
                         type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
+                        url: '{{ route('ongoing_pullout_request_modal') }}',
                         data: {
                             id,
                             type,
@@ -200,6 +232,9 @@
                             data: 'tools_status'
                         },
                         {
+                            data: 'new_tools_status'
+                        },
+                        {
                             data: 'action'
                         }
                     ],
@@ -228,16 +263,11 @@
                         selected: true
                     }).data();
 
-                    // if(data.length > 0){
-                    //     $("#receiveBtnModal").prop()
-                    // }else{
-
-                    // }
-
-
                 })
 
+
                 $(document).on("click", "#receiveBtnModal", function() {
+                    const multi = "multi";
 
                     data = $("#modalTable").DataTable().rows({
                         selected: true
@@ -247,95 +277,57 @@
                         showToast("error", "Select Item first!");
                         return;
                     }
-                    const multi = "multi";
-                    const type = $(this).data("type");
-                    const selectedItemId = [];
+
+                    const allData = [];
+                    const prevCount = parseInt($("#pulloutForReceivingCount").text());
+
 
                     for (var i = 0; i < data.length; i++) {
-                        selectedItemId.push(data[i].tri_id)
+
+                        const tool_eval = $('.whEval').eq([i]).val()
+                        const pri_id = data[i].pri_id
+                        const user_eval = data[i].tool_status_eval
+
+                        const datas = {
+                            tool_eval,
+                            pri_id,
+                            user_eval
+                        }
+                        allData.push(datas)
                     }
 
-                    const arrayToString = JSON.stringify(selectedItemId);
+
+                    const arrayToString = JSON.stringify(allData);
 
                     const modalTable = $("#modalTable").DataTable()
-                    const table = $("#table").DataTable()
 
                     $.ajax({
-                        url: '{{ route('scanned_teis_received') }}',
+                        url: '{{ route('received_pullout_tools') }}',
                         method: 'post',
                         data: {
                             id,
                             multi,
-                            type,
-                            triIdArray: arrayToString,
+                            dataArray: arrayToString,
                             _token: "{{ csrf_token() }}"
                         },
                         success() {
+                            modalTable.ajax.reload();
                             showToast("success", "Received Successful");
-                            modalTable.ajax.reload(function() {
-                                if (!modalTable.rows().count()) {
-                                    setTimeout(() => $("#ongoingTeisRequestModal").modal('hide'), 1000);
+                            if(prevCount == 1){
+                                    $(".countContainer").addClass("d-none")
+                                }else{
+                                    $("#pulloutForReceivingCount").text(prevCount - 1);
                                 }
-                            });
-                            table.ajax.reload();
+
+                            if (modalTable.data().count() == 1) {
+                                $("#receiveBtnModal").prop('disabled', 'true')
+                                setTimeout(function() {
+                                    $("#ongoingPulloutRequestModal").modal('hide')
+                                }, 1000);
+                            }
                         }
                     })
                 })
-
-            })
-
-
-
-
-
-            $(document).on('click', '.receivedBtn', function() {
-                const id = $(this).data('triid');
-                const teis_num = $(this).data('number');
-
-                const confirm = Swal.mixin({
-                    customClass: {
-                        confirmButton: "btn btn-success ms-2",
-                        cancelButton: "btn btn-danger"
-                    },
-                    buttonsStyling: false
-                });
-
-                confirm.fire({
-                    title: "Recieved?",
-                    text: "Are you sure you want to Received this tool?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes!",
-                    cancelButtonText: "Back",
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        $.ajax({
-                            url: '{{ route('scanned_teis_received') }}',
-                            method: 'post',
-                            data: {
-                                id,
-                                teis_num,
-                                type,
-                                _token: '{{ csrf_token() }}',
-                            },
-                            success(result) {
-                                showToast("success",
-                                    "Tool Received");
-                                $("#modalTable").DataTable().ajax.reload();
-
-                            }
-                        })
-
-                    } else if (
-                        /* Read more about handling dismissals below */
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-
-                    }
-                });
-
 
             })
 

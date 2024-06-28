@@ -1,7 +1,7 @@
 @extends('layouts.backend')
 
 @section('css')
-    <link rel="stylesheet" href="{{asset("js/plugins/datatables-select/css/select.dataTables.css")}}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -31,8 +31,10 @@
                     <i class="fa fa-filter fs-2 me-2 text-secondary"></i>
                     <select class="form-select" id="selectProjectCode" name="example-select">
                         <option disabled selected="">Project Site</option>
-                        <option value="pn-1">Project Site 1</option>
-                        <option value="pn-2">Project Site 2</option>
+                        @foreach ($pg as $project_detail)
+                            <option value="{{ $project_detail->project_code }}">
+                                {{ Str::title($project_detail->project_name) }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="d-flex gap-2">
@@ -91,8 +93,8 @@
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    <script src="{{asset('js/plugins/datatables-select/js/dataTables.select.js')}}"></script>
-    <script src="{{asset('js/plugins/datatables-select/js/select.dataTables.js')}}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
@@ -219,7 +221,7 @@
             });
 
 
-            $('#projectCode').change(function() {
+            $('#selectProjectCode').change(function() {
 
                 const table = $("#table").DataTable({
                     processing: true,
@@ -231,14 +233,14 @@
                             "bSortable": false,
                             "aTargets": [0]
                         },
-                        // { "targets": [1], "visible": false, "searchable": false }
+                        // { "targets": [0], "visible": false, "searchable": false }
                     ],
                     ajax: {
                         type: 'get',
                         url: '{{ route('fetch_my_te') }}',
                         data: {
-                            id: $(this).val(),
-                        }
+                            pCode: $(this).val(),
+                        },
                     },
                     columns: [{
                             data: null,
@@ -266,16 +268,24 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'
                         },
                         {
+                            data: 'transfer_state'
+                        },
+                        {
                             data: 'action'
                         },
                     ],
-                    select: true
+                    scrollX: true,
+                    select: true,
+                    select: {
+                        style: 'multi+shift',
+                        selector: 'td'
+                    },
                 });
 
             });
@@ -287,31 +297,81 @@
             });
 
 
-            $("#tableContainer").click(function() {
+            // $("#tableContainer").click(function() {
 
-                const data = table.rows({
+            //     const data = table.rows({
+            //         selected: true
+            //     }).data();
+
+            //     $("#pulloutRequestBtn").attr("data-current_site", data[0].current_site_id);
+
+            //     const dataCount = table.rows({
+            //         selected: true
+            //     }).count();
+
+            //     if (dataCount > 0) {
+            //         $("#pulloutRequestBtn").prop('disabled', false);
+            //         $("#changeStateBtn").prop('disabled', false);
+            //     } else {
+            //         $("#pulloutRequestBtn").prop('disabled', true);
+            //         $("#changeStateBtn").prop('disabled', true);
+
+            //     }
+            // })
+
+            $('#table').on('select.dt deselect.dt', function(e, dt, type, indexes) {
+                const selectedRows = table.rows({
                     selected: true
-                }).data();
+                }).nodes();
+                const count = selectedRows.length;
 
-                $("#pulloutRequestBtn").attr("data-current_site", data[0].current_pe);
-
-                const dataCount = table.rows({
-                    selected: true
-                }).count();
-
-                if (dataCount > 0) {
+                if (count > 0) {
                     $("#pulloutRequestBtn").prop('disabled', false);
                     $("#changeStateBtn").prop('disabled', false);
                 } else {
                     $("#pulloutRequestBtn").prop('disabled', true);
                     $("#changeStateBtn").prop('disabled', true);
-
                 }
-            })
+
+
+                const data = table.rows({
+                    selected: true
+                }).data();
+
+                console.log(data)
+
+                $("#pulloutRequestBtn").attr("data-current_site", data[0].current_site_id);
+            });
 
 
 
             $("#pulloutRequestBtn").click(function() {
+
+                const currentSiteId = $(this).data('current_site')
+
+                $.ajax({
+                    url: '{{ route('fetch_current_site') }}',
+                    method: 'post',
+                    data: {
+                        currentSiteId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success(currenSite) {
+                        $("#client").val(currenSite.customer_name)
+                        $("#projectAddress").val(currenSite.project_address)
+                        $("#projectName").val(currenSite.project_name)
+                        $("#projectCode").val(currenSite.project_code)
+
+                        $("#pulloutRequestBtn").prop('disabled', true);
+                        $("#changeStateBtn").prop('disabled', true);
+                    },
+                    complete() {
+                        $('#client, #projectAddress, #projectName, #projectCode').on('keydown',
+                            function() {
+                                return false;
+                            });
+                    }
+                })
 
                 $("#tbodyPulloutModal").empty()
 
@@ -339,6 +399,8 @@
                 const finalData = {}
 
                 const inputData = $("#pulloutFrom").serializeArray();
+
+                console.log(inputData)
 
                 const id = $("#tbodyPulloutModal input[type=hidden]").map((i, id) => id.value);
                 const toolsStatus = $(".toolsStatus").map((i, toolsStatus) => toolsStatus.value);

@@ -1,7 +1,7 @@
 @extends('layouts.backend')
 
 @section('css')
-    <link rel="stylesheet" href="{{asset("js/plugins/datatables-select/css/select.dataTables.css")}}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
@@ -75,6 +75,7 @@
                     </div>
                     <div class="block-content fs-sm">
                         <div class="row mb-3">
+                            <input type="hidden" value="{{ date('Y-m-d') }}" id="currentDate">
                             <div class="col-6">
                                 <label class="form-label" for="pe">Project Enginner <span
                                         class="text-danger">*</span></label>
@@ -84,8 +85,8 @@
                             <div class="col-6">
                                 <label class="form-label" for="pickupDate">Pick-up Date <span
                                         class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="pickupDate" name="pickupDate" min="{{ date('Y-m-d') }}"
-                                    placeholder="Enter Pick-up Date">
+                                <input type="date" class="form-control" id="pickupDate" name="pickupDate"
+                                    min="{{ date('Y-m-d') }}" placeholder="Enter Pick-up Date">
                             </div>
                         </div>
                         <div class="col-12 mb-3">
@@ -122,8 +123,8 @@
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    <script src="{{asset('js/plugins/datatables-select/js/dataTables.select.js')}}"></script>
-    <script src="{{asset('js/plugins/datatables-select/js/select.dataTables.js')}}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
 
     <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
@@ -189,11 +190,16 @@
                         placement: 'top',
                         trigger: 'hover',
                         content: '<div class="event-details">' +
-                            '<p><strong>Project Name:</strong> ' + info.event.extendedProps.project_name + '</p>' +
-                            '<p><strong>Project PE:</strong> ' + info.event.extendedProps.pe + '</p>' +
-                            '<p><strong>Client:</strong> ' + info.event.extendedProps.client + '</p>' +
-                            '<p><strong>Address:</strong> ' + info.event.extendedProps.project_address + '</p>' +
-                            '<p><strong>Contact Number:</strong> ' + info.event.extendedProps.contact + '</p>' +
+                            '<p><strong>Project Name:</strong> ' + info.event.extendedProps
+                            .project_name + '</p>' +
+                            '<p><strong>Project PE:</strong> ' + info.event.extendedProps.pe +
+                            '</p>' +
+                            '<p><strong>Client:</strong> ' + info.event.extendedProps.client +
+                            '</p>' +
+                            '<p><strong>Address:</strong> ' + info.event.extendedProps
+                            .project_address + '</p>' +
+                            '<p><strong>Contact Number:</strong> ' + info.event.extendedProps
+                            .contact + '</p>' +
                             '</div>',
                         container: 'body',
                         html: true
@@ -211,33 +217,17 @@
             })
 
 
-            $("#btnAddSched").click(function() {
-                const pickupDate = $("#pickupDate").val();
-
-                $.ajax({
-                    url: '{{ route('add_schedule') }}',
-                    method: 'post',
-                    data: {
-                        pickupDate,
-                        pulloutNum,
-                        _token: '{{ csrf_token() }}',
-
-                    },
-                    success() {
-                        calendar.refetchEvents();
-                        $("#addSched").modal('hide')
-                    }
-                })
-            })
-
-
+            const path = $("#path").val();
 
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
                 ajax: {
                     type: 'get',
-                    url: '{{ route('fetch_pullout_request') }}'
+                    url: '{{ route('fetch_pullout_request') }}',
+                    data: {
+                        path
+                    }
                 },
                 columns: [{
                         data: 'view_tools'
@@ -278,6 +268,34 @@
                 ],
             });
 
+
+            $("#btnAddSched").click(function() {
+                const pickupDate = $("#pickupDate").val();
+                const prevCount = parseInt($("#pulloutForSchedCount").text());
+
+                $.ajax({
+                    url: '{{ route('add_schedule') }}',
+                    method: 'post',
+                    data: {
+                        pickupDate,
+                        pulloutNum,
+                        _token: '{{ csrf_token() }}',
+
+                    },
+                    success() {
+                        calendar.refetchEvents();
+                        $("#addSched").modal('hide')
+                        table.ajax.reload()
+
+                        if (prevCount == 1) {
+                            $(".countContainer").addClass("d-none")
+                        } else {
+                            $("#pulloutForSchedCount").text(prevCount - 1);
+                        }
+                    }
+                })
+            })
+
             let type;
 
             $(document).on('click', '.teisNumber', function() {
@@ -287,27 +305,10 @@
                 type = $(this).data("transfertype");
                 const path = $("#path").val();
 
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    "aoColumnDefs": [{
-                            "bSortable": false,
-                            "aTargets": [0]
-                        }
-                    ],
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_pullout_request_modal') }}',
-                        data: {
-                            id,
-                            type,
-                            path,
-                            _token: '{{ csrf_token() }}'
-                        }
+                let showColumns = [];
 
-                    },
-                    columns: [{
+                if (path == "pages/pullout_for_receiving") {
+                    showColumns = [{
                             data: null,
                             render: DataTable.render.select(),
                             className: 'selectTools'
@@ -342,7 +343,57 @@
                         {
                             data: 'action'
                         }
-                    ],
+                    ]
+                } else {
+                    showColumns = [{
+                            data: 'po_number'
+                        },
+                        {
+                            data: 'asset_code'
+                        },
+                        {
+                            data: 'serial_number'
+                        },
+                        {
+                            data: 'item_code'
+                        },
+                        {
+                            data: 'item_description'
+                        },
+                        {
+                            data: 'brand'
+                        },
+                        {
+                            data: 'warehouse_name'
+                        },
+                        {
+                            data: 'tools_status'
+                        },
+                    ]
+
+                }
+
+
+                const modalTable = $("#modalTable").DataTable({
+                    processing: true,
+                    serverSide: false,
+                    destroy: true,
+                    "aoColumnDefs": [{
+                        "bSortable": false,
+                        "aTargets": [0]
+                    }],
+                    ajax: {
+                        type: 'get',
+                        url: '{{ route('ongoing_pullout_request_modal') }}',
+                        data: {
+                            id,
+                            type,
+                            path,
+                            _token: '{{ csrf_token() }}'
+                        }
+
+                    },
+                    columns: showColumns,
                     select: {
                         style: 'multi+shift',
                         selector: 'td'
@@ -364,7 +415,7 @@
 
                 $(document).on("change", ".selectTools", function() {
 
-                     data = modalTable.rows({
+                    data = modalTable.rows({
                         selected: true
                     }).data();
 
@@ -372,33 +423,52 @@
 
 
                 $(document).on("click", "#receiveBtnModal", function() {
-                        const multi = "multi";
+                    const multi = "multi";
 
-                        const selectedItemId = [];
+                    const allData = [];
 
-                        for (var i = 0; i < data.length; i++) {
-                            selectedItemId.push(data[i].pri_id)
+                    console.log(data)
+
+                    for (var i = 0; i < data.length; i++) {
+
+                        const tool_eval = $('.whEval').eq([i]).val()
+                        const pri_id = data[i].pri_id
+                        const user_eval = data[i].tool_status_eval
+
+                        const datas = {
+                            tool_eval,
+                            pri_id,
+                            user_eval
                         }
+                        allData.push(datas)
+                    }
 
-                        const arrayToString = JSON.stringify(selectedItemId);
 
-                        const modalTable = $("#modalTable").DataTable()
+                    const arrayToString = JSON.stringify(allData);
 
-                        $.ajax({
-                            url: '{{ route('received_pullout_tools') }}',
-                            method: 'post',
-                            data: {
-                                id,
-                                multi,
-                                priIdArray: arrayToString,
-                                _token: "{{ csrf_token() }}"
-                            },
-                            success() {
-                                modalTable.ajax.reload();
-                                showToast("success", "Received Successful");
+                    const modalTable = $("#modalTable").DataTable()
+
+                    $.ajax({
+                        url: '{{ route('received_pullout_tools') }}',
+                        method: 'post',
+                        data: {
+                            id,
+                            multi,
+                            dataArray: arrayToString,
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success() {
+                            modalTable.ajax.reload();
+                            showToast("success", "Received Successful");
+                            if (modalTable.data().count() == 1) {
+                                $("#receiveBtnModal").prop('disabled', 'true')
+                                setTimeout(function() {
+                                    $("#ongoingPulloutRequestModal").modal('hide')
+                                }, 1000);
                             }
-                        })
+                        }
                     })
+                })
 
             })
 
@@ -406,153 +476,21 @@
                 const pe = $(this).data('pe');
                 const location = $(this).data('location');
                 const pickUpdate = $(this).data('pickupdate');
+                const currentDate = $("#currentDate").val();
+
+
+                if (pickUpdate < currentDate) {
+
+                    $("#pickupDate").val(currentDate);
+                } else {
+
+                    $("#pickupDate").val(pickUpdate)
+                }
 
                 $("#pe").val(pe)
-                $("#pickupDate").val(pickUpdate)
                 $("#location").val(location)
 
             })
-
-
-
-
-            // $("#poNumber").keypress(function(e) {
-            //     if (String.fromCharCode(e.keyCode).match(/[^0-9]/g)) return false;
-            // });
-
-            // $("#btnAddTools").click(function() {
-
-            //     // $("#poNumber").val("");
-            //     // $("#assetCode").val("");
-            //     // $("#serialNumber").val("");
-            //     // $("#itemCode").val("");
-            //     // $("#itemDescription").val("");
-            //     // $("#brand").val("");
-
-
-
-            //     var input = $("#addToolsForm").serializeArray();
-            //     $.ajax({
-            //         url: '{{ route('add_tools') }}',
-            //         method: 'post',
-            //         data: input,
-            //         success() {
-            //             $("#modal-tools").modal('hide')
-            //             table.ajax.reload();
-            //             $("#addToolsForm")[0].reset();
-            //             // $('#closeModal').click();
-
-            //         }
-            //     })
-            // })
-
-
-            // $(document).on('click', '#editBtn', function() {
-            //     const id = $(this).data('id');
-            //     const po = $(this).data('po');
-            //     const asset = $(this).data('asset');
-            //     const serial = $(this).data('serial');
-            //     const itemCode = $(this).data('itemcode');
-            //     const itemDesc = $(this).data('itemdesc');
-            //     const brand = $(this).data('brand');
-            //     const location = $(this).data('location');
-            //     const status = $(this).data('status');
-
-            //     $("#editPo").val(po);
-            //     $("#editAssetCode").val(asset);
-            //     $("#editSerialNumber").val(serial);
-            //     $("#editItemCode").val(itemCode)
-            //     $("#editItemDescription").val(itemDesc)
-            //     $("#editBrand").val(brand)
-            //     $("#editLocation").val(location)
-            //     $("#editStatus").val(status)
-            //     $("#hiddenId").val(id)
-
-            // })
-
-            // $("#updateBtnModal").click(function() {
-
-            //     const hiddenToolsId = $("#hiddenId").val()
-            //     const updatePo = $("#editPo").val();
-            //     const updateAsset = $("#editAssetCode").val();
-            //     const updateSerial = $("#editSerialNumber").val();
-            //     const updateItemCode = $("#editItemCode").val()
-            //     const updateItemDesc = $("#editItemDescription").val()
-            //     const updateBrand = $("#editBrand").val()
-            //     const updateLocation = $("#editLocation").val()
-            //     const updateStatus = $("#editStatus").val()
-
-            //     $.ajax({
-            //         url: '{{ route('edit_tools') }}',
-            //         method: 'post',
-            //         data: {
-            //             hiddenToolsId,
-            //             updatePo,
-            //             updateAsset,
-            //             updateSerial,
-            //             updateItemCode,
-            //             updateItemDesc,
-            //             updateBrand,
-            //             updateLocation,
-            //             updateStatus,
-            //             _token: "{{ csrf_token() }}"
-            //         },
-            //         success(e) {
-            //             table.ajax.reload();
-            //             $('#closeEditToolsModal').click();
-            //             // console.log(e)
-            //             alert()
-            //         }
-            //     })
-            // })
-
-            // $(document).on('click','#deleteToolsBtn', function(){
-            //     const id = $(this).data('id');
-
-            //     $.ajax({
-            //         url: '{{ route('delete_tools') }}',
-            //         method: 'post',
-            //         data: {
-            //             id,
-            //             _token: "{{ csrf_token() }}"
-            //         },
-            //         success(){
-            //             table.ajax.reload();
-            //         }
-            //     })
-
-            // })
-
-            // $("#tableContainer").click(function(){
-            //     const dataCount = table.rows({ selected: true }).count();
-
-            //     if(dataCount > 0){
-            //         $("#requesToolstBtn").prop('disabled', false);
-            //     }else{
-            //         $("#requesToolstBtn").prop('disabled', true);
-
-            //     }
-            // })
-
-
-            // $("#requesToolstBtn").click(function(){
-            //     const data = table.rows({ selected: true }).data();
-
-            //     // const arrItem = []
-
-
-            //     for(var i = 0; i < data.length; i++ ){
-            //         // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
-
-            //     $("#tbodyModal").append(`<tr><td>${data[i].item_code}</td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`);
-            //         // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
-            //     }
-
-            // })
-
-            // $(".closeModalRfteis").click(function(){
-            //     $("#tbodyModal").empty()
-            // })
 
         })
     </script>

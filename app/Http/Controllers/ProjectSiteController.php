@@ -56,7 +56,8 @@ class ProjectSiteController extends Controller
 
         if($request->warehouseId){
             $tools = ToolsAndEquipment::leftJoin('warehouses','warehouses.id','tools_and_equipment.location')
-            ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+            ->leftjoin('project_sites','project_sites.id','tools_and_equipment.current_site_id')
+            ->select('tools_and_equipment.*', 'warehouses.warehouse_name', 'project_sites.project_location')
             ->where('tools_and_equipment.status', 1)
             ->where('tools_and_equipment.wh_ps', 'ps')
             ->where('location', $request->warehouseId)
@@ -64,7 +65,8 @@ class ProjectSiteController extends Controller
             ->get();
         }else{
             $tools = ToolsAndEquipment::leftJoin('warehouses','warehouses.id','tools_and_equipment.location')
-            ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+            ->leftjoin('project_sites','project_sites.id','tools_and_equipment.current_site_id')
+            ->select('tools_and_equipment.*', 'warehouses.warehouse_name','project_sites.project_location')
             ->where('tools_and_equipment.status', 1)
             ->where('tools_and_equipment.wh_ps', 'ps')
             ->whereNotIn('tools_and_equipment.id', $id)
@@ -279,7 +281,8 @@ class ProjectSiteController extends Controller
         public function ps_ongoing_teis_request_modal(Request $request){
 
             $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-                                         ->select('tools_and_equipment.*','ps_transfer_request_items.id as pstri_id', 'ps_transfer_request_items.price')
+                                         ->leftjoin('warehouses', 'warehouses.id', 'tools_and_equipment.location')
+                                         ->select('tools_and_equipment.*','ps_transfer_request_items.id as pstri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name')
                                          ->where('ps_transfer_request_items.status', 1)
                                          ->where('ps_transfer_request_items.request_number', $request->id)
                                          ->get();

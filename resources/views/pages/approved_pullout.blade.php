@@ -14,7 +14,7 @@
     </style>
 @endsection
 
-@section('content-title', 'Ongoing Pull-Out Request')
+@section('content-title', 'Approved Pull-Out Request')
 
 @section('content')
     <!-- Page Content -->
@@ -27,13 +27,14 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Approver</th>
                             <th>Customer Name</th>
                             <th>Project Name</th>
                             <th>Project Code</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
                             <th>Subcon</th>
-                            <th>Date Requested</th>
+                            <th>Date Approved</th>
                             <th>Pickup Date</th>
                             <th>Contact Number</th>
                             <th>Reason</th>
@@ -81,6 +82,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'approver_name'
+                    },
+                    {
                         data: 'client'
                     },
                     {
@@ -102,7 +106,7 @@
                         data: 'pickup_date'
                     },
                     {
-                        data: 'date_requested'
+                        data: 'date_approved'
                     },
                     {
                         data: 'contact_number'

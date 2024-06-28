@@ -336,7 +336,7 @@
     // ->where('teis_uploads.status', 1)
     ->where('progress', 'ongoing')
     ->where('request_status', 'approved')
-    ->whereNull('teis_uploads.teis_number');
+    ->whereNull('is_deliver');
 
     $ps_request_tools_wh = App\Models\PsTransferRequests::leftjoin('teis_uploads','teis_uploads.teis_number','ps_transfer_requests.request_number')
     ->leftjoin('ters_uploads','ters_uploads.pullout_number','ps_transfer_requests.request_number')
@@ -345,7 +345,7 @@
     ->where('progress', 'ongoing')
     ->where('request_status', 'approved')
     ->whereNotNull('acc')
-    ->whereNull('ters_uploads.pullout_number');
+    ->whereNull('is_deliver');
 
     $unioned_tables = $request_tools->union($ps_request_tools_wh)->count();
 
@@ -356,15 +356,45 @@
     ->where('status', 1)
     ->where('progress', 'ongoing')
     ->where('request_status', 'approved')
-    ->where('pe', Auth::user()->id);
+    ->where('pe', Auth::user()->id)
+    ->whereNotNull('is_deliver');
 
     $ps_request_tools_for_receiving = App\Models\PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
     ->where('status', 1)
     ->where('progress', 'ongoing')
     ->where('request_status', 'approved')
-    ->where('user_id', Auth::user()->id);
+    ->where('user_id', Auth::user()->id)
+    ->whereNotNull('is_deliver');
 
     $unioned_tables_for_receiving = $request_tools_for_receiving->union($ps_request_tools_for_receiving)->count();
+
+    // pullout-out schedule - warehouse
+    if(Auth::user()->user_type_id == 2){
+        $pullout_for_schedule = App\Models\PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->whereNull('approved_sched_date')
+            ->count();
+    }else{
+        $pullout_for_schedule = 0;
+    }
+
+    // pullout for receiving warehouse
+    if(Auth::user()->user_type_id == 2){
+        $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('request_status', 'approved')
+            ->where('progress', 'ongoing')
+            ->whereNotNull('is_deliver')
+            ->count();
+    }else{
+        $pullout_for_receiving = 0;
+    }
 @endphp
 
 <!doctype html>
@@ -507,16 +537,32 @@
                             </li>
 
                             @if (Auth::user()->user_type_id == 2)
-                                <li class="nav-main-item d-flex align-items-center justify-content-between">
-                                    <a class="nav-main-link{{ request()->is('pages/rftte') ? ' active' : '' }}"
-                                        href="/pages/rftte">
+                                <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
+                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/rftte', 'pages/rftte_completed') ? ' active' : '' }}"
+                                        data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                                         <i class="nav-main-link-icon fa fa-box-open"></i>
                                         <span class="nav-main-link-name">RFTTE</span>
                                     </a>
-                                    <span class="countContainer nav-main-link text-light {{ $unioned_tables == 0 ? 'd-none' : '' }}"><span
-                                        id="rftteCount" class="bg-info"
-                                        style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables }}</span>
-                                    </span>
+                                    <ul class="nav-main-submenu">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/rftte') ? ' active' : '' }}"
+                                                href="/pages/rftte">
+                                                <span class="nav-main-link-name">
+                                                    Ongoing
+                                                </span>
+                                            </a>
+                                            <span class="countContainer nav-main-link text-light {{ $unioned_tables == 0 ? 'd-none' : '' }}"><span
+                                                id="rftteCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables }}</span>
+                                            </span>
+                                        </li>
+                                        <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/rftte_completed') ? ' active' : '' }}"
+                                                href="/pages/rftte_completed">
+                                                <span class="nav-main-link-name">Completed</span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/pullout_warehouse', 'pages/pullout_completed_warehouse') ? ' active' : '' }}"
@@ -525,16 +571,30 @@
                                         <span class="nav-main-link-name">Pull-Out Request</span>
                                     </a>
                                     <ul class="nav-main-submenu">
-                                        <li class="nav-main-item">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
                                             <a class="nav-main-link{{ request()->is('pages/pullout_warehouse') ? ' active' : '' }}"
                                                 href="/pages/pullout_warehouse">
                                                 <span class="nav-main-link-name">
-                                                    Ongoing
+                                                    Schedule
                                                 </span>
                                             </a>
+                                            <span class="countContainer nav-main-link text-light {{$pullout_for_schedule == 0 ? 'd-none' : '' }}"><span
+                                                id="pulloutForSchedCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $pullout_for_schedule }}</span>
+                                            </span>
+                                        </li>
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/pullout_for_receiving') ? ' active' : '' }}"
+                                                href="/pages/pullout_for_receiving">
+                                                <span class="nav-main-link-name">For Receiving</span>
+                                            </a>
+                                            <span class="countContainer nav-main-link text-light {{$pullout_for_receiving == 0 ? 'd-none' : '' }}"><span
+                                                id="pulloutForReceivingCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $pullout_for_receiving }}</span>
+                                            </span>
                                         </li>
                                         <li class="nav-main-item">
-                                            <a class="nav-main-link{{ request()->is('pages/pullout_completed_warehouse') ? ' active' : '' }}"
+                                            <a class="nav-main-link{{ request()->is('pages/pullout_completed') ? ' active' : '' }}"
                                                 href="/pages/pullout_completed">
                                                 <span class="nav-main-link-name">Completed</span>
                                             </a>

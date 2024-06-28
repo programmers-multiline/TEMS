@@ -131,7 +131,7 @@
                         data: 'brand'
                     },
                     {
-                        data: 'warehouse_name'
+                        data: 'project_location'
                     },
                     {
                         data: 'tools_status'

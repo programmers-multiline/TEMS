@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     // Route::view('/pages/my_te', 'pages.my_te');
     Route::view('/pages/pullout_ongoing', 'pages.pullout_ongoing');
     Route::view('/pages/rftte', 'pages.rftte');
+    Route::view('/pages/rftte_completed', 'pages.rftte_completed');
     Route::view('/pages/rfteis_approved', 'pages.rfteis_approved');
     Route::view('/pages/pullout_warehouse', 'pages.pullout_warehouse');
     Route::view('/pages/rfteis', 'pages.rfteis');
@@ -47,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/site_to_site_transfer', 'pages.site_to_site_transfer');
     Route::view('/pages/pullout_completed', 'pages.pullout_completed');
     Route::view('/pages/approved_pullout', 'pages.approved_pullout');
+    Route::view('/pages/pullout_for_receiving', 'pages.pullout_for_receiving');
 
 
     Route::view('/pages/pullout_receiving', 'pages.pullout_receiving');
@@ -80,6 +82,7 @@ Route::controller(TransferRequestController::class)->group(function () {
     Route::get('ongoing_teis_request', 'ongoing_teis_request')->name('ongoing_teis_request');
     Route::match(['GET', 'POST'], '/ongoing_teis_request_modal', 'ongoing_teis_request_modal')->name('ongoing_teis_request_modal');
     Route::get('teis_request', 'fetch_teis_request')->name('fetch_teis_request');
+    Route::get('teis_request_completed', 'fetch_teis_request_completed')->name('fetch_teis_request_completed');
     Route::post('rfteis_approver', 'fetch_rfteis_approver')->name('fetch_rfteis_approver');
     Route::post('approve_tools', 'approve_tools')->name('approve_tools');
     Route::get('barcode_scanner', 'scanned_teis')->name('scanned_teis');
@@ -114,6 +117,7 @@ Route::controller(PullOutController::class)->group(function () {
     Route::post('add_schedule', 'add_schedule')->name('add_schedule');
     Route::get('fetch_approved_pullout', 'fetch_approved_pullout')->name('fetch_approved_pullout');
     Route::post('received_pullout_tools', 'received_pullout_tools')->name('received_pullout_tools');
+    Route::post('fetch_current_site', 'fetch_current_site')->name('fetch_current_site');
     
 });
 

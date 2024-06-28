@@ -231,6 +231,58 @@
 
 
             })
+
+
+            $(document).on('click', '.deliverBtn', function(){
+                const requestNum = $(this).data('num');
+                const type = $(this).data('type');
+
+                const confirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success ms-2",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+
+                confirm.fire({
+                    title: "Deliver?",
+                    text: "Are you sure you want to deliver this tools?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes!",
+                    cancelButtonText: "Close",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: '{{ route('tools_deliver') }}',
+                            method: 'post',
+                            data: {
+                                requestNum,
+                                type,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success() {
+                                table.ajax.reload();
+                                confirm.fire({
+                                    title: "En Route!",
+                                    text: "The tools are out for Delivery.",
+                                    icon: "success"
+                                });
+                            }
+                        })
+
+                    } else if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+
+                    }
+                });
+
+            })
             
 
 
