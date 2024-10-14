@@ -404,6 +404,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
+    <meta name="description" content="Tools and Equipment Monitoring System">
+    <meta name="author" content="Pao">
+    <meta name="robots" content="index, follow">
+  
+    <!-- Open Graph Meta -->
+    <meta property="og:title" content="Tools and Equipment Monitoring System">
+    <meta property="og:site_name" content="TEMS">
+    <meta property="og:description" content="Tools and Equipment Monitoring System">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+  
+    <!-- Icons -->
+    <link rel="shortcut icon" href="{{ asset('media/logo.png') }}">
+    <link rel="icon" sizes="192x192" type="image/png" href="{{ asset('media/FMLC_LOGO.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('public/media/favicons/apple-touch-icon-180x180.png') }}">
+
     <title>Tools And Equipment Monitoring System</title>
 
 
@@ -535,6 +552,24 @@
                                     <span class="nav-main-link-name">Dashboard</span>
                                 </a>
                             </li>
+
+                            @if (Auth::user()->user_type_id == 1)
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/users_management') ? ' active' : '' }}"
+                                        href="/pages/users_management">
+                                        <i class="nav-main-link-icon fa fa-user-group"></i>
+                                        <span class="nav-main-link-name">Users Management</span>
+                                    </a>
+                                </li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('approvers_setup') ? ' active' : '' }}"
+                                        href="/approvers_setup">
+                                        <i class="nav-main-link-icon fa fa-users-gear"></i>
+                                        <span class="nav-main-link-name">Setup Approver</span>
+                                    </a>
+                                </li>
+                                
+                            @endif
 
                             @if (Auth::user()->user_type_id == 2)
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
@@ -697,7 +732,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                {{-- <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/site_to_site_transfer') ? ' active' : '' }}"
                                         href="/pages/site_to_site_transfer">
                                         <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
@@ -709,7 +744,58 @@
                                             id="siteToSiteCount" class="bg-info"
                                             style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>
                                     </span>
+                                </li> --}}
+
+                                <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
+                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/site_to_site_transfer', 'pages/sts_request_completed') ? ' active' : '' }}"
+                                        data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
+                                        <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
+                                        <span class="nav-main-link-name">
+                                            Site to Site Transfer
+                                        </span>
+                                    </a>
+                                    <ul class="nav-main-submenu">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/site_to_site_transfer') ? ' active' : '' }}"
+                                                href="/pages/site_to_site_transfer">
+                                                <span class="nav-main-link-name">
+                                                    @if (Auth::user()->user_type_id == 4)
+                                                        Ongoing
+                                                    @else
+                                                    For Approval 
+                                                    @endif
+                                                </span>
+                                            </a>
+                                            <span @php
+                                            if(Auth::user()->user_type_id == 4){$ps_request_tools = 0;} @endphp
+                                                class="countContainer nav-main-link text-light {{ $ps_request_tools == 0 ? 'd-none' : '' }}"><span
+                                                    id="siteToSiteCount" class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>
+                                            </span>
+                                        </li>
+                                        @if (Auth::user()->user_type_id == 4)
+                                            <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/sts_request_completed') ? ' active' : '' }}"
+                                                href="/pages/sts_request_completed">
+                                                <span class="nav-main-link-name">
+                                                        Completed
+                                                    </span>
+                                                </a>
+                                            </li>
+                                            @else
+                                            <li class="nav-main-item">
+                                                <a class="nav-main-link{{ request()->is('pages/site_to_site_approved') ? ' active' : '' }}"
+                                                    href="/pages/site_to_site_approved">
+                                                    <span class="nav-main-link-name">
+                                                        Approved
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        @endif
+                                    </ul>
                                 </li>
+
+
                                 @if (Auth::user()->user_type_id !== 4)
                                     <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                         <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/rfteis', 'pages/rfteis_approved') ? ' active' : '' }}"
@@ -831,8 +917,8 @@
                                 </a>
                             </li>
                             <li class="nav-main-item">
-                                <a class="nav-main-link{{ request()->is('project_site') ? ' active' : '' }}"
-                                    href="/project_site">
+                                <a class="nav-main-link{{ request()->is('view_project_site') ? ' active' : '' }}"
+                                    href="/view_project_site">
                                     <i class="nav-main-link-icon fa fa-building"></i>
                                     <span class="nav-main-link-name">Project Site</span>
                                 </a>
@@ -1118,81 +1204,89 @@
     {{-- <script src="{{asset('js/codebase.app.min.js')}}"></script> --}}
 
     <script>
-        function showToast(icon, title) {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                }
-            });
+            function showToast(icon, title) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+    
+                Toast.fire({
+                    icon: icon,
+                    title: title,
+                    width: '27em'
+                });
+            }
+    
+    
+            function showDialogConfirm(title = "Approve?", text = "Are you sure you want to approved this Tools?",
+                confirmTitle = "Approved!", confirmTxt = "Items Approved Successfully.") {
+                const dialogConfirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+                dialogConfirm.fire({
+                    title: title,
+                    text: text,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes!",
+                    cancelButtonText: "Back",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        dialogConfirm.fire({
+                            title: confirmTitle,
+                            text: confirmTxt,
+                            icon: "success"
+                        });
+                    } else if (
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+                        // dialogConfirm.fire({
+                        //     title: "Cancelled",
+                        //     text: "Your imaginary file is safe :)",
+                        //     icon: "error"
+                        // });
+                    }
+                });
+            }
+    
+            $("#searchTools").keyup(function() {
+                const searchVal = $(this).val();
+    
+                $.ajax({
+                    url: '{{ route('search') }}',
+                    method: 'post',
+                    data: {
+                        searchVal,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success(response) {
+                        $("#searchResult").empty()
+    
+                        $("#searchResult").append(response);
+    
+                    }
+                })
+            })
 
-            Toast.fire({
-                icon: icon,
-                title: title,
-                width: '27em'
-            });
-        }
+            const path = window.location.pathname.substring(1);
 
-
-        function showDialogConfirm(title = "Approve?", text = "Are you sure you want to approved this Tools?",
-            confirmTitle = "Approved!", confirmTxt = "Items Approved Successfully.") {
-            const dialogConfirm = Swal.mixin({
-                customClass: {
-                    confirmButton: "btn btn-success",
-                    cancelButton: "btn btn-danger"
-                },
-                buttonsStyling: false
-            });
-            dialogConfirm.fire({
-                title: title,
-                text: text,
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes!",
-                cancelButtonText: "Back",
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    dialogConfirm.fire({
-                        title: confirmTitle,
-                        text: confirmTxt,
-                        icon: "success"
-                    });
-                } else if (
-                    result.dismiss === Swal.DismissReason.cancel
-                ) {
-                    // dialogConfirm.fire({
-                    //     title: "Cancelled",
-                    //     text: "Your imaginary file is safe :)",
-                    //     icon: "error"
-                    // });
-                }
-            });
-        }
-
-        $("#searchTools").keyup(function() {
-            const searchVal = $(this).val();
-
-            $.ajax({
-                url: '{{ route('search') }}',
-                method: 'post',
-                data: {
-                    searchVal,
-                    _token: "{{ csrf_token() }}"
-                },
-                success(response) {
-                    $("#searchResult").empty()
-
-                    $("#searchResult").append(response);
-
+            $(".closeModalBtn").click(function(){
+                if(path == "pages/request_for_receiving"){
+                    location.reload();
                 }
             })
-        })
     </script>
 
     @yield('js')

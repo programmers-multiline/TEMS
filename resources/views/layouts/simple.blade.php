@@ -12,16 +12,16 @@
   <meta name="robots" content="index, follow">
 
   <!-- Open Graph Meta -->
-  <meta property="og:title" content="Codebase - Bootstrap 5 Admin Template &amp; UI Framework">
-  <meta property="og:site_name" content="Codebase">
-  <meta property="og:description" content="Codebase - Bootstrap 5 Admin Template &amp; UI Framework created by pixelcave">
+  <meta property="og:title" content="Tools and Equipment Monitoring System">
+  <meta property="og:site_name" content="TEMS">
+  <meta property="og:description" content="Tools and Equipment Monitoring System">
   <meta property="og:type" content="website">
   <meta property="og:url" content="">
   <meta property="og:image" content="">
 
   <!-- Icons -->
-  <link rel="shortcut icon" href="{{ asset('public/media/favicons/favicon.png') }}">
-  <link rel="icon" sizes="192x192" type="image/png" href="{{ asset('public/media/favicons/favicon-192x192.png') }}">
+  <link rel="shortcut icon" href="{{ asset('public/media/logo.png') }}">
+  <link rel="icon" sizes="192x192" type="image/png" href="{{ asset('media/FMLC_LOGO.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('public/media/favicons/apple-touch-icon-180x180.png') }}">
 
 

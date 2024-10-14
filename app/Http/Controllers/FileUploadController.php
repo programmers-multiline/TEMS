@@ -7,6 +7,7 @@ use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\PulloutRequest;
 use Illuminate\Http\UploadedFile;
 
 class FileUploadController extends Controller
@@ -18,14 +19,14 @@ class FileUploadController extends Controller
             $teis_form = $request->teis_upload;
             foreach ($teis_form as $teis) {
                 $teis_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $teis->extension();
-                Uploads::create([
+                $uploads = Uploads::create([
                     'name' => $teis_name,
                     'original_name' => $teis->getClientOriginalName(),
                     'extension' => $teis->extension(),
                 ]);
                 $teis->move('uploads/teis_form/', $teis_name);
 
-                $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+                // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
                 TeisUploads::create([
                     'teis_number' => $request->teisNum,
@@ -78,14 +79,14 @@ class FileUploadController extends Controller
 
             foreach ($ters_form as $ters) {
                 $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->extension();
-                Uploads::create([
+                $uploads = Uploads::create([
                     'name' => $ters_name,
                     'original_name' => $ters->getClientOriginalName(),
                     'extension' => $ters->extension(),
                 ]);
                 $ters->move('uploads/ters_form/', $ters_name);
 
-                $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+                // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
                 TersUploads::create([
                     'pullout_number' => $request->tersNum,
@@ -109,19 +110,23 @@ class FileUploadController extends Controller
             $image_id = mt_rand(111111, 999999) . date('YmdHms');
             foreach ($ters_form as $ters) {
                 $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->extension();
-                Uploads::create([
+                $uploads = Uploads::create([
                     'name' => $ters_name,
                     'original_name' => $ters->getClientOriginalName(),
                     'extension' => $ters->extension(),
                 ]);
                 $ters->move('uploads/ters_form/', $ters_name);
 
-                $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+                // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
                 TersUploads::create([
                     'pullout_number' => $request->tersNum,
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
+                ]);
+
+                PulloutRequest::where('status', 1)->where('pullout_number', $request->tersNum)->update([
+                    'progress' => 'completed',
                 ]);
             }
         }

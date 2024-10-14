@@ -1,31 +1,35 @@
-
 @extends('layouts.backend')
 
 @section('css')
-    <link rel="stylesheet" href="{{asset("js/plugins/datatables-select/css/select.dataTables.css")}}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
 
-        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order,  {
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order,
+        {
+        display: none;
+        }
+
+        #table>thead>tr>th.dt-orderable-asc.dt-orderable-desc.dt-type-numeric>span.dt-column-order {
             display: none;
         }
 
-        #table > thead > tr > th.dt-orderable-asc.dt-orderable-desc.dt-type-numeric > span.dt-column-order {
-            display: none;
-        }
-        #table > thead > tr > th.dt-orderable-asc.dt-orderable-desc.dt-type-numeric.dt-ordering-asc > span.dt-column-order{
+        #table>thead>tr>th.dt-orderable-asc.dt-orderable-desc.dt-type-numeric.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
 
-        #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {}
 
-        }
-        #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none !important;
             border: 1px solid red !important;
+        }
+
+        #accordion_tac{
+            /* transition: all 1s ease-out; */
         }
     </style>
 @endsection
@@ -33,11 +37,15 @@
 @section('content-title', 'Warehouse Tools')
 
 @section('content')
-<div class="loader-container" id="loader" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
-    <dotlottie-player src="{{asset('js/loader.json')}}" background="transparent" speed="1" style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal" loop autoplay>Loading</dotlottie-player>
-</div>
+    <div class="loader-container" id="loader"
+        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+        <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+            style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
+            loop autoplay>Loading</dotlottie-player>
+    </div>
     <!-- Page Content -->
     <div class="content">
+        <input type="hidden" id="userId" value="{{ Auth::user()->user_type_id }}">
         @if (Auth::user()->user_type_id == 2 || Auth::user()->user_type_id == 1)
             <button type="button" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
                 data-bs-target="#modal-tools"><i class="fa fa-plus me-1"></i>Add Tools</button>
@@ -53,15 +61,15 @@
                         @endforeach
                     </select>
                 </div>
-                <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto"
-                    data-bs-toggle="modal" data-bs-target="#requestToolsModal" disabled><i
+                <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto"><i
                         class="fa fa-pen-to-square me-1"></i>Request Tools</button>
             </div>
         @endif
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table" class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table"
+                    class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
@@ -75,7 +83,7 @@
                             <th>Location</th>
                             <th>Status</th>
                             {{-- @if (!Auth::user()->user_type_id == 6) --}}
-                                <th>Action</th>
+                            <th>Action</th>
                             {{-- @endif --}}
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
@@ -252,10 +260,10 @@
                                             class="text-danger">*</span></label>
                                     <select class="form-select" id="editLocation" name="editLocation" size="1">
                                         <option disabled selected>Select Location</option>
-                                        <option value="warehouse1">Warehouse 1</option>
-                                        <option value="warehouse2">Warehouse 2</option>
-                                        <option value="warehouse3">Warehouse 3</option>
-                                        <option value="warehouse4">Warehouse 4</option>
+                                        <option value="1">Warehouse 1</option>
+                                        <option value="2">Warehouse 2</option>
+                                        <option value="3">Warehouse 3</option>
+                                        <option value="4">Warehouse 4</option>
                                     </select>
                                 </div>
                                 <div class="col-6">
@@ -296,8 +304,8 @@
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    <script src="{{asset('js/plugins/datatables-select/js/dataTables.select.js')}}"></script>
-    <script src="{{asset('js/plugins/datatables-select/js/select.dataTables.js')}}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     {{-- <script type="module">
@@ -308,6 +316,8 @@
 
     <script>
         $(document).ready(function() {
+            const userId = $("#userId").val()
+
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
@@ -322,6 +332,11 @@
                         "targets": [1],
                         "visible": false,
                         "searchable": false
+                    },
+                    {
+                        "targets": [0],
+                        "visible": userId == 4,
+                        "searchable": userId == 4
                     }
                 ],
                 ajax: {
@@ -330,7 +345,7 @@
                 },
                 columns: [{
                         data: null,
-                        render: DataTable.render.select()
+                        render: DataTable.render.select(),
                     },
                     {
                         data: 'id'
@@ -374,90 +389,28 @@
             $(".test").click()
             $(".test").click()
 
+            var searchVal = new URLSearchParams(window.location.search).get('searchVal');
+
             if (@json($search) == "search") {
 
-
-                $("#table").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    searchable: true,
-                    pagination: true,
-                    destroy: true,
-                    "aoColumnDefs": [{
-                            "bSortable": false,
-                            "aTargets": [0]
-                        },
-                        {
-                            "targets": [1],
-                            "visible": false,
-                            "searchable": false
-                        }
-                    ],
-                    "search": {
-                        "search": @json($desc)
-                    },
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('fetch_tools') }}'
-                    },
-                    columns: [{
-                            data: null,
-                            render: DataTable.render.select()
-                        },
-                        {
-                            data: 'id'
-                        },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
-                        },
-                    ],
-                    select: true,
-                    select: {
-                        style: 'multi+shift',
-                        selector: 'td'
-                    },
-
-                });
+                table.search(searchVal).draw();
 
             }
 
             table.on('select', function(e, dt, type, indexes) {
-                    if (type === 'row') {
-                        var rows = table.rows(indexes).nodes().to$();
-                        $.each(rows, function() {
-                            if ($(this).hasClass('bg-gray')) {
-                                table.row($(this)).deselect();
-                                showToast("error","Cannot select, This tools is currently on process!");
-                            }
-                        })
-                    }
-                });
+                if (type === 'row') {
+                    var rows = table.rows(indexes).nodes().to$();
+                    $.each(rows, function() {
+                        if ($(this).hasClass('bg-gray')) {
+                            table.row($(this)).deselect();
+                            showToast("error",
+                            "Cannot select, This tools is currently on process!");
+                        }
+                    })
+                }
+            });
 
-                table.select.selector('td:first-child');
+            table.select.selector('td:first-child');
 
             // .replace(/_/g, " ")
 
@@ -571,18 +524,16 @@
 
             })
 
-            $("#tableContainer").click(function() {
-                const dataCount = table.rows({
-                    selected: true
-                }).count();
+            // $("#tableContainer").click(function() {
+            //     const dataCount = table.rows({
+            //         selected: true
+            //     }).count();
 
-                if (dataCount > 0) {
-                    $("#requesToolstBtn").prop('disabled', false);
-                } else {
-                    $("#requesToolstBtn").prop('disabled', true);
+            //     if (dataCount < 1) {
+            //         showToast('warning', 'Select tool first!')
+            //     }
+            // })
 
-                }
-            })
 
 
             $("#requesToolstBtn").click(function() {
@@ -590,7 +541,15 @@
                     selected: true
                 }).data();
 
-                console.log(data);
+                console.log(data)
+
+                if (data.count() < 1) {
+                    showToast('warning', 'Select tool first!')
+                    return
+                } else {
+                    $("#requestToolsModal").modal('show')
+                }
+
 
                 // const arrItem = []
 
@@ -599,7 +558,7 @@
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 
                     $("#tbodyModal").append(
-                        `<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`
+                        `<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td> <td class="d-sm-table-cell"><button type="button" class="deleteToolRequestBtnModal btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete"><i class="fa fa-times"></i></td></tr>`
                     );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
@@ -609,6 +568,17 @@
             $(".closeModalRfteis").click(function() {
                 $("#tbodyModal").empty()
             })
+
+
+            $('#inputCheck').change(function() {
+                if ($(this).is(':checked')) {
+                    $("#requestToolsModalBtn").prop('disabled', false);
+                    $("#accordion_tac").collapse('show');
+                } else {
+                    $("#requestToolsModalBtn").prop('disabled', true);
+                    $("#accordion_tac").collapse('hide');
+                }
+            });
 
 
 
@@ -623,6 +593,11 @@
                 const projectAddress = $("#projectAddress").val();
 
                 const id = $("#tbodyModal input[type=hidden]").map((i, id) => id.defaultValue);
+
+                if(id.length == 0){
+                    showToast("error", "No Selected Item!");
+                    return
+                }
 
                 const selectedItemId = [];
 
@@ -646,15 +621,15 @@
                         idArray: arrayToString,
                         _token: "{{ csrf_token() }}"
                     },
-                    beforeSend(){
+                    beforeSend() {
                         $("#requestToolsModal").modal('hide')
-                                $("#loader").show()
-                        },
+                        $("#loader").show()
+                    },
                     success() {
                         $("#loader").hide()
                         table.ajax.reload();
                         showToast("success", "Request Successfully");
-                        $("#requesToolstBtn").prop('disabled', true);
+                        // $("#requesToolstBtn").prop('disabled', true);
                     }
                 })
 
@@ -663,71 +638,8 @@
 
 
             $("#selectWarehouse").change(function() {
-
-                const table = $("#table").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    searchable: true,
-                    pagination: true,
-                    destroy: true,
-                    "aoColumnDefs": [{
-                            "bSortable": false,
-                            "aTargets": [0]
-                        },
-                        {
-                            "targets": [1],
-                            "visible": false,
-                            "searchable": false
-                        }
-                    ],
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('fetch_tools') }}',
-                        data: {
-                            warehouseId: $(this).val(),
-                        }
-                    },
-                    columns: [{
-                            data: null,
-                            render: DataTable.render.select()
-                        },
-                        {
-                            data: 'id'
-                        },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
-                        },
-                    ],
-                    select: true,
-                    select: {
-                        style: 'multi+shift',
-                        selector: 'td'
-                    },
-                });
+                const warehouseId = $(this).val();
+                table.ajax.url('{{ route('fetch_tools') }}?warehouseId=' + warehouseId).load();
             })
 
             $('#projectCode').change(function() {
@@ -741,6 +653,11 @@
                 $("#projectAddress").val(pAddress)
 
             });
+
+            //delete selected tools in modal
+            $(document).on('click','.deleteToolRequestBtnModal', function(){
+                $(this).closest('tr').remove();
+            })
 
 
         })

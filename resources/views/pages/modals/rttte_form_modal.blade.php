@@ -1,6 +1,10 @@
+@php
+    $dept = App\Models\Departments::where('status', 1)->where('id', Auth::user()->dept_id)->first();
+    $comp = App\Models\Companies::where('status', 1)->where('id', Auth::user()->comp_id)->first();
+@endphp
 <div class="modal fade" id="rttteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
     aria-labelledby="modal-popin" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
         <div class="modal-content">
             <div class="block block-rounded shadow-none mb-0">
                 <div class="block-header block-header-default">
@@ -38,14 +42,14 @@
                                 <label class="form-label" for="projectCode">Project Code <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectCode" name="projectCode"
-                                    placeholder="Enter Project code">
+                                    placeholder="Enter Project code" disabled>
                             </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="projectAddress">Project Address <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="projectAddress" name="projectAddress"
-                                placeholder="Enter Project Address">
+                                placeholder="Enter Project Address" disabled>
                         </div>
                         <hr class="mt-5 mb-3">
                         <div>
@@ -64,13 +68,28 @@
                                 </div>
                                 <div class="col-3">
                                     <label class="form-label" for="department">Department</label>
-                                    <input value="{{ Auth::user()->dept_id }}" disabled type="text" class="form-control" id="department" name="department"
+                                    <input value="{{ $dept->department_name }}" disabled type="text" class="form-control" id="department" name="department"
                                         placeholder="Enter Department">
                                 </div>
                                 <div class="col-2">
                                     <label class="form-label" for="date">Date <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="date"
                                         value="{{ now()->format('m-d-Y') }}" disabled name="date" placeholder="">
+                                </div>
+                            </div>
+
+                            <div id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="block block-rounded mb-2">
+                                  <div class="ps-1 mt-4" role="tab" id="accordion_h1">
+                                    <input type="checkbox" id="inputCheck" class="me-2"><a class="fw-semibold text-dark" data-bs-toggle="collapse" data-bs-parent="#accordion" href="#accordion_tac" aria-expanded="true" aria-controls="accordion_tac">I hereby authorize the company <span class="text-primary font-bold">{{ $comp->company_name }}</span>, to deduct the following for the purposes indicated below;</a>
+                                  </div>
+                                  <div id="accordion_tac" class="collapse" role="tabpanel" aria-labelledby="accordion_h1" data-bs-parent="#accordion">
+                                    <div class="block-content ps-1 pt-2">
+                                      <p class="mb-2"> I understand and acknowledge that the authorized deductions will be made on a monthly or bi-monthly basis. </p>
+                                
+                                      <span> In the event that my employment ends for any reason, and the outstanding amount herein has not yet been fully deducted, I agree that any remaining balance shall be deducted from my final pay. Furthermore, if my final pay is insufficient to cover the remaining balance, I acknowledge and consent that the company shall have the right and remedies to collect the remaining balance by any lawful means available to them.</span>
+                                    </div>
+                                  </div>
                                 </div>
                             </div>
                         </div>
@@ -81,7 +100,8 @@
                         <thead>
                             <tr>
                                 <th>Item Code</th>
-                                <th class="d-none d-lg-table-cell" style="width: 60%;">Item Description</th>
+                                <th class="d-lg-table-cell" style="width: 60%;">Item Description</th>
+                                <th>Upload Picture</th>
                             </tr>
                         </thead>
                         <tbody id="tbodyModal">
@@ -93,7 +113,7 @@
                         data-bs-dismiss="modal">
                         Close
                     </button>
-                    <button id="psRequestToolsModalBtn" type="button" class="btn btn-alt-primary">
+                    <button id="psRequestToolsModalBtn" type="button" class="btn btn-alt-primary" disabled>
                         Request
                     </button>
                 </div>

@@ -68,7 +68,7 @@ class PullOutController extends Controller
                 <button '.$have_sched.' data-num="'.$row->pullout_number.'" data-type="'.$row->tr_type.'" type="button" class="deliverBtn '.$have_sched2.' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 </div>';
             }else if($user_type == 3 || $user_type == 5){
-                $action =  '<div class="d-flex"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                $action =  '<div class="d-flex">
                 <button type="button" data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
                 </div>';
             };
@@ -126,8 +126,8 @@ class PullOutController extends Controller
                     </select>
                 ';
             }
-            if($request->path == "pages/pullout_completed"){
-                $action = "";
+            if($request->path == "pages/pullout_completed" || $request->path == "pages/pullout_ongoing" || $request->path == "pages/approved_pullout"){
+                $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
             }
             return $action;
         })
@@ -154,6 +154,15 @@ class PullOutController extends Controller
                 $status =  '<span class="badge bg-danger">'.$status.'</span>';
             }
             return $status;
+        })
+
+        ->addColumn('warehouse_name', function ($row){
+            if($row->current_site_id){
+                // $location = ProjectSites::where('status', 1)->where('id', $row->current_site_id)->first();
+                return ProjectSites::where('status', 1)->where('id', $row->current_site_id)->value('project_location');
+            }else{
+                return $row->warehouse_name;
+            }
         })
 
         ->rawColumns(['tools_status', 'action', 'new_tools_status'])
@@ -198,7 +207,7 @@ class PullOutController extends Controller
         })
         ->addColumn('action', function($row){
 
-            $action = '';
+            $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
 
             return $action;
         })
@@ -245,7 +254,7 @@ class PullOutController extends Controller
                 $query->where('progress', 'ongoing')
                 ->orWhereNull('ters_uploads.pullout_number');
             })
-            ->where('ters_uploads.tr_type', 'pullout')
+            // ->where('ters_uploads.tr_type', 'pullout')
             ->whereNotNull('is_deliver')
             ->get();
 
@@ -273,9 +282,13 @@ class PullOutController extends Controller
 
             $have_ters = in_array($row->pullout_number, $ters_numbers) ? 'disabled' : '';
 
+            $pui = PulloutRequestItems::where('status', 1)->where('pullout_number', $row->pullout_number)->pluck('item_status')->toArray();
+
+            $is_tools_received = in_array(0, $pui) ? 'disabled' : '';
+
             if($request->path == "pages/pullout_for_receiving"){
                 $action =  '<div class="d-flex align-items-center justify-content-center">
-            <button '.$have_ters.' data-pulloutnum="'.$row->pullout_number.'" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
+            <button '.$have_ters.' '.$is_tools_received.' data-pulloutnum="'.$row->pullout_number.'" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
             ';
             }else{
                 $action =  '<div class="d-flex align-items-center gap-2">
@@ -353,8 +366,16 @@ class PullOutController extends Controller
 
 
     public function fetch_completed_pullout(){
+        $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
+        ->select('pullout_requests.*', 'request_approvers.date_approved')
+        ->where('request_approvers.status', 1)
+        ->where('pullout_requests.status', 1)
+        ->where('request_approvers.request_type', 3)
+        ->where('progress', 'completed')
+        ->distinct('request_id')
+        ->get();
 
-    $pullout_tools = PulloutRequest::where('status', 1)->where('progress', 'completed')->get();
+    // return $pullout_tools;
         
         return DataTables::of($pullout_tools)
         
@@ -363,7 +384,7 @@ class PullOutController extends Controller
             return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="pulloutNumber btn text-primary fs-6 d-block">View</button>';
         })
         ->addColumn('ters', function ($row) {
-            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->get()->toArray();
+            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->where('status', 1)->get()->toArray();
             $uploads_file = [];
             $uploads_file ='<div class="row mx-auto">';
             foreach($ters_uploads as $item) {
@@ -391,7 +412,7 @@ class PullOutController extends Controller
                 <button type="button" data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
                 </div>';
             }else{
-                $action = '';
+                $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
             };
             return $action;
         })
@@ -467,20 +488,20 @@ class PullOutController extends Controller
 
         }
 
-        $pri = PulloutRequestItems::where('status', 1)
-        ->where('pullout_number', $received_tools->pullout_number)
-        ->get();
+        // $pri = PulloutRequestItems::where('status', 1)
+        // ->where('pullout_number', $received_tools->pullout_number)
+        // ->get();
 
-        $item_status = collect($pri)->pluck('item_status')->toArray();
+        // $item_status = collect($pri)->pluck('item_status')->toArray();
 
-        $allStatus = array_unique($item_status);
+        // $allStatus = array_unique($item_status);
 
-        if(count($allStatus) == 1){
-            $tool_requests = PulloutRequest::find($pri[0]->pullout_request_id);
+        // if(count($allStatus) == 1){
+        //     $tool_requests = PulloutRequest::find($pri[0]->pullout_request_id);
             
-            $tool_requests->progress = 'completed';
-            $tool_requests->update();
-        }
+        //     $tool_requests->progress = 'completed';
+        //     $tool_requests->update();
+        // }
     }
 
     public function fetch_current_site(Request $request){

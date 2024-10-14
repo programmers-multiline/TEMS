@@ -39,6 +39,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -115,6 +116,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'teis_number'
+                    },
+                    {
                         data: 'subcon'
                     },
                     {
@@ -156,7 +160,8 @@
                         }
 
                     },
-                    columns: [{
+                    columns: [
+                        {
                             data: 'po_number'
                         },
                         {
@@ -175,7 +180,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'
@@ -187,11 +192,17 @@
                 });
             })
 
+            $("#approveBtnModal").click(function(){
+                $(".approveBtn").click();
+            })
+
 
             $(document).on('click', '.approveBtn', function() {
                 const id = $(this).data('id');
                 const requestId = $(this).data('requestid');
                 const series = $(this).data('series');
+                const toolId = $(this).data('toolid');
+                const requestorId = $(this).data('requestorid');
 
                 const prevCount = parseInt($("#rfteisCount").text());
 
@@ -221,6 +232,8 @@
                                 id,
                                 requestId, 
                                 series,
+                                toolId,
+                                requestorId,
                                 _token: '{{ csrf_token() }}'
                             },
                             beforeSend(){
@@ -234,6 +247,7 @@
                                     icon: "success"
                                 });
                                 $("#loader").hide();
+                                $("#ongoingTeisRequestModal").modal('hide');
                                 if(prevCount == 1){
                                     $(".countContainer").addClass("d-none")
                                 }else{

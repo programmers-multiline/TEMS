@@ -56,7 +56,7 @@
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
-                            <th style="text-align: left; font-size: 14px;">Teis#</th>
+                            <th style="text-align: left; font-size: 14px;">Request#</th>
                             <th style="text-align: left; font-size: 14px;">PO Number</th>
                             <th style="text-align: left; font-size: 14px;">Asset Code</th>
                             <th style="text-align: left; font-size: 14px;">Serial#</th>
@@ -66,7 +66,7 @@
                             <th style="text-align: left; font-size: 14px;">Location</th>
                             <th style="text-align: left; font-size: 14px;">Status</th>
                             <th style="text-align: left; font-size: 14px;"> Transfer State</th>
-                            <th style="text-align: left; font-size: 14px;">Action</th>
+                            {{-- <th style="text-align: left; font-size: 14px;">Action</th> --}}
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
                         </tr>
@@ -160,9 +160,9 @@
                     {
                         data: 'transfer_state'
                     },
-                    {
-                        data: 'action'
-                    },
+                    // {
+                    //     data: 'action'
+                    // },
                 ],
                 scrollX: true,
                 select: true,
@@ -186,7 +186,7 @@
                     selected: true
                 }).data();
 
-                console.log(data)
+                // console.log(data)
 
                 for (var i = 0; i < data.length; i++) {
 
@@ -222,71 +222,8 @@
 
 
             $('#selectProjectCode').change(function() {
-
-                const table = $("#table").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    searchable: true,
-                    pagination: true,
-                    destroy: true,
-                    "aoColumnDefs": [{
-                            "bSortable": false,
-                            "aTargets": [0]
-                        },
-                        // { "targets": [0], "visible": false, "searchable": false }
-                    ],
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('fetch_my_te') }}',
-                        data: {
-                            pCode: $(this).val(),
-                        },
-                    },
-                    columns: [{
-                            data: null,
-                            render: DataTable.render.select()
-                        },
-                        {
-                            data: 'teis_number'
-                        },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'transfer_state'
-                        },
-                        {
-                            data: 'action'
-                        },
-                    ],
-                    scrollX: true,
-                    select: true,
-                    select: {
-                        style: 'multi+shift',
-                        selector: 'td'
-                    },
-                });
+                const pCode = $(this).val();
+                table.ajax.url('{{ route('fetch_my_te') }}?pCode=' + pCode).load();
 
             });
 
@@ -319,6 +256,20 @@
             //     }
             // })
 
+            table.on('select', function(e, dt, type, indexes) {
+                    if (type === 'row') {
+                        var rows = table.rows(indexes).nodes().to$();
+                        $.each(rows, function() {
+                            if ($(this).hasClass('bg-gray')) {
+                                table.row($(this)).deselect();
+                                showToast("error","Cannot select, This tools is currently on process!");
+                                return
+                            }
+                        })
+                    }
+                });
+
+
             $('#table').on('select.dt deselect.dt', function(e, dt, type, indexes) {
                 const selectedRows = table.rows({
                     selected: true
@@ -340,7 +291,12 @@
 
                 console.log(data)
 
-                $("#pulloutRequestBtn").attr("data-current_site", data[0].current_site_id);
+                if (data.length > 0) {
+                        $("#pulloutRequestBtn").attr("data-current_site", data[0].current_site_id);
+                } else {
+                    $("#pulloutRequestBtn").removeAttr("data-current_site");
+                }
+
             });
 
 

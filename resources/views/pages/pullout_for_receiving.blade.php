@@ -35,6 +35,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Pullout#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -137,6 +138,9 @@
                 },
                 columns: [{
                         data: 'view_tools'
+                    },
+                    {
+                        data: 'pullout_number'
                     },
                     {
                         data: 'subcon'
@@ -312,6 +316,7 @@
                         },
                         success() {
                             modalTable.ajax.reload();
+                            $("#table").DataTable().ajax.reload();
                             showToast("success", "Received Successful");
                             if(prevCount == 1){
                                     $(".countContainer").addClass("d-none")

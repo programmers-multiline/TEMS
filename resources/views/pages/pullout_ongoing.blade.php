@@ -27,6 +27,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Pullout#</th>
                             <th>Customer Name</th>
                             <th>Project Name</th>
                             <th>Project Code</th>
@@ -81,6 +82,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'pullout_number'
+                    },
+                    {
                         data: 'client'
                     },
                     {
@@ -119,6 +123,11 @@
             $(document).on('click', '.pulloutNumber', function() {
 
                 const id = $(this).data("id");
+                const path = $("#path").val();
+
+                
+
+                console.log(path)
 
 
                 const modalTable = $("#modalTable").DataTable({
@@ -130,6 +139,7 @@
                         url: '{{ route('ongoing_pullout_request_modal') }}',
                         data: {
                             id,
+                            path,
                             _token: '{{ csrf_token() }}'
                         }
 
@@ -166,6 +176,7 @@
                             data: 'action'
                         }
                     ],
+                    scrollX: true,
                 });
             })
 

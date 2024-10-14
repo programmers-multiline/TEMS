@@ -1,7 +1,7 @@
 @extends('layouts.backend')
 
 @section('css')
-    <link rel="stylesheet" href="{{asset("js/plugins/datatables-select/css/select.dataTables.css")}}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -19,6 +19,7 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
+        <input type="hidden" id="userId" value="{{ Auth::user()->user_type_id }}">
         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4)
             <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
                 data-bs-target="#rttteModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
@@ -69,8 +70,8 @@
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    <script src="{{asset('js/plugins/datatables-select/js/dataTables.select.js')}}"></script>
-    <script src="{{asset('js/plugins/datatables-select/js/select.dataTables.js')}}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
 
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
@@ -80,6 +81,7 @@
 
     <script>
         $(document).ready(function() {
+            const userId = $("#userId").val()
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
@@ -93,6 +95,11 @@
                         "targets": [1, 2, 3],
                         "visible": false,
                         "searchable": false
+                    },
+                    {
+                        "targets": [0],
+                        "visible": userId != 2,
+                        "searchable": userId != 2
                     }
                 ],
                 ajax: {
@@ -150,15 +157,23 @@
                 },
             });
 
+            var searchVal = new URLSearchParams(window.location.search).get('searchVal');
+
+            if (searchVal) {
+
+                table.search(searchVal).draw();
+
+            }
+
 
             table.on('select', function(e, dt, type, indexes) {
                 if (type === 'row') {
                     var rows = table.rows(indexes).nodes().to$();
                     $.each(rows, function() {
-                        if ($(this).hasClass('bg-gray')){
+                        if ($(this).hasClass('bg-gray')) {
                             table.row($(this)).deselect();
                             showToast("error", "Currently on transfer process or on use!");
-                        } 
+                        }
                     })
 
                 }
@@ -223,8 +238,17 @@
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 
                     $("#tbodyModal").append(
-                        `<tr><td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> </td><td class="d-none d-sm-table-cell">${data[i].item_description}</td></tr>`
-                        );
+                        `<tr>
+                            <td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> </td>
+                            <td class="d-sm-table-cell">${data[i].item_description}</td>
+                            <td class="d-sm-table-cell">
+                                <form id="formRequest-${data[i].id}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                <input type="file" class="picUpload form-control" name="file" style="width: 88%" data-id="${data[i].id}" multiple data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept="application/pdf">
+                                </form>
+                            </td>
+                            </tr>`
+                    );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
 
@@ -234,6 +258,20 @@
                 $("#tbodyModal").empty()
             })
 
+
+            const files = {};
+
+            // Handle file selection for each row
+            $(document).on('change', '.picUpload', function() {
+                const rowId = $(this).data('id');
+                const file = $(this)[0].files[0];
+
+                if (file) {
+                    files[rowId] = file;
+                } else {
+                    delete files[rowId];
+                }
+            });
 
 
 
@@ -256,26 +294,56 @@
 
                 const arrayToString = JSON.stringify(selectedItemId);
 
+
+                if (Object.keys(files).length === 0) {
+                    alert('No files selected!');
+                    return;
+                }
+
+                var formData = new FormData();
+
+                // Append each file and its corresponding row_id to FormData
+                Object.keys(files).forEach(function(rowId, index) {
+                    formData.append('files[]', files[rowId]);
+                    formData.append('row_ids[]', rowId);
+                });
+
+                formData.append('currentSiteId', currentSiteId);
+                formData.append('currentPe', currentPe);
+                formData.append('projectName', projectName);
+                formData.append('projectCode', projectCode);
+                formData.append('projectAddress', projectAddress);
+                formData.append('idArray', arrayToString);
+                formData.append('_token', $('input[name=_token]').val());
+
+                for (var pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+
+
                 $.ajax({
                     url: '{{ route('ps_request_tools') }}',
                     method: 'post',
-                    data: {
-                        currentSiteId,
-                        currentPe,
-                        projectName,
-                        projectCode,
-                        projectAddress,
-                        idArray: arrayToString,
-                        _token: "{{ csrf_token() }}"
-                    },
+                    data: formData,
+                    contentType: false,
+                    processData: false,
                     success() {
                         $("#rttteModal").modal('hide')
                         table.ajax.reload();
                     }
                 })
 
-                // #tbodyModal > tr:nth-child(1) > td:nth-child(1) > input[type=text]
             })
+
+            $('#inputCheck').change(function() {
+                if ($(this).is(':checked')) {
+                    $("#psRequestToolsModalBtn").prop('disabled', false);
+                    $("#accordion_tac").collapse('show');
+                } else {
+                    $("#psRequestToolsModalBtn").prop('disabled', true);
+                    $("#accordion_tac").collapse('hide');
+                }
+            });
 
             $('#projectName').change(function() {
                 const selectedPcode = $(this).find(':selected')

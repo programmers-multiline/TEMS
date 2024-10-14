@@ -35,6 +35,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Type</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
@@ -108,6 +109,9 @@
                     data: 'view_tools'
                 },
                 {
+                    data: 'teis_number'
+                },
+                {
                     data: 'tr_type'
                 },
                 {
@@ -141,6 +145,8 @@
                 drawCallback: function() {
                     $(".deliverBtn").tooltip();
                     $(".uploadTeisBtn").tooltip();
+                    $(".uploadTersBtn").tooltip();
+                    $(".proceedBtn").tooltip();
                 }
             });
             
@@ -166,6 +172,9 @@
                     },
                     columns: [
                         {
+                            data: 'picture'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -184,7 +193,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'
@@ -193,7 +202,22 @@
                             data: 'action'
                         },
                     ],
+                    drawCallback: function() {
+                        // if(type == 'rttte'){
+                        //     $('table thead th.pictureHeader').show();
+                        // }else{
+                        //     $('table thead th.pictureHeader').hide();
+                        // }
+                    }
                 });
+
+                if (type == 'rttte') {
+                    modalTable.column(0).visible(true);
+                    modalTable.column(0).searchable(true);
+                } else {
+                    modalTable.column(0).visible(false);
+                    modalTable.column(0).searchable(false);
+                }
             })
             
             $(document).on('click', '.deliverBtn, .proceedBtn', function(){

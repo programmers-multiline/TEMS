@@ -7,10 +7,13 @@ use Carbon\Carbon;
 use App\Models\Daf;
 use App\Models\User;
 use App\Models\DafItems;
+use App\Mail\ApproverEmail;
+use App\Models\TeisUploads;
 use App\Models\TersUploads;
+use Illuminate\Support\Str;
 use App\Mail\EmailRequestor;
 use App\Models\ProjectSites;
-use App\Models\TeisUploads; 
+use App\Models\ToolPictures;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
@@ -18,188 +21,191 @@ use App\Models\TransferRequest;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PsTransferRequests;
+use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
-use App\Models\TransferRequestItems; 
 use App\Models\PsTransferRequestItems;
 
 
 class TransferRequestController extends Controller
 {
-    public function ongoing_teis_request(Request $request){ 
+    public function ongoing_teis_request(Request $request)
+    {
 
 
-        $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('pe', Auth::user()->id);
-
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('user_id', Auth::user()->id);
-
-
-        if($request->path == 'pages/request_for_receiving'){
-            $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type', 'is_deliver')
+        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'ongoing')
-            ->where('request_status', 'approved')
-            ->where('pe', Auth::user()->id)
-            ->whereNotNull('is_deliver');
+            ->where('pe', Auth::user()->id);
 
-            $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type','is_deliver')
+        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'ongoing')
-            ->where('request_status', 'approved')
-            ->where('user_id', Auth::user()->id)
-            ->whereNotNull('is_deliver');
+            ->where('user_id', Auth::user()->id);
+
+
+        if ($request->path == 'pages/request_for_receiving') {
+            $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver')
+                ->where('status', 1)
+                ->where('progress', 'ongoing')
+                ->where('request_status', 'approved')
+                ->where('pe', Auth::user()->id)
+                ->whereNotNull('is_deliver');
+
+            $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver')
+                ->where('status', 1)
+                ->where('progress', 'ongoing')
+                ->where('request_status', 'approved')
+                ->where('user_id', Auth::user()->id)
+                ->whereNotNull('is_deliver');
         }
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
-        
+
         return DataTables::of($unioned_tables)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-id="'.$row->teis_number.'" data-transfertype="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
-        })
 
-        ->addColumn('request_status', function($row){
+            ->addColumn('view_tools', function ($row) {
 
-            $bg_class = $row->request_status === 'approved' ? 'bg-success' : 'bg-warning';
-            
-            return $request_status = '<span class="badge '.$bg_class.'">'.$row->request_status.'</span>';
-        })
+                return $view_tools = '<button data-id="' . $row->teis_number . '" data-transfertype="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
+            })
 
-        ->addColumn('request_type', function($row){
-            
-            return strtoupper($row->tr_type);
-        })
+            ->addColumn('request_status', function ($row) {
 
-        ->addColumn('action', function($row){
-            $user_type = Auth::user()->user_type_id;
+                $bg_class = $row->request_status === 'approved' ? 'bg-success' : 'bg-warning';
 
-            $action =  '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                return $request_status = '<span class="badge ' . $bg_class . '">' . $row->request_status . '</span>';
+            })
+
+            ->addColumn('request_type', function ($row) {
+
+                return strtoupper($row->tr_type);
+            })
+
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
+
+                $action = '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
             </div>
             ';
-            // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
+                // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
+    
+                // if($user_type == 1){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i>
+                //   </button>
+                //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
+                //     <i class="fa fa-times"></i>
+                //   </button>';
+                // }else if($user_type == 2){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i></button>';
+                // }else if($user_type == 3 || $user_type == 4){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-file-pen"></i></button>';
+                // }
+                return $action;
+            })
+            ->addColumn('teis', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
 
-            // if($user_type == 1){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i>
-            //   </button>
-            //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
-            //     <i class="fa fa-times"></i>
-            //   </button>';
-            // }else if($user_type == 2){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i></button>';
-            // }else if($user_type == 3 || $user_type == 4){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-file-pen"></i></button>';
-            // }
-            return $action;
-        })
-        ->addColumn('teis', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
                     <span>TEIS.pdf</span>
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->addColumn('ters', function ($row) {
-            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($ters_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/ters_form/'.$item['uploads']['name'].'">
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->addColumn('ters', function ($row) {
+                $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($ters_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/ters_form/' . $item['uploads']['name'] . '">
                     <span>TERS.pdf</span>
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->rawColumns(['view_tools', 'request_status', 'request_type', 'teis', 'ters','action'])
-        ->toJson();
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->rawColumns(['view_tools', 'request_status', 'request_type', 'teis', 'ters', 'action'])
+            ->toJson();
     }
 
 
-    public function completed_teis_request(){
-        $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'completed')
-        ->where('pe', Auth::user()->id);
+    public function completed_teis_request()
+    {
+        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'completed')
+            ->where('pe', Auth::user()->id);
 
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'completed')
-        ->where('user_id', Auth::user()->id);
+        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'completed')
+            ->where('user_id', Auth::user()->id);
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
-        
+
         return DataTables::of($unioned_tables)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-id="'.$row->teis_number.'" data-transfertype="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
-        })
 
-        ->addColumn('request_status', function($row){
+            ->addColumn('view_tools', function ($row) {
 
-            $bg_class = $row->request_status === 'approved' ? 'bg-success' : 'bg-warning';
-            
-            return $request_status = '<span class="badge '.$bg_class.'">'.$row->request_status.'</span>';
-        })
+                return $view_tools = '<button data-id="' . $row->teis_number . '" data-transfertype="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
+            })
 
-        ->addColumn('request_type', function($row){
-            
-            return strtoupper($row->tr_type);
-        })
+            ->addColumn('request_status', function ($row) {
 
-        ->addColumn('action', function($row){
-            $user_type = Auth::user()->user_type_id;
+                $bg_class = $row->request_status === 'approved' ? 'bg-success' : 'bg-warning';
 
-            $action =  '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Print" data-bs-original-title="Print"><i class="fa fa-print"></i></button>
+                return $request_status = '<span class="badge ' . $bg_class . '">' . $row->request_status . '</span>';
+            })
+
+            ->addColumn('request_type', function ($row) {
+
+                return strtoupper($row->tr_type);
+            })
+
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
+
+                $action = '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Print" data-bs-original-title="Print"><i class="fa fa-print"></i></button>
             </div>
             ';
-            return $action;
-        })
-        ->addColumn('uploads', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
-                    <img class="border border-1 border-primary" src="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'" width="30">
+                return $action;
+            })
+            ->addColumn('uploads', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
+                    <img class="border border-1 border-primary" src="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '" width="30">
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->rawColumns(['view_tools', 'request_status', 'request_type', 'uploads', 'action'])
-        ->toJson();
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->rawColumns(['view_tools', 'request_status', 'request_type', 'uploads', 'action'])
+            ->toJson();
     }
 
 
 
-    public function ongoing_teis_request_modal(Request $request){
+    public function ongoing_teis_request_modal(Request $request)
+    {
 
         // $tr_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
         //         ->select('transfer_request_items.*')
@@ -209,149 +215,196 @@ class TransferRequestController extends Controller
 
         //         return $tr_id;
 
-        if($request->type){
-            if($request->type == 'rfteis'){
+        if ($request->type) {
+            if ($request->type == 'rfteis') {
                 $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+                    ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
+                    ->where('transfer_request_items.status', 1)
+                    ->where('transfer_request_items.teis_number', $request->id)
+                    ->get();
+
+                if ($request->path == "pages/request_for_receiving") {
+                    $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+                        ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                        ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
+                        ->where('transfer_request_items.status', 1)
+                        ->where('transfer_request_items.item_status', 0)
+                        ->where('transfer_request_items.teis_number', $request->id)
+                        ->get();
+                }
+
+            } else {
+                $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+                    ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*', 'ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id')
+                    ->where('ps_transfer_request_items.status', 1)
+                    ->where('ps_transfer_request_items.request_number', $request->id)
+                    ->get();
+
+                if ($request->path == "pages/request_for_receiving") {
+                    $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+                        ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                        ->select('tools_and_equipment.*', 'ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id')
+                        ->where('ps_transfer_request_items.status', 1)
+                        ->where('ps_transfer_request_items.item_status', 0)
+                        ->where('ps_transfer_request_items.request_number', $request->id)
+                        ->get();
+                }
+
+                if ($request->path == "pages/sts_request_completed" || $request->path == "pages/site_to_site_approved") {
+                    $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+                        ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                        ->select('tools_and_equipment.*', 'ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id')
+                        ->where('ps_transfer_request_items.status', 1)
+                        ->where('ps_transfer_request_items.request_number', $request->id)
+                        ->get();
+                }
+            }
+        } else {
+            $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                 ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                ->select('tools_and_equipment.*','transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
+                ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
                 ->where('transfer_request_items.status', 1)
                 ->where('transfer_request_items.teis_number', $request->id)
                 ->get();
-
-                if($request->path == "pages/request_for_receiving"){
-                    $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-                    ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*','transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
-                    ->where('transfer_request_items.status', 1)
-                    ->where('transfer_request_items.item_status', 0)
-                    ->where('transfer_request_items.teis_number', $request->id)
-                    ->get();
-                }
-
-            }else{
-                $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-                ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                ->select('tools_and_equipment.*','ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number')
-                ->where('ps_transfer_request_items.status', 1)
-                ->where('ps_transfer_request_items.request_number', $request->id)
-                ->get();
-
-                if($request->path == "pages/request_for_receiving"){
-                    $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-                    ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*','ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number')
-                    ->where('ps_transfer_request_items.status', 1)
-                    ->where('ps_transfer_request_items.item_status', 0)
-                    ->where('ps_transfer_request_items.request_number', $request->id)
-                    ->get();
-                }
-            }
-        }else{
-            $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-            ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-            ->select('tools_and_equipment.*','transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number')
-            ->where('transfer_request_items.status', 1)
-            ->where('transfer_request_items.teis_number', $request->id)
-            ->get();
         }
 
         // $data = TransferRequestItems::with('tools')->where('teis_number', $request->id)->get();
-        
+
+        // return $tools;
+
         return DataTables::of($tools)
+            ->addColumn('checkbox', function ($row) use ($request) {
+                return '<input type="checkbox" class="chkItem" />';
+            })
 
-        ->addColumn('action', function($row) use ($request){
-            $user_type = Auth::user()->user_type_id;
+            ->addColumn('picture', function ($row) use ($request) {
+                if ($request->type == 'rttte') {
+                    $picture = ToolPictures::leftjoin('uploads', 'uploads.id', 'upload_id')
+                        ->select('uploads.name', 'uploads.original_name')
+                        ->where('tool_pictures.status', 1)
+                        ->where('pstr_id', $row->r_number)
+                        ->where('tool_id', $row->tool_id)
+                        ->first();
 
-            if($request->type == 'rfteis'){
-                $tri = TransferRequest::where('transfer_requests.status', 1)
-                ->where('transfer_requests.teis_number', $row->r_number)
-                ->first();
+                    $uploads_file =
+                        '<div class="row mx-auto">
+                        <div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                            <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/tool_pictures/' . $picture->name . '">
+                            <span>' . $picture->original_name . '</span>
+                            </a>
+                        </div>
+                    </div>';
 
-                $isPending = $tri->request_status == 'pending' ? 'disabled' : '';
-            }else if($request->type == 'rttte'){
-                $ps_tr = PsTransferRequests::where('ps_transfer_requests.status', 1)
-                ->where('ps_transfer_requests.request_number', $row->r_number)
-                ->first();
-                
-                $isPending = $ps_tr->request_status == 'pending' ? 'disabled' : '';
-            }else{
-                $isPending = 'disabled';
-            }
+                    return $uploads_file;
+                }
+            })
 
-            if($request->type == 'rfteis'){
-                $tri_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
-                ->select('transfer_request_items.*')
-                ->where('transfer_requests.status', 1)
-                ->where('transfer_request_items.status', 1)
-                ->where('transfer_request_items.item_status', 1)
-                ->where('transfer_requests.teis_number', $row->r_number)
-                ->get();
+            ->addColumn('action', function ($row) use ($request) {
+                $user_type = Auth::user()->user_type_id;
 
-                $id = collect($tri_id)->pluck('tool_id')->toArray();
+                if ($request->type == 'rfteis') {
+                    $tri = TransferRequest::where('transfer_requests.status', 1)
+                        ->where('transfer_requests.teis_number', $row->r_number)
+                        ->first();
 
-                $isApproved = in_array($row->tool_id, $id) == 'pending' ? 'disabled' : '';
-            }else{
-                $tri_id = PsTransferRequestItems::leftjoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.request_number')
-                ->select('ps_transfer_request_items.*')
-                ->where('ps_transfer_requests.status', 1)
-                ->where('ps_transfer_request_items.status', 1)
-                ->where('ps_transfer_requests.request_number', $row->r_number)
-                ->get();
+                    $isPending = $tri->request_status == 'pending' ? 'disabled' : '';
+                } else if ($request->type == 'rttte') {
+                    $ps_tr = PsTransferRequests::where('ps_transfer_requests.status', 1)
+                        ->where('ps_transfer_requests.request_number', $row->r_number)
+                        ->first();
 
-                $id = collect($tri_id)->pluck('tool_id')->toArray();
+                    $isPending = $ps_tr->request_status == 'pending' ? 'disabled' : '';
+                } else {
+                    $isPending = 'disabled';
+                }
 
-                $isApproved = in_array($row->tool_id, $id) == 'pending' ? 'disabled' : '';
-            }
-            
+                if ($request->type == 'rfteis') {
+                    $tri_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
+                        ->select('transfer_request_items.*')
+                        ->where('transfer_requests.status', 1)
+                        ->where('transfer_request_items.status', 1)
+                        ->where('transfer_request_items.item_status', 1)
+                        ->where('transfer_requests.teis_number', $row->r_number)
+                        ->get();
 
-            if( $user_type == 4 && $request->path == 'pages/request_for_receiving'){
-                $action =  '
-                <input type="hidden" class="selected_item_id" value="'.$row->id.'">
-                <button '.$isPending.' '.$isApproved.' data-triid="'.$row->tri_id.'" data-number="'.$row->r_number.'" type="button" class="receivedBtn btn btn-sm btn-alt-success d-block mx-auto" data-bs-toggle="tooltip" aria-label="Receive Tool" data-bs-original-title="Receive Tool"><i class="fa fa-file-circle-check"></i></button>
+                    $id = collect($tri_id)->pluck('tool_id')->toArray();
+
+                    $isApproved = in_array($row->tool_id, $id) == 'pending' ? 'disabled' : '';
+                } else {
+                    $tri_id = PsTransferRequestItems::leftjoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.request_number')
+                        ->select('ps_transfer_request_items.*')
+                        ->where('ps_transfer_requests.status', 1)
+                        ->where('ps_transfer_request_items.status', 1)
+                        ->where('ps_transfer_requests.request_number', $row->r_number)
+                        ->get();
+
+                    $id = collect($tri_id)->pluck('tool_id')->toArray();
+
+                    $isApproved = in_array($row->tool_id, $id) == 'pending' ? 'disabled' : '';
+                }
+
+
+                if ($user_type == 4 && $request->path == 'pages/request_for_receiving') {
+                    $action = '
+                <input type="hidden" class="selected_item_id" value="' . $row->id . '">
+                <button ' . $isPending . ' ' . $isApproved . ' data-triid="' . $row->tri_id . '" data-number="' . $row->r_number . '" type="button" class="receivedBtn btn btn-sm btn-alt-success d-block mx-auto" data-bs-toggle="tooltip" aria-label="Receive Tool" data-bs-original-title="Receive Tool"><i class="fa fa-file-circle-check"></i></button>
                 ';
-            }else{
-                $action = '';
-            }
+                } else {
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                }
 
-            if ($request->path == 'pages/site_to_site_transfer') {
-                $action = '';
-            }
+                if ($request->path == 'pages/site_to_site_transfer') {
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                }
 
-            return $action;
-        })
-        
-        ->addColumn('tools_status', function($row){
-            $status = $row->tools_status;
-            if($status == 'good'){
-                $status = '<span class="badge bg-success">'.$status.'</span>';
-            }else if($status == 'repair'){
-                $status =  '<span class="badge bg-warning">'.$status.'</span>';
-            }else{
-                $status =  '<span class="badge bg-danger">'.$status.'</span>';
-            }
-            return $status;
-        })
-        ->rawColumns(['tools_status', 'action'])
-        ->toJson();
+                return $action;
+            })
+
+            ->addColumn('tools_status', function ($row) {
+                $status = $row->tools_status;
+                if ($status == 'good') {
+                    $status = '<span class="badge bg-success">' . $status . '</span>';
+                } else if ($status == 'repair') {
+                    $status = '<span class="badge bg-warning">' . $status . '</span>';
+                } else {
+                    $status = '<span class="badge bg-danger">' . $status . '</span>';
+                }
+                return $status;
+            })
+
+            ->addColumn('warehouse_name', function ($row) {
+                if ($row->current_site_id) {
+                    // $location = ProjectSites::where('status', 1)->where('id', $row->current_site_id)->first();
+                    return ProjectSites::where('status', 1)->where('id', $row->current_site_id)->value('project_location');
+                } else {
+                    return $row->warehouse_name;
+                }
+            })
+
+            ->rawColumns(['tools_status', 'action', 'checkbox', 'picture'])
+            ->toJson();
     }
 
 
 
 
-    public function fetch_teis_request(){
+    public function fetch_teis_request()
+    {
 
-        $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('request_status', 'approved')
-        ->whereNull('is_deliver');
+        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->whereNull('is_deliver');
 
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('request_status', 'approved')
-        ->whereNotNull('acc')
-        ->whereNull('is_deliver');
+        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->whereNotNull('acc')
+            ->whereNull('is_deliver');
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
 
@@ -359,126 +412,132 @@ class TransferRequestController extends Controller
         // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->where('daf_status', 1)->get();
 
         return DataTables::of($unioned_tables)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-type="'.$row->tr_type.'" data-id="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
-        })
-        ->addColumn('action', function($row){
-            $user_type = Auth::user()->user_type_id;
 
-            if($row->tr_type == 'rfteis'){
-                $teis_uploads = TeisUploads::where('status', 1)
-                ->where('tr_type', 'rfteis')->get();
+            ->addColumn('view_tools', function ($row) {
 
-                $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+                return $view_tools = '<button data-type="' . $row->tr_type . '" data-id="' . $row->teis_number . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
+            })
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
 
-                $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
-                $have_teis2 = in_array($row->teis_number, $teis_numbers) ? '' : 'disabled';
+                if ($row->tr_type == 'rfteis') {
+                    $teis_uploads = TeisUploads::where('status', 1)
+                        ->where('tr_type', 'rfteis')->get();
 
-                $action =  '
-                <div class="d-flex gap-2 align-items-center">
-                    <button '.$have_teis.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto w-100 js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TEIS</span></button>
-                    <button '.$have_teis2.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="deliverBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
+                    $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+
+                    $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
+                    $have_teis2 = in_array($row->teis_number, $teis_numbers) ? '' : 'disabled';
+
+                    $action = '
+                <div class="d-flex gap-2 align-items-center justify-content-center">
+                    <button ' . $have_teis . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TEIS</span></button>
+                    <button ' . $have_teis2 . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="deliverBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 </div>
                 ';
-            }else{
+                } else {
 
-                $teis_uploads = TeisUploads::where('status', 1)
-                ->where('tr_type', 'rttte')->get();
+                    $teis_uploads = TeisUploads::where('status', 1)
+                        ->where('tr_type', 'rttte')->get();
 
-                $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+                    $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
 
-                $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
+                    $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
 
 
-                $ters_uploads = TersUploads::where('status', 1)
-                ->where('tr_type', 'rttte')->get();
+                    $ters_uploads = TersUploads::where('status', 1)
+                        ->where('tr_type', 'rttte')->get();
 
-                $ters_numbers = collect($ters_uploads)->pluck('pullout_number')->toArray();
+                    $ters_numbers = collect($ters_uploads)->pluck('pullout_number')->toArray();
 
-                $have_ters = in_array($row->teis_number, $ters_numbers) ? 'disabled' : '';
-                $have_ters2 = in_array($row->teis_number, $ters_numbers) ? '' : 'disabled';
+                    $have_ters = in_array($row->teis_number, $ters_numbers) ? 'disabled' : '';
+                    $have_ters2 = in_array($row->teis_number, $ters_numbers) ? '' : 'disabled';
 
-                $action =  '<div class="d-flex gap-2">
-                <button '.$have_teis.' data-type="'.$row->tr_type.'" data-num="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
-                <button '.$have_ters.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
-                <button '.$have_ters2.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Done" data-bs-original-title="Done"><i class="fa fa-check"></i></button>
+                    $action = '<div class="d-flex gap-2">
+                    <button ' . $have_ters . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
+                <button ' . $have_teis . ' data-type="' . $row->tr_type . '" data-num="' . $row->teis_number . '" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
+                <button ' . $have_ters2 . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 </div>';
-            }
-            // <button data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="approvedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
+                }
+                // <button data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="approvedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
+    
+                // if($user_type == 1){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i>
+                //   </button>
+                //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
+                //     <i class="fa fa-times"></i>
+                //   </button>';
+                // }else if($user_type == 2){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i></button>';
+                // }else if($user_type == 3 || $user_type == 4){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-file-pen"></i></button>';
+                // }
+                return $action;
+            })
+            // ->addColumn('uploads', function ($row) {
+            //     $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
+            // })
 
-            // if($user_type == 1){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i>
-            //   </button>
-            //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
-            //     <i class="fa fa-times"></i>
-            //   </button>';
-            // }else if($user_type == 2){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i></button>';
-            // }else if($user_type == 3 || $user_type == 4){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-file-pen"></i></button>';
-            // }
-            return $action;
-        })
-        // ->addColumn('uploads', function ($row) {
-        //     $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
-        // })
+            ->addColumn('teis', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
 
-        ->addColumn('teis', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
                     <span>TEIS.pdf</span>
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->addColumn('ters', function ($row) {
-            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($ters_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/ters_form/'.$item['uploads']['name'].'">
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->addColumn('ters', function ($row) {
+                $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($ters_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/ters_form/' . $item['uploads']['name'] . '">
                     <span>TERS.pdf</span>
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
 
-        ->rawColumns(['view_tools','action','teis', 'ters'])
-        ->toJson();
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+
+            ->addColumn('tr_type', function ($row) {
+                return Str::upper($row->tr_type);
+            })
+
+            ->rawColumns(['view_tools', 'action', 'teis', 'ters'])
+            ->toJson();
     }
 
-    public function fetch_teis_request_completed(){
+    public function fetch_teis_request_completed()
+    {
 
-        $request_tools = TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('request_status', 'approved')
-        ->whereNotNull('is_deliver');
+        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'completed')
+            ->where('request_status', 'approved')
+            ->whereNotNull('is_deliver');
 
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('request_status', 'approved')
-        ->whereNotNull('acc')
-        ->whereNotNull('is_deliver');
+
+        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'completed')
+            ->where('request_status', 'approved')
+            ->whereNotNull('acc')
+            ->whereNotNull('is_deliver');
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
 
@@ -486,50 +545,51 @@ class TransferRequestController extends Controller
         // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->where('daf_status', 1)->get();
 
         return DataTables::of($unioned_tables)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-id="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
-        })
-        ->addColumn('teis', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
+
+            ->addColumn('view_tools', function ($row) {
+
+                return $view_tools = '<button data-id="' . $row->teis_number . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
+            })
+            ->addColumn('teis', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
                     <span>TEIS.pdf</span>
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->addColumn('ters', function ($row) {
-            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($ters_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/ters_form/'.$item['uploads']['name'].'">
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->addColumn('ters', function ($row) {
+                $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($ters_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/ters_form/' . $item['uploads']['name'] . '">
                     <span>TERS.pdf</span>
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
 
-        ->rawColumns(['view_tools','teis', 'ters'])
-        ->toJson();
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+
+            ->rawColumns(['view_tools', 'teis', 'ters'])
+            ->toJson();
     }
 
 
-    public function fetch_rfteis_approver(Request $request){
+    public function fetch_rfteis_approver(Request $request)
+    {
 
         // $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
         // ->leftJoin('transfer_request_items', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
@@ -540,202 +600,334 @@ class TransferRequestController extends Controller
         // ->where('tools_and_equipment.status', 1)
         // ->where('request_approvers.status', 1)
         // ->where('approver_id', Auth::user()->id)
+        // ->where('id', 0)
         // ->get();
 
-        $series = 1;
 
-        $approver = RequestApprover::where('status', 1)
-        ->where('approver_id', Auth::user()->id)
-        ->where('series', $series)
-        ->where('request_type', 1)
-        ->first();
-        
-
-        if($approver->sequence == 0){
-            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
-            $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-            ->where('transfer_requests.status', 1)
-            ->where('request_approvers.status', 1)
-            ->where('request_approvers.approver_id', Auth::user()->id)
-            ->where('series', $series)
+        $approvers = RequestApprover::where('status', 1)
+            ->where('approver_id', Auth::user()->id)
             ->where('approver_status', 0)
             ->where('request_type', 1)
-            ->get();    
+            ->get();
 
-        }elseif ($approver->sequence == 1) {
-            $prev_approver = RequestApprover::where('status', 1)
-                ->where('request_id', $approver->request_id)
-                ->where('sequence', 0)
-                ->where('series', $series)
-                ->where('request_type', 1)
-                ->orderBy('approver_status', 'desc')
-                ->first();
+        // return $approvers;
 
-            if ($prev_approver->approver_status == 1) {
-                $tool_approvers = RequestApprover::leftjoin(
-                    'transfer_requests',
-                    'transfer_requests.id',
-                    'request_approvers.request_id',
-                )
-                    ->select(
-                        'transfer_requests.*',
-                        'request_approvers.id as approver_id',
-                        'request_approvers.request_id',
-                        'request_approvers.series',
-                        'request_approvers.date_approved'
-                    )
+
+        // if (!$approvers) {
+        //     return datatables()->of(collect())->make(true);
+        // }
+
+        // $tool_approvers = [];
+
+        // foreach ($approvers as $approver) {
+        //     if ($approver->sequence == 0) {
+        //         // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
+        //         $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+        //             ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+        //             ->where('transfer_requests.status', 1)
+        //             ->where('request_approvers.status', 1)
+        //             ->where('request_approvers.approver_id', Auth::user()->id)
+        //             ->where('approver_status', 0)
+        //             ->where('request_type', 1)
+        //             ->get();
+
+        //         // return $tool_approvers;
+
+        //     } elseif ($approver->sequence == 1) {
+        //         $prev_approver = RequestApprover::where('status', 1)
+        //             ->where('request_id', $approver->request_id)
+        //             ->where('sequence', 0)
+        //             ->where('request_type', 1)
+        //             ->orderBy('approver_status', 'desc')
+        //             ->first();
+
+        //         if ($prev_approver->approver_status == 1) {
+        //             $tool_approvers = RequestApprover::leftjoin(
+        //                 'transfer_requests',
+        //                 'transfer_requests.id',
+        //                 'request_approvers.request_id',
+        //             )
+        //                 ->select(
+        //                     'transfer_requests.*',
+        //                     'request_approvers.id as approver_id',
+        //                     'request_approvers.request_id',
+        //                     'request_approvers.series',
+        //                     'request_approvers.date_approved'
+        //                 )
+        //                 ->where('transfer_requests.status', 1)
+        //                 ->where('request_approvers.status', 1)
+        //                 ->where('approver_id', Auth::user()->id)
+        //                 ->where('approver_status', 0)
+        //                 ->where('request_type', 1)
+        //                 ->get();
+
+        //         } else {
+        //             $tool_approvers = [];
+        //         }
+        //     } else {
+
+        //         $prev_sequence = $approver->sequence - 1;
+
+        //         $prev_approver = RequestApprover::where('status', 1)
+        //             ->where('request_id', $approver->request_id)
+        //             ->where('sequence', $prev_sequence)
+        //             ->where('request_type', 1)
+        //             ->first();
+
+
+        //         if ($prev_approver->approver_status == 1) {
+        //             $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+        //                 ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+        //                 ->where('transfer_requests.status', 1)
+        //                 ->where('request_approvers.status', 1)
+        //                 ->where('approver_id', Auth::user()->id)
+        //                 ->where('approver_status', 0)
+        //                 ->where('request_type', 1)
+        //                 ->get();
+        //         } else {
+        //             $tool_approvers = [];
+        //         }
+        //     }
+
+        // }
+        $tool_approvers = collect();
+
+        foreach ($approvers as $approver) {
+            $current_approvers =  collect();
+
+            if ($approver->sequence == 0) {
+                $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                    ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
                     ->where('transfer_requests.status', 1)
                     ->where('request_approvers.status', 1)
-                    ->where('approver_id', Auth::user()->id)
-                    ->where('series', $series)
+                    ->where('request_approvers.approver_id', Auth::user()->id)
                     ->where('approver_status', 0)
                     ->where('request_type', 1)
                     ->get();
+            } elseif ($approver->sequence == 1) {
+                $prev_approver = RequestApprover::where('status', 1)
+                    ->where('request_id', $approver->request_id)
+                    ->where('sequence', 0)
+                    ->where('request_type', 1)
+                    ->orderBy('approver_status', 'desc')
+                    ->first();
+
+                if ($prev_approver && $prev_approver->approver_status == 1) {
+                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                        ->where('transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 1)
+                        ->get();
+                }
             } else {
-                $tool_approvers = [];
+                $prev_sequence = $approver->sequence - 1;
+
+                $prev_approver = RequestApprover::where('status', 1)
+                    ->where('request_id', $approver->request_id)
+                    ->where('sequence', $prev_sequence)
+                    ->where('request_type', 1)
+                    ->first();
+
+                if ($prev_approver && $prev_approver->approver_status == 1) {
+                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                        ->where('transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 1)
+                        ->get();
+                }
             }
-        }else{
 
-            $prev_sequence = $approver->sequence - 1;
+            // Merge the current approvers to the tool_approvers array
+            $tool_approvers = $tool_approvers->merge($current_approvers);
+        }
 
-            $prev_approver = RequestApprover::where('status', 1)
-            ->where('request_id', $approver->request_id)
-            ->where('sequence', $prev_sequence)
-            ->where('series', $series)
-            ->where('request_type', 1)
-            ->first();
+        // return $tool_approvers;
 
-
-            if($prev_approver->approver_status == 1){
-                $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-                ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+        if ($request->path == 'pages/rfteis_approved') {
+            $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                ->leftjoin('users', 'users.id', 'request_approvers.approved_by')
+                ->select('transfer_requests.*', 'users.fullname', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
                 ->where('transfer_requests.status', 1)
                 ->where('request_approvers.status', 1)
-                ->where('approver_id', Auth::user()->id)
-                ->where('series', $series)
-                ->where('approver_status', 0)
+                ->where('request_approvers.can_be_view_by', Auth::user()->id)
+                ->where('approver_status', 1)
                 ->where('request_type', 1)
                 ->get();
-            }
-            else{
-                $tool_approvers = [];
-            }
         }
 
-        if($request->path == 'pages/rfteis_approved'){
-            $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-            ->where('transfer_requests.status', 1)
-            ->where('request_approvers.status', 1)
-            ->where('request_approvers.approved_by', Auth::user()->id)
-            ->where('series', $series)
-            ->where('approver_status', 1)
-            ->where('request_type', 1)
-            ->get();  
-        }
+        // $tool_approvers = (object) $tool_approvers;
 
-        
+        // return $tool_approvers;
         return DataTables::of($tool_approvers)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-id="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
-        })
 
-        // ->addColumn('request_status', function($row){
-            
-        //     return $request_status = '<span class="badge bg-warning">'.$row->request_status.'</span>';
-        // })
+            ->addColumn('view_tools', function ($row) {
 
-        ->addColumn('action', function($row) use ($request){
-            $user_type = Auth::user()->user_type_id;
+                return $view_tools = '<button data-id="' . $row->teis_number . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
+            })
 
-            $action =  '<div class="d-flex gap-1"><button type="button" data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>
+
+            ->addColumn('approver_name', function ($row) {
+
+                if (!$row->fullname) {
+                    return Auth::user()->fullname;
+                } else {
+                    return $row->fullname;
+                }
+
+            })
+
+            // ->addColumn('request_status', function($row){
+
+            //     return $request_status = '<span class="badge bg-warning">'.$row->request_status.'</span>';
+            // })
+
+            ->addColumn('action', function ($row) use ($request) {
+                $user_type = Auth::user()->user_type_id;
+
+                $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $row->id)->pluck('tool_id')->toArray();
+
+                $items = json_encode($tools);
+
+                $action = '<div class="d-flex gap-1"><button type="button" data-requestorid="' . $row->pe . '" data-toolid="' . $items . '" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>
             </div>
             ';
 
-            if($request->path == 'pages/rfteis_approved'){
-                $action = '';
-            }
-            // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
+                if ($request->path == 'pages/rfteis_approved') {
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                }
+                // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
+    
+                // if($user_type == 1){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i>
+                //   </button>
+                //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
+                //     <i class="fa fa-times"></i>
+                //   </button>';
+                // }else if($user_type == 2){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i></button>';
+                // }else if($user_type == 3 || $user_type == 4){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-file-pen"></i></button>';
+                // }
+                return $action;
+            })
+            ->addColumn('uploads', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
 
-            // if($user_type == 1){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i>
-            //   </button>
-            //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
-            //     <i class="fa fa-times"></i>
-            //   </button>';
-            // }else if($user_type == 2){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i></button>';
-            // }else if($user_type == 3 || $user_type == 4){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-file-pen"></i></button>';
-            // }
-            return $action;
-        })
-        ->addColumn('uploads', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
-                    <img class="border border-1 border-primary" src="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'" width="30">
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
+                    <img class="border border-1 border-primary" src="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '" width="30">
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->rawColumns(['view_tools', 'uploads', 'action'])
-        ->toJson();
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->rawColumns(['view_tools', 'uploads', 'action'])
+            ->toJson();
     }
 
-    public function approve_tools(Request $request){
+    public function approve_tools(Request $request)
+    {
+        //* for email
+        $requestor_name = User::where('status', 1)->where('id', $request->requestorId)->first('fullname');
+
 
         $mail_Items = [];
 
         $tobeApproveTools = RequestApprover::where('status', 1)
-        ->where('request_id', $request->requestId)
-        ->where('request_type', 1)
-        ->where('series', $request->series)
-        ->orderBy('sequence','desc')
-        ->first();
+            ->where('request_id', $request->requestId)
+            ->where('request_type', 1)
+            ->where('series', $request->series)
+            ->orderBy('sequence', 'desc')
+            ->first();
 
 
         $tools = RequestApprover::find($request->id);
 
-        
+
         $tools->approver_status = 1;
         $tools->approved_by = Auth::user()->id;
         $tools->date_approved = Carbon::now();
-        
+
         $tools->update();
 
-        if($tools->sequence == 0){
-            $tobeApproveToolsTeis = RequestApprover::where('status', 1)
-            ->where('request_id', $request->requestId)
-            ->where('series', $request->series)
-            ->where('request_type', 1)
-            ->where('sequence', 0)
-            ->first();
-    
-            $tobeApproveToolsTeis->approver_status = 1;
-            $tobeApproveToolsTeis->update();
+        if ($tools->sequence == 0) {
+            $shotgun_approver = RequestApprover::where('status', 1)
+                ->where('request_id', $request->requestId)
+                ->where('series', $request->series)
+                ->where('request_type', 1)
+                ->where('approver_status', 0)
+                ->orderBy('sequence', 'asc')
+                ->first();
+
+            $shotgun_approver->approver_status = 1;
+            $shotgun_approver->can_be_view_by = Auth::user()->id;
+            $shotgun_approver->date_approved = Carbon::now();
+            $shotgun_approver->update();
+
+            $tools->can_be_view_by = $shotgun_approver->approver_id;
+            $tools->update();
+        }else{
+            $tools->can_be_view_by = Auth::user()->id;
+            $tools->update();
         }
 
 
 
 
+        //!ayusin mo to kapag om gumagana pero pag pm hindi
+        // if ($tools->sequence == 0) {
+        //     $tobeApproveToolsTeis = RequestApprover::where('status', 1)
+        //         ->where('request_id', $request->requestId)
+        //         ->where('series', $request->series)
+        //         ->where('request_type', 1)
+        //         ->where('sequence', 0)
+        //         ->first();
 
-        
+        //     $tobeApproveToolsTeis->approver_status = 1;
+        //     $tobeApproveToolsTeis->update();
+        // }
 
-        if($tools->sequence == $tobeApproveTools->sequence){
+        //*for email
+        $nextSec = $tools->sequence + 1;
+
+        $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+            ->select('request_approvers.*', 'users.fullname', 'users.email')
+            ->where('request_approvers.status', 1)
+            ->where('request_type', 1)
+            ->where('request_approvers.request_id', $tools->request_id)
+            ->where('request_approvers.sequence', $nextSec)
+            ->first();
+
+        // return $approvers;
+
+        $items = ToolsAndEquipment::where('status', 1)->whereIn('id', $request->toolId)->get();
+
+        foreach ($items as $tool) {
+            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+        }
+
+
+        //! $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+
+        // Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+
+
+
+        if ($tools->sequence == $tobeApproveTools->sequence) {
             $transfer_request = TransferRequest::find($request->requestId);
             $transfer_request->request_status = "approved";
 
@@ -746,264 +938,243 @@ class TransferRequestController extends Controller
 
 
             $tools_approved = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-            ->select('tools_and_equipment.*')
-            ->where('tools_and_equipment.status', 1)
-            ->where('transfer_request_items.item_status', 0)
-            ->where('transfer_request_id', $transfer_request->id)
-            ->get();
+                ->select('tools_and_equipment.*')
+                ->where('tools_and_equipment.status', 1)
+                ->where('transfer_request_items.item_status', 0)
+                ->where('transfer_request_id', $transfer_request->id)
+                ->get();
 
             foreach ($tools_approved as $tool) {
                 array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
             }
-            
-        
+
+
             $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
-        
-            Mail::to($user->email)->send(new EmailRequestor($mail_data));
+
+            // Mail::to($user->email)->send(new EmailRequestor($mail_data));
 
 
         }
     }
 
 
-    public function scanned_teis(Request $request){
+    public function scanned_teis(Request $request)
+    {
 
         $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-        ->select('tools_and_equipment.*','transfer_request_items.tool_id', 'transfer_request_items.id as tri_id','transfer_request_items.teis_number')
-        ->where('transfer_request_items.status', 1)
-        ->where('transfer_request_items.teis_number', $request->barcode)
-        ->get();
-       
+            ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number')
+            ->where('transfer_request_items.status', 1)
+            ->where('transfer_request_items.teis_number', $request->barcode)
+            ->get();
+
         return DataTables::of($tools)
-        
-            ->setRowClass(function ($row) { 
+
+            ->setRowClass(function ($row) {
                 $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
-                ->select('transfer_request_items.*')
-                // ->where('transfer_requests.progress', 'ongoing')
-                ->where('transfer_requests.status', 1)
-                ->where('transfer_request_items.item_status', 1)
-                ->get();
-        
+                    ->select('transfer_request_items.*')
+                    // ->where('transfer_requests.progress', 'ongoing')
+                    ->where('transfer_requests.status', 1)
+                    ->where('transfer_request_items.item_status', 1)
+                    ->get();
+
                 $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
 
                 return in_array($row->id, $toolIds) ? 'bg-gray' : '';
-        })
-        
-        ->addColumn('tools_status', function($row){
-            $status = $row->tools_status;
-            if($status == 'good'){
-                $status = '<span class="badge bg-success">'.$status.'</span>';
-            }else if($status == 'repair'){
-                $status =  '<span class="badge bg-warning">'.$status.'</span>';
-            }else{
-                $status =  '<span class="badge bg-danger">'.$status.'</span>';
-            }
-            return $status;
-        })
-        ->addColumn('action', function($row){
+            })
 
-            $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
-            ->select('transfer_request_items.*')
-            // ->where('transfer_requests.progress', 'ongoing')
-            ->where('transfer_requests.status', 1)
-            ->where('transfer_request_items.item_status', 1)
-            ->get();
-    
-            $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
+            ->addColumn('tools_status', function ($row) {
+                $status = $row->tools_status;
+                if ($status == 'good') {
+                    $status = '<span class="badge bg-success">' . $status . '</span>';
+                } else if ($status == 'repair') {
+                    $status = '<span class="badge bg-warning">' . $status . '</span>';
+                } else {
+                    $status = '<span class="badge bg-danger">' . $status . '</span>';
+                }
+                return $status;
+            })
+            ->addColumn('action', function ($row) {
 
-             $isApproved = in_array($row->id, $toolIds) ? 'disabled' : '';
+                $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
+                    ->select('transfer_request_items.*')
+                    // ->where('transfer_requests.progress', 'ongoing')
+                    ->where('transfer_requests.status', 1)
+                    ->where('transfer_request_items.item_status', 1)
+                    ->get();
 
-                return $action =  '
-              <button type="button" id="ReceivedToolsBtn" data-id="'.$row->tri_id.'" data-teis="'.$row->teis_number.'" class="receiveBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Received" data-bs-original-title="Received" '.$isApproved.'>
+                $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
+
+                $isApproved = in_array($row->id, $toolIds) ? 'disabled' : '';
+
+                return $action = '
+              <button type="button" id="ReceivedToolsBtn" data-id="' . $row->tri_id . '" data-teis="' . $row->teis_number . '" class="receiveBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Received" data-bs-original-title="Received" ' . $isApproved . '>
                 <i class="fa fa-clipboard-check"></i>
               </button>';
-            
-        })
-        ->rawColumns(['tools_status','action'])
-        ->toJson();
+
+            })
+            ->rawColumns(['tools_status', 'action'])
+            ->toJson();
     }
 
-    public function scanned_teis_received(Request $request){
+    public function scanned_teis_received(Request $request)
+    {
 
-        if($request->type == 'rttte'){
-            if($request->multi){
+        if ($request->type == 'rttte') {
+            if ($request->multi) {
 
                 $pstriIds = json_decode($request->triIdArray);
 
-                foreach($pstriIds as $pstri_id){
-                    
+                foreach ($pstriIds as $pstri_id) {
+
                     $scannedTools = PsTransferRequestItems::find($pstri_id);
-    
+
+
                     $scannedTools->item_status = 1;
-            
+
                     $scannedTools->update();
-            
+
                     $tr = PsTransferRequests::where('status', 1)->where('id', $scannedTools->ps_transfer_request_id)->first();
                     $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
-            
-            
+
+
                     $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
-            
+
                     $tools->wh_ps = 'ps';
                     $tools->current_pe = $scannedTools->user_id;
                     $tools->current_site_id = $project_site->id;
                     $tools->transfer_state = 0;
-            
+
                     $tools->update();
 
                 }
-            }else{
+            } else {
                 $scannedTools = PsTransferRequestItems::find($request->id);
-    
+
                 $scannedTools->item_status = 1;
-        
+
                 $scannedTools->update();
-        
+
                 $tr = PsTransferRequests::where('status', 1)->where('id', $scannedTools->ps_transfer_request_id)->first();
                 $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
-        
-        
+
+
                 $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
-        
+
                 $tools->wh_ps = 'ps';
                 $tools->current_pe = $scannedTools->user_id;
                 $tools->current_site_id = $project_site->id;
                 $tools->transfer_state = 0;
-        
+
                 $tools->update();
             }
 
             $tri = PsTransferRequestItems::where('status', 1)
-            ->where('request_number', $scannedTools->request_number)
-            ->get();
-    
+                ->where('request_number', $scannedTools->request_number)
+                ->get();
+
             $item_status = collect($tri)->pluck('item_status')->toArray();
-    
+
             $allStatus = array_unique($item_status);
-    
-            if(count($allStatus) == 1){
+
+            if (count($allStatus) == 1) {
                 $tool_requests = PsTransferRequests::find($tri[0]->ps_transfer_request_id);
-                
+
                 $tool_requests->progress = 'completed';
                 $tool_requests->update();
             }
-        }else{
+        } else {
 
-            if($request->multi){
+            if ($request->multi) {
 
                 $triIds = json_decode($request->triIdArray);
 
-                
-                foreach($triIds as $tri_id){
-                    
+
+                foreach ($triIds as $tri_id) {
+
                     $scannedTools = TransferRequestItems::find($tri_id);
-    
+
                     $scannedTools->item_status = 1;
-            
+
                     $scannedTools->update();
-            
+
                     $tr = TransferRequest::where('status', 1)->where('id', $scannedTools->transfer_request_id)->first();
                     $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
-            
-            
+
+
                     $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
-            
+
                     $tools->wh_ps = 'ps';
                     $tools->current_pe = $scannedTools->pe;
                     $tools->current_site_id = $project_site->id;
                     $tools->transfer_state = 0;
-            
+
                     $tools->update();
 
                 }
 
-            }else{
+            } else {
                 $scannedTools = TransferRequestItems::find($request->id);
 
                 $scannedTools->item_status = 1;
-        
+
                 $scannedTools->update();
-        
+
                 $tr = TransferRequest::where('status', 1)->where('id', $scannedTools->transfer_request_id)->first();
                 $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
-        
-        
+
+
                 $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
-        
+
                 $tools->wh_ps = 'ps';
                 $tools->current_pe = $scannedTools->pe;
                 $tools->current_site_id = $project_site->id;
                 $tools->transfer_state = 0;
-        
-                $tools->update();  
+
+                $tools->update();
 
             }
 
             $tri = TransferRequestItems::where('status', 1)
-            ->where('teis_number', $scannedTools->teis_number)
-            ->get();
-    
+                ->where('teis_number', $scannedTools->teis_number)
+                ->get();
+
             $item_status = collect($tri)->pluck('item_status')->toArray();
-    
+
             $allStatus = array_unique($item_status);
-    
-            if(count($allStatus) == 1){
+
+            if (count($allStatus) == 1) {
                 $tool_requests = TransferRequest::find($tri[0]->transfer_request_id);
-                
+
                 $tool_requests->progress = 'completed';
                 $tool_requests->update();
             }
-        
+
         }
-      
+
 
 
 
     }
 
 
-    public function fetch_daf_approver(){
+    public function fetch_daf_approver()
+    {
 
         $series = 1;
 
         $approver = RequestApprover::where('status', 1)
-        ->where('approver_id', Auth::user()->id)
-        ->where('series', $series)
-        ->where('request_type', 4)
-        ->first();
-
-        
-
-        if($approver->sequence == 1){
-            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
-            $tool_approvers = RequestApprover::leftjoin('dafs', 'dafs.id', 'request_approvers.request_id')
-            ->leftjoin('transfer_requests','transfer_requests.teis_number','dafs.daf_number')
-            ->select('dafs.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series','transfer_requests.subcon', 'transfer_requests.customer_name','transfer_requests.project_name','transfer_requests.project_code','transfer_requests.project_address')
-            ->where('dafs.status', 1)
-            ->where('transfer_requests.status', 1)
-            ->where('request_approvers.status', 1)
-            ->where('request_approvers.approver_id', Auth::user()->id)
-            ->where('series', $series)
-            ->where('approver_status', 0)
-            ->where('request_type', 4)
-            ->get();    
-
-        }else{
-
-            $prev_sequence = $approver->sequence - 1;
-
-            $prev_approver = RequestApprover::where('status', 1)
-            ->where('request_id', $approver->request_id)
-            ->where('sequence', $prev_sequence)
+            ->where('approver_id', Auth::user()->id)
             ->where('series', $series)
             ->where('request_type', 4)
             ->first();
 
 
-            if($prev_approver->approver_status == 1){
-                $tool_approvers = RequestApprover::leftjoin('dafs', 'dafs.id', 'request_approvers.request_id')
-                ->leftjoin('transfer_requests','transfer_requests.teis_number','dafs.daf_number')
-                ->select('dafs.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series','transfer_requests.subcon', 'transfer_requests.customer_name','transfer_requests.project_name','transfer_requests.project_code','transfer_requests.project_address')
+
+        if ($approver->sequence == 1) {
+            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
+            $tool_approvers = RequestApprover::leftjoin('dafs', 'dafs.id', 'request_approvers.request_id')
+                ->leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
+                ->select('dafs.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'transfer_requests.subcon', 'transfer_requests.customer_name', 'transfer_requests.project_name', 'transfer_requests.project_code', 'transfer_requests.project_address')
                 ->where('dafs.status', 1)
                 ->where('transfer_requests.status', 1)
                 ->where('request_approvers.status', 1)
@@ -1011,108 +1182,133 @@ class TransferRequestController extends Controller
                 ->where('series', $series)
                 ->where('approver_status', 0)
                 ->where('request_type', 4)
-                ->get();    
-            }
-            else{
+                ->get();
+
+        } else {
+
+            $prev_sequence = $approver->sequence - 1;
+
+            $prev_approver = RequestApprover::where('status', 1)
+                ->where('request_id', $approver->request_id)
+                ->where('sequence', $prev_sequence)
+                ->where('series', $series)
+                ->where('request_type', 4)
+                ->first();
+
+
+            if ($prev_approver->approver_status == 1) {
+                $tool_approvers = RequestApprover::leftjoin('dafs', 'dafs.id', 'request_approvers.request_id')
+                    ->leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
+                    ->select('dafs.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'transfer_requests.subcon', 'transfer_requests.customer_name', 'transfer_requests.project_name', 'transfer_requests.project_code', 'transfer_requests.project_address')
+                    ->where('dafs.status', 1)
+                    ->where('transfer_requests.status', 1)
+                    ->where('request_approvers.status', 1)
+                    ->where('request_approvers.approver_id', Auth::user()->id)
+                    ->where('series', $series)
+                    ->where('approver_status', 0)
+                    ->where('request_type', 4)
+                    ->get();
+            } else {
                 $tool_approvers = [];
             }
         }
 
-        
+
         return DataTables::of($tool_approvers)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-id="'.$row->daf_number.'" data-bs-toggle="modal" data-bs-target="#psOngoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
-        })
 
-        // ->addColumn('request_status', function($row){
-            
-        //     return $request_status = '<span class="badge bg-warning">'.$row->request_status.'</span>';
-        // })
+            ->addColumn('view_tools', function ($row) {
 
-        ->addColumn('action', function($row){
-            $user_type = Auth::user()->user_type_id;
+                return $view_tools = '<button data-id="' . $row->daf_number . '" data-bs-toggle="modal" data-bs-target="#psOngoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
+            })
 
-            $price = [];
-            
-            $daf_tools = DafItems::where('status', 1)->where('daf_id', $row->id)->get();
-            foreach ($daf_tools as $tools) {
-    
-                array_push($price, $tools->price);
-            }
+            // ->addColumn('request_status', function($row){
 
-            if( Auth::user()->dept_id !== 1){
-                $price = [''];
-            }
-    
-            $has_null = in_array(null, $price, true);
-    
-             $has_price = $has_null ? 'disabled' : '';
+            //     return $request_status = '<span class="badge bg-warning">'.$row->request_status.'</span>';
+            // })
 
-            $action =  '<div class="d-flex gap-1"><button type="button" '.$has_price.' data-requestid="'.$row->request_id.'"  data-series="'.$row->series.'" data-id="'.$row->approver_id.'" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
+
+                $price = [];
+
+                $daf_tools = DafItems::where('status', 1)->where('daf_id', $row->id)->get();
+                foreach ($daf_tools as $tools) {
+
+                    array_push($price, $tools->price);
+                }
+
+                if (Auth::user()->dept_id !== 1) {
+                    $price = [''];
+                }
+
+                $has_null = in_array(null, $price, true);
+
+                $has_price = $has_null ? 'disabled' : '';
+
+                $action = '<div class="d-flex gap-1"><button type="button" ' . $has_price . ' data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>
             </div>
             ';
-            // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
+                // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
+    
+                // if($user_type == 1){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i>
+                //   </button>
+                //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
+                //     <i class="fa fa-times"></i>
+                //   </button>';
+                // }else if($user_type == 2){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-pencil-alt"></i></button>';
+                // }else if($user_type == 3 || $user_type == 4){
+                //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+                //     <i class="fa fa-file-pen"></i></button>';
+                // }
+                return $action;
+            })
+            ->addColumn('uploads', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
 
-            // if($user_type == 1){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i>
-            //   </button>
-            //   <button type="button" id="deleteToolsBtn" data-id="'.$row->id.'" class="btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
-            //     <i class="fa fa-times"></i>
-            //   </button>';
-            // }else if($user_type == 2){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-pencil-alt"></i></button>';
-            // }else if($user_type == 3 || $user_type == 4){
-            //     $action =  '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-            //     <i class="fa fa-file-pen"></i></button>';
-            // }
-            return $action;
-        })
-        ->addColumn('uploads', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
-                    <img class="border border-1 border-primary" src="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'" width="30">
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
+                    <img class="border border-1 border-primary" src="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '" width="30">
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->rawColumns(['view_tools', 'uploads', 'action'])
-        ->toJson();
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->rawColumns(['view_tools', 'uploads', 'action'])
+            ->toJson();
     }
 
 
 
-    public function daf_approve_tools(Request $request){
+    public function daf_approve_tools(Request $request)
+    {
 
         $mail_Items = [];
 
         $tobeApproveTools = RequestApprover::where('status', 1)
-        ->where('request_id', $request->requestId)
-        ->where('series', $request->series)
-        ->orderBy('sequence','desc')
-        ->first();
+            ->where('request_id', $request->requestId)
+            ->where('series', $request->series)
+            ->orderBy('sequence', 'desc')
+            ->first();
 
 
         $tools = RequestApprover::find($request->id);
 
-        
-            $tools->approver_status = 1;
-            $tools->date_approved = Carbon::now();
-            
-            $tools->update();
 
-        if($tools->sequence == $tobeApproveTools->sequence){
+        $tools->approver_status = 1;
+        $tools->date_approved = Carbon::now();
+
+        $tools->update();
+
+        if ($tools->sequence == $tobeApproveTools->sequence) {
             $daf_request = Daf::find($request->requestId);
             $daf_request->request_status = "approved";
 
@@ -1129,20 +1325,20 @@ class TransferRequestController extends Controller
 
 
             $tools_approved = DafItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'daf_items.tool_id')
-            ->select('tools_and_equipment.*')
-            ->where('tools_and_equipment.status', 1)
-            ->where('daf_items.item_status', 0)
-            ->where('daf_id', $daf_request->id)
-            ->get();
+                ->select('tools_and_equipment.*')
+                ->where('tools_and_equipment.status', 1)
+                ->where('daf_items.item_status', 0)
+                ->where('daf_id', $daf_request->id)
+                ->get();
 
             foreach ($tools_approved as $tool) {
                 array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
             }
-            
-        
+
+
             $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
-        
-            Mail::to($user->email)->send(new EmailRequestor($mail_data));
+
+            // Mail::to($user->email)->send(new EmailRequestor($mail_data));
 
 
         }
@@ -1150,62 +1346,64 @@ class TransferRequestController extends Controller
 
 
 
-    public function daf_table_modal(Request $request){
+    public function daf_table_modal(Request $request)
+    {
 
         $tools = DafItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'daf_items.tool_id')
-                                     ->select('tools_and_equipment.*','daf_items.id as pstri_id', 'daf_items.price')
-                                     ->where('daf_items.status', 1)
-                                     ->where('daf_items.daf_number', $request->id)
-                                     ->get();
+            ->select('tools_and_equipment.*', 'daf_items.id as pstri_id', 'daf_items.price')
+            ->where('daf_items.status', 1)
+            ->where('daf_items.daf_number', $request->id)
+            ->get();
 
 
         // $data = TransferRequestItems::with('tools')->where('teis_number', $request->id)->get(); lagay ka barcode to receive btn
 
-        
-        
+
+
         return DataTables::of($tools)
 
-        ->addColumn('action', function($row){
-            if( $user_type = 6){
-                $action = '';
-            }else{
-                $action =  '
+            ->addColumn('action', function ($row) {
+                if ($user_type = 6) {
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                } else {
+                    $action = '
                 <button data-bs-toggle="modal" data-bs-target="#" type="button" class="receiveBtn btn btn-sm btn-alt-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-file-circle-check"></i></button>
                 ';
 
-            }
-            return $action;
-        })
+                }
+                return $action;
+            })
 
 
-        ->addColumn('tools_status', function($row){
-            $status = $row->tools_status;
-            if($status == 'good'){
-                $status = '<span class="badge bg-success">'.$status.'</span>';
-            }else if($status == 'repair'){
-                $status =  '<span class="badge bg-warning">'.$status.'</span>';
-            }else{
-                $status =  '<span class="badge bg-danger">'.$status.'</span>';
-            }
-            return $status;
-        })
+            ->addColumn('tools_status', function ($row) {
+                $status = $row->tools_status;
+                if ($status == 'good') {
+                    $status = '<span class="badge bg-success">' . $status . '</span>';
+                } else if ($status == 'repair') {
+                    $status = '<span class="badge bg-warning">' . $status . '</span>';
+                } else {
+                    $status = '<span class="badge bg-danger">' . $status . '</span>';
+                }
+                return $status;
+            })
 
-        ->addColumn('add_price', function($row){
+            ->addColumn('add_price', function ($row) {
 
-            $is_have_value = $row->price ? 'disabled' : '';
-            $is_accounting = Auth::user()->dept_id != '1' ? 'disabled' : '';
+                $is_have_value = $row->price ? 'disabled' : '';
+                $is_accounting = Auth::user()->dept_id != '1' ? 'disabled' : '';
 
-            $add_price = '<input value="'.$row->price.'" data-id="'.$row->pstri_id.'" '.$is_have_value.' '.$is_accounting .' style="width: 100px;" type="number" class="price" name="price" min="1">';
-            return $add_price;
-        })
+                $add_price = '<input value="' . $row->price . '" data-id="' . $row->pstri_id . '" ' . $is_have_value . ' ' . $is_accounting . ' style="width: 100px;" type="number" class="price" name="price" min="1">';
+                return $add_price;
+            })
 
-        ->rawColumns(['tools_status', 'action', 'add_price'])
-        ->toJson();
+            ->rawColumns(['tools_status', 'action', 'add_price'])
+            ->toJson();
     }
 
-    
-    public function add_price_acc_daf(Request $request){
-        
+
+    public function add_price_acc_daf(Request $request)
+    {
+
         $price_datas = json_decode($request->priceDatas);
 
         foreach ($price_datas as $data) {
@@ -1215,61 +1413,37 @@ class TransferRequestController extends Controller
 
             $daf_itams->update();
         }
-        
+
     }
 
 
-    public function fetch_site_tools(){
-        
+    public function fetch_site_tools()
+    {
+        //! i review ang code tanggalin ang hard coded
+
         $series = 1;
 
 
-        if(Auth::user()->user_type_id == 4){
+        if (Auth::user()->user_type_id == 4) {
             $ps_request_tools = PsTransferRequests::leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-            ->select('users.fullname','request_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
-            ->where('ps_transfer_requests.status', 1)
-            ->where('users.status', 1)
-            ->where('progress', 'ongoing')
-            ->where('current_pe', Auth::user()->id);
-        }else{
+                ->select('users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('ps_transfer_requests.status', 1)
+                ->where('users.status', 1)
+                ->where('progress', 'ongoing')
+                ->where('current_pe', Auth::user()->id);
+        } else {
 
             $approver = RequestApprover::where('status', 1)
-            ->where('approver_id', Auth::user()->id)
-            ->where('series', $series)
-            ->where('request_type', 2)
-            ->first();
-            
-
-            if($approver->sequence == 1){
-                $ps_request_tools = PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
-                ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                ->select('users.fullname','request_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
-                ->where('ps_transfer_requests.status', 1)
-                ->where('request_approvers.status', 1)
-                // ->where('current_pe', Auth::user()->id)
-                ->where('request_approvers.approver_id', Auth::user()->id)
-                ->where('progress', 'ongoing')
-                // ->where('series', $series)
-                ->where('approver_status', 0)
-                ->where('request_type', 2)
-                ->get();
-
-            }else{
-
-                $prev_sequence = $approver->sequence - 1;
-
-                $prev_approver = RequestApprover::where('status', 1)
-                ->where('request_id', $approver->request_id)
-                ->where('sequence', $prev_sequence)
+                ->where('approver_id', Auth::user()->id)
                 ->where('series', $series)
                 ->where('request_type', 2)
                 ->first();
 
 
-                if($prev_approver->approver_status == 1){
-                    $ps_request_tools = PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
+            if ($approver->sequence == 1) {
+                $ps_request_tools = PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
                     ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                    ->select('users.fullname','request_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                    ->select('users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
                     ->where('ps_transfer_requests.status', 1)
                     ->where('request_approvers.status', 1)
                     // ->where('current_pe', Auth::user()->id)
@@ -1279,8 +1453,33 @@ class TransferRequestController extends Controller
                     ->where('approver_status', 0)
                     ->where('request_type', 2)
                     ->get();
-                }
-                else{
+
+            } else {
+
+                $prev_sequence = $approver->sequence - 1;
+
+                $prev_approver = RequestApprover::where('status', 1)
+                    ->where('request_id', $approver->request_id)
+                    ->where('sequence', $prev_sequence)
+                    ->where('series', $series)
+                    ->where('request_type', 2)
+                    ->first();
+
+
+                if ($prev_approver->approver_status == 1) {
+                    $ps_request_tools = PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
+                        ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+                        ->select('users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                        ->where('ps_transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        // ->where('current_pe', Auth::user()->id)
+                        ->where('request_approvers.approver_id', Auth::user()->id)
+                        ->where('progress', 'ongoing')
+                        // ->where('series', $series)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 2)
+                        ->get();
+                } else {
                     $ps_request_tools = [];
                 }
             }
@@ -1310,79 +1509,80 @@ class TransferRequestController extends Controller
 
 
         return DataTables::of($ps_request_tools)
-        
-        ->addColumn('view_tools', function($row){
-            
-            return $view_tools = '<button data-id="'.$row->request_number.'" data-transfertype="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
-        })
 
-        ->addColumn('request_status', function($row){
+            ->addColumn('view_tools', function ($row) {
 
-            $bg_class = $row->request_status === 'approved' ? 'bg-success' : 'bg-warning';
-            
-            return $request_status = '<span class="badge '.$bg_class.'">'.$row->request_status.'</span>';
-        })
+                return $view_tools = '<button data-id="' . $row->request_number . '" data-transfertype="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
+            })
 
-        ->addColumn('request_type', function($row){
-            
-            return strtoupper($row->tr_type);
-        })
+            ->addColumn('request_status', function ($row) {
 
-        ->addColumn('action', function($row){
-            $user_type = Auth::user()->user_type_id;
+                $bg_class = $row->request_status === 'approved' ? 'bg-success' : 'bg-warning';
 
-            $action = '';
+                return $request_status = '<span class="badge ' . $bg_class . '">' . $row->request_status . '</span>';
+            })
 
-            if($user_type !== 4){
-                $action =  '<div class="d-flex gap-1"><button data-requestid="'.$row->request_id.'" data-id="'.$row->request_approver_id.'" data-series="'.$row->series.'" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>
+            ->addColumn('request_type', function ($row) {
+
+                return strtoupper($row->tr_type);
+            })
+
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
+
+                $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+
+                if ($user_type !== 4) {
+                    $action = '<div class="d-flex gap-1"><button data-requestid="' . $row->request_id . '" data-id="' . $row->request_approver_id . '" data-series="' . $row->series . '" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>
                 </div>
                 ';
-            }
+                }
 
-            return $action;
-        })
-        ->addColumn('uploads', function ($row) {
-            $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
-            $uploads_file = [];
-            $uploads_file ='<div class="row mx-auto">';
-            foreach($teis_uploads as $item) {
-                
-                $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'">
-                    <img class="border border-1 border-primary" src="'.env('APP_URL').'uploads/teis_form/'.$item['uploads']['name'].'" width="30">
+                return $action;
+            })
+            ->addColumn('uploads', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->id)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
+                    <img class="border border-1 border-primary" src="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '" width="30">
                     </a>
                 </div>';
-                
-            }
-            $uploads_file .= '</div>';
-            return $uploads_file;
-        })
-        ->rawColumns(['view_tools', 'request_status', 'request_type', 'uploads', 'action'])
-        ->toJson();
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->rawColumns(['view_tools', 'request_status', 'request_type', 'uploads', 'action'])
+            ->toJson();
     }
 
 
-    public function ps_approve_tools(Request $request){
+    public function ps_approve_tools(Request $request)
+    {
 
         $mail_Items = [];
 
         $tobeApproveTools = RequestApprover::where('status', 1)
-        ->where('request_id', $request->requestId)
-        ->where('request_type', 2)
-        ->where('series', $request->series)
-        ->orderBy('sequence','desc')
-        ->first();
+            ->where('request_id', $request->requestId)
+            ->where('request_type', 2)
+            ->where('series', $request->series)
+            ->orderBy('sequence', 'desc')
+            ->first();
 
 
         $tools = RequestApprover::find($request->id);
-        
+
         $tools->approver_status = 1;
         $tools->approved_by = Auth::user()->id;
         $tools->date_approved = Carbon::now();
-        
+
         $tools->update();
 
-        if($tools->sequence == $tobeApproveTools->sequence){
+        if ($tools->sequence == $tobeApproveTools->sequence) {
             $ps_transfer_request = PsTransferRequests::find($request->requestId);
             $ps_transfer_request->request_status = "approved";
 
@@ -1393,26 +1593,27 @@ class TransferRequestController extends Controller
 
 
             $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-            ->select('tools_and_equipment.*')
-            ->where('tools_and_equipment.status', 1)
-            // ->where('ps_transfer_request_items.item_status', 1)
-            ->where('ps_transfer_request_id', $ps_transfer_request->id)
-            ->get();
+                ->select('tools_and_equipment.*')
+                ->where('tools_and_equipment.status', 1)
+                // ->where('ps_transfer_request_items.item_status', 1)
+                ->where('ps_transfer_request_id', $ps_transfer_request->id)
+                ->get();
 
             foreach ($tools_approved as $tool) {
                 array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
             }
-            
-        
+
+
             $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
-        
-            Mail::to($user->email)->send(new EmailRequestor($mail_data));
+
+            // Mail::to($user->email)->send(new EmailRequestor($mail_data));
 
 
         }
     }
-  
-    public function ps_approve_rttte(Request $request){
+
+    public function ps_approve_rttte(Request $request)
+    {
         $ps_tools = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNum)->first();
 
         $ps_tools->acc = Carbon::now();
@@ -1421,26 +1622,245 @@ class TransferRequestController extends Controller
 
     }
 
-    public function tools_deliver(Request $request){
-        if($request->type == 'rfteis'){
+    public function tools_deliver(Request $request)
+    {
+        if ($request->type == 'rfteis') {
             $teis_tools = TransferRequest::where('status', 1)->where('teis_number', $request->requestNum)->first();
-    
+
             $teis_tools->is_deliver = Carbon::now();
-    
+
             $teis_tools->update();
-        }else if($request->type == 'pullout'){
+        } else if ($request->type == 'pullout') {
             $pullout_tools = PulloutRequest::where('status', 1)->where('pullout_number', $request->requestNum)->first();
-    
+
             $pullout_tools->is_deliver = Carbon::now();
-    
+
             $pullout_tools->update();
-        }else{
+        } else {
             $tool_request = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNum)->first();
-    
+
             $tool_request->is_deliver = Carbon::now();
-    
+
             $tool_request->update();
         }
+    }
+
+    public function track_request(Request $request)
+    {
+
+        if ($request->trType == 'rfteis') {
+            $request_progress = TransferRequest::where('status', 1)->where('teis_number', $request->requestNumber)->where('progress', 'completed')->count();
+            if ($request_progress) {
+                return '<li class="active text-center"></li>
+                        <li class="active text-center"></li>
+                        <li class="active text-center"></li>
+                        <li class="active text-center"></li>';
+            } else {
+                $requests = TransferRequest::where('status', 1)->where('teis_number', $request->requestNumber)->whereNotNull('is_deliver')->count();
+                if ($requests) {
+                    return '<li class="active text-center"></li>
+                            <li class="active text-center"></li>
+                            <li class="active text-center"></li>
+                            <li class="text-center"></li>';
+                } else {
+                    //! short version
+                    // $teis_uploads = TeisUploads::where('status', 1)
+                    // ->where('tr_type', 'rfteis')
+                    // ->pluck('teis_number')
+                    // ->toArray();
+
+                    $teis_uploads = TeisUploads::where('status', 1)
+                        ->where('tr_type', 'rfteis')->get();
+
+                    $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+                    $have_teis = in_array($request->requestNumber, $teis_numbers);
+
+                    if ($have_teis) {
+                        return '<li class="active text-center"></li>
+                                <li class="active text-center"></li>
+                                <li class=" text-center"></li>
+                                <li class=" text-center"></li>';
+                    } else {
+                        return '<li class="active text-center"></li>
+                                <li class=" text-center"></li>
+                                <li class=" text-center"></li>
+                                <li class=" text-center"></li>';
+                    }
+
+                }
+            }
+        } else {
+            // rttte
+            $requests = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNumber)->where('progress', 'completed')->count();
+            if ($requests) {
+                return '<li class="active text-center"></li>
+                        <li class="active text-center"></li>
+                        <li class="active text-center"></li>
+                        <li class="active text-center"></li>';
+            } else {
+                $requests = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNumber)->whereNotNull('is_deliver')->count();
+                if ($requests) {
+                    return '<li class="active text-center"></li>
+                            <li class="active text-center"></li>
+                            <li class="active text-center"></li>
+                            <li class="text-center"></li>';
+                } else {
+
+                    $teis_uploads = TeisUploads::where('status', 1)
+                        ->where('tr_type', 'rttte')->get();
+
+                    $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
+                    $have_teis = in_array($request->requestNumber, $teis_numbers);
+
+
+                    $ters_uploads = TersUploads::where('status', 1)
+                        ->where('tr_type', 'rttte')->get();
+
+                    $ters_numbers = collect($ters_uploads)->pluck('pullout_number')->toArray();
+                    $have_ters = in_array($request->requestNumber, $ters_numbers);
+                    // $have_ters2 = in_array($row->teis_number, $ters_numbers) ? '' : 'disabled';
+
+                    // $action =  '<div class="d-flex gap-2">
+                    // <button '.$have_teis.' data-type="'.$row->tr_type.'" data-num="'.$row->teis_number.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
+                    // <button '.$have_ters.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
+                    // <button '.$have_ters2.' data-num="'.$row->teis_number.'" data-type="'.$row->tr_type.'" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Done" data-bs-original-title="Done"><i class="fa fa-check"></i></button>
+                    // </div>';
+
+
+                    if ($have_teis && $have_ters) {
+                        return '<li class="active text-center"></li>
+                                <li class="active text-center"></li>
+                                <li class=" text-center"></li>
+                                <li class=" text-center"></li>';
+                    } else {
+                        return '<li class="active text-center"></li>
+                                <li class=" text-center"></li>
+                                <li class=" text-center"></li>
+                                <li class=" text-center"></li>';
+                    }
+
+
+                }
+            }
+        }
+    }
+
+    public function completed_sts_request()
+    {
+        $ps_tools = PsTransferRequests::where('status', 1)
+            ->where('progress', 'completed')
+            ->get();
+
+
+        return DataTables::of($ps_tools)
+
+            ->addColumn('view_tools', function ($row) {
+
+                return '<button data-id="' . $row->request_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
+            })
+            ->addColumn('teis', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->request_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
+                <span>TEIS.pdf</span>
+                </a>
+            </div>';
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->addColumn('ters', function ($row) {
+                $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->request_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($ters_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/ters_form/' . $item['uploads']['name'] . '">
+                <span>TERS.pdf</span>
+                </a>
+            </div>';
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+
+            ->rawColumns(['view_tools', 'teis', 'ters'])
+            ->toJson();
+    }
+
+    public function sts_request_approved()
+    {
+        $tool_approvers = RequestApprover::leftjoin('ps_transfer_requests', 'ps_transfer_requests.id', 'request_approvers.request_id')
+            ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+            ->select('ps_transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved', 'users.fullname')
+            ->where('ps_transfer_requests.status', 1)
+            ->where('request_approvers.status', 1)
+            ->where('request_approvers.approved_by', Auth::user()->id)
+            ->where('approver_status', 1)
+            ->where('request_type', 2)
+            ->get();
+
+
+        return DataTables::of($tool_approvers)
+
+            ->addColumn('view_tools', function ($row) {
+
+                return '<button data-id="' . $row->request_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
+            })
+
+            ->addColumn('request_status', function ($row) {
+
+                $status = $row->request_status;
+                if ($status == 'pending') {
+                    $status = '<span class="badge bg-warning">' . $status . '</span>';
+                } else {
+                    $status = '<span class="badge bg-success">' . $status . '</span>';
+                }
+                return $status;
+            })
+
+            ->addColumn('teis', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('teis_number', $row->request_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/teis_form/' . $item['uploads']['name'] . '">
+                <span>TEIS.pdf</span>
+                </a>
+            </div>';
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+            ->addColumn('ters', function ($row) {
+                $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->request_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($ters_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . env('APP_URL') . 'uploads/ters_form/' . $item['uploads']['name'] . '">
+                <span>TERS.pdf</span>
+                </a>
+            </div>';
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+
+            ->rawColumns(['view_tools', 'teis', 'ters', 'request_status'])
+            ->toJson();
     }
 
 }

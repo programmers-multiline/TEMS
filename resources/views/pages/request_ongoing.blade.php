@@ -3,6 +3,7 @@
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
     <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/track_request.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -27,6 +28,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -50,6 +52,7 @@
     <!-- END Page Content -->
 
     @include('pages.modals.ongoing_teis_request_modal')
+    @include('pages.modals.track_request_modal')
 
 @endsection
 
@@ -87,6 +90,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'teis_number'
+                    },
+                    {
                         data: 'subcon'
                     },
                     {
@@ -122,6 +128,34 @@
                 ],
                 drawCallback: function() {
                     $(".trackBtn").tooltip();
+
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnumber');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+
+                                $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
+
+                                // $("#requestProgress li").each(function(index) {
+                                //     if (index < result) {
+                                //         $(this).addClass("active");
+                                //     }
+                                // });
+
+                            }
+                        })
+                    })
                 }
             });
 
@@ -148,6 +182,9 @@
 
                     },
                     columns: [{
+                            data: 'picture'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -178,8 +215,22 @@
                     scrollX: true,
                     drawCallback: function() {
                         $(".receivedBtn").tooltip();
+
+                        // if(type == 'rttte'){
+                        //     $('table thead th.pictureHeader').show();
+                        // }else{
+                        //     $('table thead th.pictureHeader').hide();
+                        // }
                     }
                 });
+
+                if (type == 'rttte') {
+                    modalTable.column(0).visible(true);
+                    modalTable.column(0).searchable(true);
+                } else {
+                    modalTable.column(0).visible(false);
+                    modalTable.column(0).searchable(false);
+                }
 
             })
 
@@ -217,7 +268,7 @@
                             },
                             success(result) {
                                 showToast("success",
-                                "Tool Received");
+                                    "Tool Received");
                                 $("#modalTable").DataTable().ajax.reload();
 
                             }

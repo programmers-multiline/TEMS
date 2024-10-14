@@ -35,6 +35,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -106,6 +107,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'teis_number'
+                    },
+                    {
                         data: 'subcon'
                     },
                     {
@@ -167,7 +171,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'add_price'

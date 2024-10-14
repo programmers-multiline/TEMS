@@ -27,6 +27,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Pullout#</th>
                             <th>Customer Name</th>
                             <th>Project Name</th>
                             <th>Project Code</th>
@@ -82,6 +83,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'pullout_number'
+                    },
+                    {
                         data: 'client'
                     },
                     {
@@ -97,13 +101,13 @@
                         data: 'subcon'
                     },
                     {
-                        data: 'pickup_date'
-                    },
-                    {
                         data: 'date_requested'
                     },
                     {
                         data: 'date_approved'
+                    },
+                    {
+                        data: 'pickup_date'
                     },
                     {
                         data: 'contact_number'
@@ -118,6 +122,7 @@
                         data: 'action'
                     },
                 ],
+                scrollX: true,
             });
 
             $(document).on('click', '.pulloutNumber', function() {
@@ -161,7 +166,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'

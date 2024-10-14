@@ -35,6 +35,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Type</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
@@ -106,6 +107,12 @@
                 {
                     data: 'view_tools'
                 },
+                // {
+                //     data: 'picture'
+                // },
+                {
+                    data: 'teis_number'
+                },
                 {
                     data: 'tr_type'
                 },
@@ -160,6 +167,9 @@
                     },
                     columns: [
                         {
+                            data: 'picture'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -178,7 +188,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'

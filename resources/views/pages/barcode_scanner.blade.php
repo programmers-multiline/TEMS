@@ -212,7 +212,7 @@
                                         data: 'brand'
                                     },
                                     {
-                                        data: 'location'
+                                        data: 'warehouse_name'
                                     },
                                     {
                                         data: 'tools_status'

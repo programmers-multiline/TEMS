@@ -27,6 +27,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -76,6 +77,9 @@
                 },
                 columns: [{
                         data: 'view_tools'
+                    },
+                    {
+                        data: 'teis_number'
                     },
                     {
                         data: 'subcon'
@@ -133,7 +137,11 @@
                         }
 
                     },
-                    columns: [{
+                    columns: [
+                        {
+                            data: 'picture'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -164,8 +172,22 @@
                     scrollX: true,
                     drawCallback: function() {
                         $(".receivedBtn").tooltip();
+
+                        // if(type == 'rttte'){
+                        //     $('table thead th.pictureHeader').show();
+                        // }else{
+                        //     $('table thead th.pictureHeader').hide();
+                        // }
                     }
                 });
+
+                if (type == 'rttte') {
+                    modalTable.column(0).visible(true);
+                    modalTable.column(0).searchable(true);
+                } else {
+                    modalTable.column(0).visible(false);
+                    modalTable.column(0).searchable(false);
+                }
 
             })
 

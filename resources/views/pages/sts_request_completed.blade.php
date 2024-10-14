@@ -2,6 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -14,7 +15,7 @@
     </style>
 @endsection
 
-@section('content-title', 'Approved Pull-Out Request')
+@section('content-title', 'Completed Site to Site Request')
 
 @section('content')
     <!-- Page Content -->
@@ -22,24 +23,21 @@
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table"
-                    class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table" class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th>Items</th>
-                            <th>Pullout#</th>
-                            <th>Approver</th>
+                            <th>Request#</th>
+                            <th>Subcon</th>
                             <th>Customer Name</th>
-                            <th>Project Name</th>
                             <th>Project Code</th>
+                            <th>Project Name</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
-                            <th>Subcon</th>
-                            <th>Date Approved</th>
-                            <th>Pickup Date</th>
-                            <th>Contact Number</th>
-                            <th>Reason</th>
-                            <th>Action</th>
+                            <th>Status</th>
+                            <th>Type</th>
+                            <th>TEIS</th>
+                            <th>TERS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -51,7 +49,7 @@
     </div>
     <!-- END Page Content -->
 
-    @include('pages.modals.ongoing_pullout_request_modal')
+    @include('pages.modals.ongoing_teis_request_modal')
 
 @endsection
 
@@ -64,32 +62,30 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
     <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
-
-    {{-- <script type="module">
-    Codebase.helpersOnLoad('cb-table-tools-checkable');
-  </script> --}}
+    <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
 
 
     <script>
         $(document).ready(function() {
+
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
                 ajax: {
                     type: 'get',
-                    url: '{{ route('fetch_approved_pullout') }}'
+                    url: '{{ route('completed_sts_request') }}'
                 },
                 columns: [{
                         data: 'view_tools'
                     },
                     {
-                        data: 'pullout_number'
+                        data: 'request_number'
                     },
                     {
-                        data: 'approver_name'
+                        data: 'subcon'
                     },
                     {
-                        data: 'client'
+                        data: 'customer_name'
                     },
                     {
                         data: 'project_name'
@@ -104,29 +100,27 @@
                         data: 'date_requested'
                     },
                     {
-                        data: 'subcon'
+                        data: 'request_status'
                     },
                     {
-                        data: 'pickup_date'
+                        data: 'tr_type'
                     },
                     {
-                        data: 'date_approved'
+                        data: 'teis'
                     },
                     {
-                        data: 'contact_number'
-                    },
-                    {
-                        data: 'reason'
-                    },
-                    {
-                        data: 'action'
+                        data: 'ters'
                     },
                 ],
+                drawCallback: function() {
+                    $(".trackBtn").tooltip();
+                }
             });
 
-            $(document).on('click', '.pulloutNumber', function() {
+            $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
+                const type = $(this).data("type");
                 const path = $("#path").val();
 
 
@@ -136,15 +130,19 @@
                     destroy: true,
                     ajax: {
                         type: 'get',
-                        url: '{{ route('ongoing_pullout_request_modal') }}',
+                        url: '{{ route('ongoing_teis_request_modal') }}',
                         data: {
                             id,
+                            type,
                             path,
                             _token: '{{ csrf_token() }}'
                         }
 
                     },
                     columns: [
+                        {
+                            data: 'picture'
+                        },
                         {
                             data: 'po_number'
                         },
@@ -174,8 +172,28 @@
                         }
                     ],
                     scrollX: true,
+                    drawCallback: function() {
+                        $(".receivedBtn").tooltip();
+
+                        // if(type == 'rttte'){
+                        //     $('table thead th.pictureHeader').show();
+                        // }else{
+                        //     $('table thead th.pictureHeader').hide();
+                        // }
+                    }
                 });
-            })    
+
+
+                if (type == 'rttte') {
+                    modalTable.column(0).visible(true);
+                    modalTable.column(0).searchable(true);
+                } else {
+                    modalTable.column(0).visible(false);
+                    modalTable.column(0).searchable(false);
+                }
+
+            })
+
         })
     </script>
 @endsection

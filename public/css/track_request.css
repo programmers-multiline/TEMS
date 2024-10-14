@@ -1,0 +1,56 @@
+.card-stepper {
+    z-index: 0;
+}
+
+#requestProgress {
+    color: #455A64;
+}
+
+#requestProgress li {
+    list-style-type: none;
+    font-size: 13px;
+    width: 33.33%;
+    float: left;
+    position: relative;
+    text-align: center;
+}
+
+#requestProgress li:before {
+    content: '\25CB';
+    color: #fff;
+    width: 37px;
+    line-height: 37px;
+    display: block;
+    font-size: 12px;
+    background: #c5cae9;
+    border-radius: 50%;
+}
+
+#requestProgress li.active:before {
+    content: '\2713';
+    background: #ee5435;
+}
+
+#requestProgress li:after {
+    content: '';
+    width: 100%;
+    height: 10px;
+    background: #c5cae9;
+    position: absolute;
+    left: 0;
+    top: 15px;
+    z-index: -1;
+}
+
+/* #requestProgress li:nth-last-child(1):after {
+    width: 0;
+} */
+
+#requestProgress li:nth-last-child(1) {
+    left: 0;
+    width: 37px;
+}
+
+#requestProgress li.active:after {
+    background: #ee5435;
+}

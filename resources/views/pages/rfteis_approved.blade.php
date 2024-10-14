@@ -38,6 +38,8 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Approver</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -99,9 +101,20 @@
 
     <script>
         $(document).ready(function() {
+
+            const utid = {{ Auth::user()->user_type_id }};
+
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                "aoColumnDefs": [
+                    {
+                        // visible ang approver_name kapag 3 or 5 ang userType.
+                        "targets": [1],
+                        "visible": [3, 5].includes(utid),
+                        "searchable": [3, 5].includes(utid)
+                    }
+                ],
                 ajax: {
                     type: 'post',
                     url: '{{ route('fetch_rfteis_approver') }}',
@@ -112,6 +125,12 @@
                 },
                 columns: [{
                         data: 'view_tools'
+                    },
+                    {
+                        data: 'approver_name'
+                    },
+                    {
+                        data: 'teis_number'
                     },
                     {
                         data: 'subcon'
@@ -177,7 +196,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'

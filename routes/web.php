@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmailController;
@@ -30,8 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Route::view('/pages/warehouse', 'pages.warehouse');
     // Route::view('/pages/project_site', 'pages.project_site');
-    Route::view('/pages/datatables', 'pages.datatables');
-    Route::view('/pages/datatables', 'pages.datatables');
+    // Route::view('/pages/approvers_setup', 'pages.approvers_setup');
     Route::view('/pages/request_ongoing', 'pages.request_ongoing');
     Route::view('/pages/request_for_receiving', 'pages.request_for_receiving');
     Route::view('/pages/request_completed', 'pages.request_completed');
@@ -49,6 +49,9 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/pullout_completed', 'pages.pullout_completed');
     Route::view('/pages/approved_pullout', 'pages.approved_pullout');
     Route::view('/pages/pullout_for_receiving', 'pages.pullout_for_receiving');
+    Route::view('/pages/site_to_site_approved', 'pages.site_to_site_approved');
+    Route::view('/pages/sts_request_completed', 'pages.sts_request_completed');
+    Route::view('/pages/users_management', 'pages.users_management');
 
 
     Route::view('/pages/pullout_receiving', 'pages.pullout_receiving');
@@ -69,7 +72,7 @@ Route::controller(WarehouseController::class)->group(function () {
 });
 
 Route::controller(ProjectSiteController::class)->group(function () {
-    Route::get('project_site', 'view_project_site')->name('view_project_site');
+    Route::get('view_project_site/{search?}/{desc?}', 'view_project_site')->name('view_project_site');
     Route::get('fetch_tools_ps', 'fetch_tools_ps')->name('fetch_tools_ps');
     Route::post('ps_request', 'ps_request_tools')->name('ps_request_tools');
     Route::get('ps_teis_request', 'fetch_teis_request_ps')->name('fetch_teis_request_ps');
@@ -96,6 +99,9 @@ Route::controller(TransferRequestController::class)->group(function () {
     Route::post('ps_approve_rttte', 'ps_approve_rttte')->name('ps_approve_rttte');
     Route::get('completed_teis_request', 'completed_teis_request')->name('completed_teis_request');
     Route::post('tools_deliver', 'tools_deliver')->name('tools_deliver');
+    Route::post('track_request', 'track_request')->name('track_request');
+    Route::get('completed_sts_request', 'completed_sts_request')->name('completed_sts_request');
+    Route::get('sts_request_approved', 'sts_request_approved')->name('sts_request_approved');
     
     
 });
@@ -119,6 +125,21 @@ Route::controller(PullOutController::class)->group(function () {
     Route::post('received_pullout_tools', 'received_pullout_tools')->name('received_pullout_tools');
     Route::post('fetch_current_site', 'fetch_current_site')->name('fetch_current_site');
     
+});
+
+Route::controller(AdminController::class)->group(function(){
+    Route::get('approvers_setup','approvers_setup')->name('approvers_setup');
+    Route::get('fetch_approvers','fetch_approvers')->name('fetch_approvers');
+    Route::post('fetch_users','fetch_users')->name('fetch_users');
+    Route::post('add_approvers','add_approvers')->name('add_approvers');
+    Route::post('edit_approver','edit_approver')->name('edit_approver');
+    Route::post('delete_approver','delete_approver')->name('delete_approver');
+    Route::post('user_per_area','user_per_area')->name('user_per_area');
+    Route::post('update_sequence','update_sequence')->name('update_sequence');
+    Route::post('add_zero_sequence','add_zero_sequence')->name('add_zero_sequence');
+    Route::get('fetch_users_admin','fetch_users_admin')->name('fetch_users_admin');
+    Route::post('user_add_edit','user_add_edit')->name('user_add_edit');
+    Route::post('change_status','change_status')->name('change_status');
 });
 
 // Route::controller(FileUploadController::class)->group(function(){

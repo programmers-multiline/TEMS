@@ -148,6 +148,9 @@
                     },
                     columns: [
                         {
+                            data: 'picture'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -166,7 +169,7 @@
                             data: 'brand'
                         },
                         {
-                            data: 'location'
+                            data: 'warehouse_name'
                         },
                         {
                             data: 'tools_status'
@@ -176,9 +179,27 @@
                         }
                     ],
                     scrollX: true,
+                    drawCallback: function() {
+                        // if(type == 'rttte'){
+                        //     $('table thead th.pictureHeader').show();
+                        // }else{
+                        //     $('table thead th.pictureHeader').hide();
+                        // }
+                    }
                 });
+
+                if (type == 'rttte') {
+                    modalTable.column(0).visible(true);
+                    // modalTable.column(0).searchable(true);
+                } else {
+                    modalTable.column(0).visible(false);
+                    modalTable.column(0).searchable(false);
+                }
             })
 
+            $("#approveBtnModal").click(function(){
+                $(".approveBtn").click();
+            })
 
 
             $(document).on('click', '.approveBtn', function() {
@@ -227,7 +248,7 @@
                                     text: "Items Approved Successfully.",
                                     icon: "success"
                                 });
-                                
+                                $("#ongoingTeisRequestModal").modal('hide');
                                 if(prevCount == 1){
                                     $(".countContainer").addClass("d-none")
                                 }else{

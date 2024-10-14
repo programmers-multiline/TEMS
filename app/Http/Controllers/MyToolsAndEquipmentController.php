@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use DataTables;
 use Carbon\Carbon;
 use App\Mail\ApproverEmail;
 use App\Models\PmGroupings;
+use App\Models\ProjectSites;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
 use App\Models\TransferRequest;
+use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PulloutRequestItems;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Models\PsTransferRequestItems;
 
 class MyToolsAndEquipmentController extends Controller
 {
@@ -111,8 +113,31 @@ class MyToolsAndEquipmentController extends Controller
 
         // return $tools[0]->teis_number;
 
+        // fix my te error
         
         return DataTables::of($tools)
+
+        ->setRowClass(function ($row) {
+            $tool_ids = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
+            ->select('transfer_request_items.*')
+            ->where('transfer_requests.progress', 'ongoing')
+            ->where('transfer_request_items.item_status', 0)
+            ->where('transfer_requests.status', 1)
+            ->pluck('tool_id')
+            ->toArray();
+
+            $ps_tool_ids = PsTransferRequestItems::leftjoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.ps_transfer_request_id')
+            ->select('ps_transfer_request_items.*')
+            ->where('ps_transfer_requests.progress', 'ongoing')
+            ->where('ps_transfer_request_items.item_status', 0)
+            ->where('ps_transfer_requests.status', 1)
+            ->pluck('tool_id')
+            ->toArray();
+
+            $all_tools_id = array_merge($tool_ids, $ps_tool_ids);
+
+            return in_array($row->id, $all_tools_id) ? 'bg-gray' : '';
+        })
         
         ->addColumn('tools_status', function($row){
             $status = $row->tools_status;
@@ -154,6 +179,15 @@ class MyToolsAndEquipmentController extends Controller
             return $action;
         })
 
+        ->addColumn('warehouse_name', function ($row){
+            if($row->current_site_id){
+                // $location = ProjectSites::where('status', 1)->where('id', $row->current_site_id)->first();
+                return ProjectSites::where('status', 1)->where('id', $row->current_site_id)->value('project_location');
+            }else{
+                return $row->warehouse_name;
+            }
+        })
+
 
         ->rawColumns(['transfer_state','tools_status','action'])
         ->toJson();
@@ -167,12 +201,12 @@ class MyToolsAndEquipmentController extends Controller
 
         $new_pullout_number = '';
         if(!$prev_pn){
-            $new_pullout_number = 1;
+            $new_pullout_number = 1000;
         }else{
             $new_pullout_number = $prev_pn->pullout_number + 1;
         }
 
-        PulloutRequest::create([
+        $req = PulloutRequest::create([
             'pullout_number' => $new_pullout_number,
             'user_id' => Auth::user()->id,
             'client' => $request->client,
@@ -189,14 +223,14 @@ class MyToolsAndEquipmentController extends Controller
 
 
 
-        $last_id = PulloutRequest::orderBy('id', 'desc')->first();
+        // $req = PulloutRequest::orderBy('id', 'desc')->first();
 
-        $last;
+        $last = 0;
 
         if(!PulloutRequest::exists()){
             $last = 1;
         }else{
-            $last = $last_id->id;
+            $last = $req->id;
         }
 
 
@@ -247,7 +281,7 @@ class MyToolsAndEquipmentController extends Controller
         foreach ($approvers as $approver) {
             $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
         
-            Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+            // Mail::to($approver->email)->send(new ApproverEmail($mail_data));
         }
 
         

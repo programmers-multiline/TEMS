@@ -22,7 +22,7 @@
     </style>
 @endsection
 
-@section('content-title', 'List of RFTTE')
+@section('content-title', 'List of RTTTE')
 
 @section('content')
     <!-- Page Content -->
@@ -35,6 +35,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Project Code</th>
                             <th>Project Name</th>
@@ -106,6 +107,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'request_number'
+                    },
+                    {
                         data: 'subcon'
                     },
                     {
@@ -145,7 +149,11 @@
                         }
 
                     },
-                    columns: [{
+                    columns: [
+                        {
+                            data: 'picture'
+                        },
+                        {
                             data: 'po_number'
                         },
                         {
@@ -176,6 +184,9 @@
                             data: 'action'
                         },
                     ],
+                    drawCallback: function() {
+                            $('table thead th.pictureHeader').show();
+                    }
                 });
             })
 

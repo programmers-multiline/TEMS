@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Daf;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
+use App\Models\RequestApprover;
 use App\Models\TransferRequest;
 use App\Models\ToolsAndEquipment;
 use App\Models\PsTransferRequests;
@@ -31,6 +32,8 @@ class DashboardController extends Controller
         $pending_daf = Daf::where('status', 1)->where('request_status', 'pending')->where('user_id', Auth::user()->id)->count();
         $approved_daf = Daf::where('status', 1)->where('request_status', 'approved')->where('user_id', Auth::user()->id)->count();
 
+        $total_approved = RequestApprover::where('status', 1)->where('approved_by', Auth::user()->id)->count();
+
 
         // $pending_daf = Daf::leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
         // ->where('transfer_requests.status', 1)
@@ -39,7 +42,7 @@ class DashboardController extends Controller
         // ->count();
 
 
-        return view('/dashboard', compact('total_tools','issued','pending_rttte', 'rttte_approval', 'approved_rttte', 'teis', 'pending_teis', 'total_pullout', 'pending_pullout', 'request_daf', 'approved_pullout', 'pending_daf'));
+        return view('/dashboard', compact('total_tools','issued','pending_rttte', 'rttte_approval', 'approved_rttte', 'teis', 'pending_teis', 'total_pullout', 'pending_pullout', 'request_daf', 'approved_pullout', 'pending_daf', 'total_approved'));
 
     }
 }

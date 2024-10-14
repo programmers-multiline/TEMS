@@ -1,9 +1,9 @@
 @extends('layouts.backend')
 
 @section('content')
-@php
-    $user_type_id = Auth::user()->user_type_id;
-@endphp
+    @php
+        $user_type_id = Auth::user()->user_type_id;
+    @endphp
     <!-- Page Content -->
     <div class="content">
         @if ($user_type_id == 1)
@@ -17,7 +17,8 @@
                             </div>
                             <div class="text-end">
                                 <div class="fs-3 fw-semibold text-primary">{{ $total_tools }}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Tools and Equipments in Warehouse</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Tools and Equipments in
+                                    Warehouse</div>
                             </div>
                         </div>
                     </a>
@@ -30,12 +31,13 @@
                             </div>
                             <div class="text-end">
                                 <div class="fs-3 fw-semibold text-primary">{{ $issued }}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Transferred Tools and Equipment</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Transferred Tools and
+                                    Equipment</div>
                             </div>
                         </div>
                     </a>
                 </div>
-                
+
                 <div class="col-6 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
@@ -63,9 +65,9 @@
                     </a>
                 </div>
                 <!-- END Row #1 -->
-            </div>  
+            </div>
         @endif
-        @if ($user_type_id == 2 || $user_type_id == 3 || $user_type_id == 4 || $user_type_id == 5)
+        @if ($user_type_id == 3 || $user_type_id == 4 || $user_type_id == 5)
             <div class="row">
                 <!-- Row #1 -->
                 <div class="col-6 col-xl-3">
@@ -129,7 +131,8 @@
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
                                 <div class="fs-3 fw-semibold text-info">{{ $pending_pullout }}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Pull out Request</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Pull out Request
+                                </div>
                             </div>
                             <div class="text-end">
                                 <i class="si si-social-dropbox fa-2x text-info"></i>
@@ -141,8 +144,9 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-pulse">{{$approved_pullout}}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved Pull out Request</div>
+                                <div class="fs-3 fw-semibold text-pulse">{{ $approved_pullout }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved Pull out Request
+                                </div>
                             </div>
                             <div class="text-end">
                                 <i class="si si-note fa-2x text-pulse"></i>
@@ -154,8 +158,9 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-warning">{{$pending_daf}}</div>
-                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Request for DAF</div>
+                                <div class="fs-3 fw-semibold text-warning">{{ $pending_daf }}</div>
+                                <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Request for DAF
+                                </div>
                             </div>
                             <div class="text-end">
                                 <i class="si si-envelope-open fa-2x text-warning"></i>
@@ -167,7 +172,7 @@
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                             <div class="d-none d-sm-block">
-                                <div class="fs-3 fw-semibold text-success">{{$rttte_approval}}</div>
+                                <div class="fs-3 fw-semibold text-success">{{ $rttte_approval }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total RTTTE for <br>Approval</div>
                             </div>
                             <div class="text-end">
@@ -194,9 +199,67 @@
                 </div>
             </div>
         @endif
-        @if ($user_type_id == 6 || $user_type_id == 7)
+        @if ($user_type_id == 2)
         <div class="row">
-            {{-- <div class="col-6 col-xl-3">
+            <!-- Row #1 -->
+            <div class="col-6 col-xl-3">
+                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                        <div class="d-none d-sm-block">
+                            <div class="fs-3 fw-semibold text-earth">{{ $teis }}</div>
+                            <div class="fs-xs fw-semibold text-uppercase text-muted">Total TEIS</div>
+                        </div>
+                        <div class="text-end">
+                            <i class="si si-doc fa-2x text-earth-light"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-xl-3">
+                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                        <div class="d-none d-sm-block">
+                            <div class="fs-3 fw-semibold text-primary">{{ $pending_teis }}</div>
+                            <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending RFTEIS</div>
+                        </div>
+                        <div class="text-end">
+                            <i class="si si-close fa-2x text-primary-light"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-xl-3">
+                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                        <div class="d-none d-sm-block">
+                            <div class="fs-3 fw-semibold text-elegance">{{ $total_pullout }}</div>
+                            <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pull Out Request</div>
+                        </div>
+                        <div class="text-end">
+                            <i class="si si-action-undo fa-2x text-elegance-light"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-xl-3">
+                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                        <div class="d-none d-sm-block">
+                            <div class="fs-3 fw-semibold text-info">{{ $pending_pullout }}</div>
+                            <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Pull out Request
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <i class="si si-social-dropbox fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        @endif
+        @if ($user_type_id == 6 || $user_type_id == 7)
+            <div class="row">
+                {{-- <div class="col-6 col-xl-3">
                 <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                     <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
                         <div class="d-none d-sm-block">
@@ -209,20 +272,20 @@
                     </div>
                 </a>
             </div> --}}
-            <div class="col-6 col-xl-3">
-                <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
-                    <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
-                        <div class="d-none d-sm-block">
-                            <i class="si si-docs fa-2x text-primary"></i>
+                <div class="col-6 col-xl-3">
+                    <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
+                        <div class="block-content block-content-full d-sm-flex justify-content-between align-items-center">
+                            <div class="d-none d-sm-block">
+                                <i class="si si-docs fa-2x text-primary"></i>
+                            </div>
+                            <div class="text-end">
+                                <div class="fs-3 fw-semibold text-primary">{{ $total_approved }}</div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Approved Requests</div>
+                            </div>
                         </div>
-                        <div class="text-end">
-                            <div class="fs-3 fw-semibold text-primary">31</div>
-                            <div class="fs-sm fw-semibold text-uppercase text-muted">Total Approved Request for DAF</div>
-                        </div>
-                    </div>
-                </a>
+                    </a>
+                </div>
             </div>
-        </div>
         @endif
         {{-- <div class="row">
             <!-- Row #3 -->

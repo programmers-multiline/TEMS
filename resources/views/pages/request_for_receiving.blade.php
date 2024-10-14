@@ -4,6 +4,7 @@
     {{-- <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css"> --}}
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/track_request.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -28,6 +29,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
                             <th>Project Code</th>
@@ -51,6 +53,7 @@
     <!-- END Page Content -->
 
     @include('pages.modals.ongoing_teis_request_modal')
+    @include('pages.modals.track_request_modal')
 
 @endsection
 
@@ -97,6 +100,9 @@
                         data: 'view_tools'
                     },
                     {
+                        data: 'teis_number'
+                    },
+                    {
                         data: 'subcon'
                     },
                     {
@@ -132,6 +138,26 @@
                 ],
                 drawCallback: function() {
                     $(".trackBtn").tooltip();
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnumber');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+                                
+                                $("#requestProgress").html(result)
+
+                            }
+                        })
+                    })
                 }
             });
 
@@ -149,16 +175,11 @@
                     processing: true,
                     serverSide: false,
                     destroy: true,
-                    "aoColumnDefs": [{
-                            "bSortable": false,
-                            "aTargets": [0]
-                        },
-                        {
-                            "targets": [1],
-                            "visible": false,
-                            "searchable": false
-                        }
-                    ],
+                    columnDefs: [{
+                        orderable: false,
+                        // render: DataTable.render.select(),
+                        targets: 0
+                    }],
                     ajax: {
                         type: 'get',
                         url: '{{ route('ongoing_teis_request_modal') }}',
@@ -174,6 +195,9 @@
                             data: null,
                             render: DataTable.render.select(),
                             className: 'selectTools'
+                        },
+                        {
+                            data: 'picture'
                         },
                         {
                             data: 'po_number'
@@ -210,8 +234,27 @@
                     scrollX: true,
                     drawCallback: function() {
                         $(".receivedBtn").tooltip();
+                        
+                        // if(type == 'rttte'){
+                        //     $('table thead th.pictureHeader').show();
+                        // }else{
+                        //     $('table thead th.pictureHeader').hide();
+                        // }
                     }
                 });
+
+
+                if (type == 'rttte') {
+                    modalTable.column(0).visible(true);
+                    //!!! modalTable.column(0).searchable(true);
+                } else if(path == 'pages/request_for_receiving'){
+                    modalTable.column(1).visible(false);
+                }else {
+                    modalTable.column(0).visible(false);
+                    modalTable.column(0).searchable(false);
+                }
+
+
 
                 modalTable.select.selector('td:first-child');
 
@@ -274,7 +317,8 @@
                             showToast("success", "Received Successful");
                             modalTable.ajax.reload(function() {
                                 if (!modalTable.rows().count()) {
-                                    setTimeout(() => $("#ongoingTeisRequestModal").modal('hide'), 1000);
+                                    setTimeout(() => $("#ongoingTeisRequestModal")
+                                        .modal('hide'), 1000);
                                 }
                             });
                             table.ajax.reload();
