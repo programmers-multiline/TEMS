@@ -569,16 +569,27 @@
                 $("#tbodyModal").empty()
             })
 
+            //old
+            // $('#inputCheck').change(function() {
+            //     if ($(this).is(':checked')) {
+            //         $("#requestToolsModalBtn").prop('disabled', false);
+            //         // $("#accordion_tac").collapse('show');
+            //     } else {
+            //         $("#requestToolsModalBtn").prop('disabled', true);
+            //         // $("#accordion_tac").collapse('hide');
+            //     }
+            // });
 
-            $('#inputCheck').change(function() {
-                if ($(this).is(':checked')) {
-                    $("#requestToolsModalBtn").prop('disabled', false);
-                    $("#accordion_tac").collapse('show');
-                } else {
-                    $("#requestToolsModalBtn").prop('disabled', true);
-                    $("#accordion_tac").collapse('hide');
-                }
-            });
+            $("#backAgreement").click(function(){
+                $('#inputCheck').prop('checked', false);
+                $("#requestToolsModalBtn").prop('disabled', true);
+            })
+
+            $("#agree").click(function(){
+                $('#inputCheck').prop('checked', true);
+                $("#requestToolsModalBtn").prop('disabled', false);
+            })
+
 
 
 
@@ -591,6 +602,11 @@
                 const projectName = $("#projectName").val();
                 const projectCode = $("#projectCode").val();
                 const projectAddress = $("#projectAddress").val();
+
+                if(!projectCode){
+                    showToast('info', 'Select Project Code first!')
+                    return
+                }
 
                 const id = $("#tbodyModal input[type=hidden]").map((i, id) => id.defaultValue);
 

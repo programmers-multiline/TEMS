@@ -78,7 +78,7 @@
                                 </div>
                             </div>
 
-                            <div id="accordion" role="tablist" aria-multiselectable="true">
+                            {{-- <div id="accordion" role="tablist" aria-multiselectable="true">
                                 <div class="block block-rounded mb-2">
                                   <div class="ps-1 mt-4" role="tab" id="accordion_h1">
                                     <input type="checkbox" id="inputCheck" class="me-2"><a class="fw-semibold text-dark" data-bs-toggle="collapse" data-bs-parent="#accordion" href="#accordion_tac" aria-expanded="true" aria-controls="accordion_tac">I hereby authorize the company <span class="text-primary font-bold">{{ $comp->company_name }}</span>, to deduct the following for the purposes indicated below;</a>
@@ -91,7 +91,12 @@
                                     </div>
                                   </div>
                                 </div>
-                            </div>
+                            </div> --}}
+
+                            <div class="ps-3 mt-4"><input type="checkbox" id="inputCheck" class="me-2"
+                                data-bs-target="#TAA" data-bs-toggle="modal">I hereby authorize the
+                            company <span class="text-primary font-bold">{{ $comp->company_name }}</span>, to
+                            deduct the following for the purposes indicated below;</div>
                         </div>
                     </form>
                     <hr class="mt-5">
@@ -115,6 +120,43 @@
                     </button>
                     <button id="psRequestToolsModalBtn" type="button" class="btn btn-alt-primary" disabled>
                         Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="TAA" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+        <div class="modal-content">
+            <div class="block block-rounded shadow-none mb-0">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">TERMS AND AGREEMENT</h3>
+                </div>
+                <div class="fs-sm">
+                    <div class="block block-rounded">
+                        <div class="block-content">
+                            <div class="px-5">
+                                <p class="fw-bold">I hereby authorize the company <span class="text-primary font-bold">{{ $comp->company_name }}</span>, to deduct the following for the purposes indicated below;</p>
+                                <p class="mb-2"> I understand and acknowledge that the authorized deductions will be made on a monthly or bi-monthly basis. </p>
+                          
+                                <span> In the event that my employment ends for any reason, and the outstanding amount herein has not yet been fully deducted, I agree that any remaining balance shall be deducted from my final pay. Furthermore, if my final pay is insufficient to cover the remaining balance, I acknowledge and consent that the company shall have the right and remedies to collect the remaining balance by any lawful means available to them.</span>
+                              </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="block-content block-content-full block-content-sm text-end border-top">
+                    <button type="button" id="backAgreement" class="btn btn-alt-secondary"
+                    data-bs-target="#rttteModal" data-bs-toggle="modal">
+                        Back
+                    </button>
+                    <button id="agree" class="btn btn-alt-primary" data-bs-target="#rttteModal" data-bs-toggle="modal">
+                        Agree
                     </button>
                 </div>
             </div>

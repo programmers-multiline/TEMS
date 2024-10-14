@@ -334,16 +334,27 @@
                 })
 
             })
+            //old
+            // $('#inputCheck').change(function() {
+            //     if ($(this).is(':checked')) {
+            //         $("#psRequestToolsModalBtn").prop('disabled', false);
+            //         $("#accordion_tac").collapse('show');
+            //     } else {
+            //         $("#psRequestToolsModalBtn").prop('disabled', true);
+            //         $("#accordion_tac").collapse('hide');
+            //     }
+            // });
 
-            $('#inputCheck').change(function() {
-                if ($(this).is(':checked')) {
-                    $("#psRequestToolsModalBtn").prop('disabled', false);
-                    $("#accordion_tac").collapse('show');
-                } else {
-                    $("#psRequestToolsModalBtn").prop('disabled', true);
-                    $("#accordion_tac").collapse('hide');
-                }
-            });
+
+            $("#backAgreement").click(function(){
+                $('#inputCheck').prop('checked', false);
+                $("#psRequestToolsModalBtn").prop('disabled', true);
+            })
+
+            $("#agree").click(function(){
+                $('#inputCheck').prop('checked', true);
+                $("#psRequestToolsModalBtn").prop('disabled', false);
+            })
 
             $('#projectName').change(function() {
                 const selectedPcode = $(this).find(':selected')
