@@ -244,7 +244,7 @@
                             <td class="d-sm-table-cell">
                                 <form id="formRequest-${data[i].id}" method="POST" enctype="multipart/form-data">
                                     @csrf
-                                <input type="file" class="picUpload form-control" name="file" style="width: 88%" data-id="${data[i].id}" multiple data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept="application/pdf">
+                                <input type="file" class="picUpload form-control" name="file" style="width: 88%" data-id="${data[i].id}" multiple data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept="image/*">
                                 </form>
                             </td>
                             </tr>`
@@ -283,6 +283,11 @@
                 const currentPe = $("#tbodyModal .currentPe").val();
                 const currentSiteId = $("#tbodyModal .currentSiteId").val();
 
+                if(!projectName){
+                    showToast('warning','Fill up all fields!');
+                    return;
+                }
+
                 const id = $("#tbodyModal .toolId").map((i, id) => id.defaultValue);
 
 
@@ -296,9 +301,15 @@
 
 
                 if (Object.keys(files).length === 0) {
-                    alert('No files selected!');
+                    showToast('warning','No picture selected!');
                     return;
                 }
+
+                if(Object.keys(files).length !== selectedItemId.length){
+                    showToast('warning','Add picture to all selected tools!');
+                    return;
+                }
+
 
                 var formData = new FormData();
 

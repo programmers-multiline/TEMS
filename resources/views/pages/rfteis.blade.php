@@ -183,6 +183,9 @@
                             data: 'warehouse_name'
                         },
                         {
+                            data: 'price'
+                        },
+                        {
                             data: 'tools_status'
                         },
                         {

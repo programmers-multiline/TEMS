@@ -61,6 +61,7 @@
                     ->where('series', $series)
                     ->where('approver_status', 0)
                     ->where('request_type', 1)
+                    ->where('for_pricing', 2)
                     ->count();
             } else {
                 $tool_approvers = 0;
@@ -892,19 +893,26 @@
 
                             @if (Auth::user()->user_type_id == 7)
                                 <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/rfteis_acc') ? ' active' : '' }}"
+                                        href="/pages/rfteis_acc">
+                                        <i class="nav-main-link-icon fa fa-box"></i>
+                                        <span class="nav-main-link-name">RFTEIS</span>
+                                    </a>
+                                </li>
+                                <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/rttte_acc') ? ' active' : '' }}"
                                         href="/pages/rttte_acc">
                                         <i class="nav-main-link-icon fa fa-box-open"></i>
                                         <span class="nav-main-link-name">RTTTE</span>
                                     </a>
                                 </li>
-                                <li class="nav-main-item">
+                                {{-- <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
                                         href="/pages/daf">
                                         <i class="nav-main-link-icon fa fa-box-archive"></i>
                                         <span class="nav-main-link-name">DAF</span>
                                     </a>
-                                </li>
+                                </li> --}}
                             @endif
 
 
@@ -913,14 +921,14 @@
                                 <a class="nav-main-link{{ request()->is('view_warehouse') ? ' active' : '' }}"
                                     href="/view_warehouse">
                                     <i class="nav-main-link-icon fa fa-warehouse"></i>
-                                    <span class="nav-main-link-name">Warehouse</span>
+                                    <span class="nav-main-link-name">Warehouses</span>
                                 </a>
                             </li>
                             <li class="nav-main-item">
                                 <a class="nav-main-link{{ request()->is('view_project_site') ? ' active' : '' }}"
                                     href="/view_project_site">
                                     <i class="nav-main-link-icon fa fa-building"></i>
-                                    <span class="nav-main-link-name">Project Site</span>
+                                    <span class="nav-main-link-name">Project Sites</span>
                                 </a>
                             </li>
                         </ul>
@@ -1207,7 +1215,7 @@
             function showToast(icon, title) {
                 const Toast = Swal.mixin({
                     toast: true,
-                    position: "top-end",
+                    position: "top",
                     showConfirmButton: false,
                     timer: 3000,
                     timerProgressBar: true,

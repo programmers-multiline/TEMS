@@ -25,14 +25,14 @@
                 style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1"
                 playMode="normal" loop autoplay>Loading</dotlottie-player>
         </div>
-        @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4)
+        @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
             <div class="d-flex mb-3 justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                     <i class="fa fa-filter fs-2 me-2 text-secondary"></i>
                     <select class="form-select" id="selectProjectCode" name="example-select">
-                        <option disabled selected="">Project Site</option>
+                        <option value="" disabled selected>Project Site</option>
                         @foreach ($pg as $project_detail)
-                            <option value="{{ $project_detail->project_code }}">
+                            <option value="{{ $project_detail->id }}">
                                 {{ Str::title($project_detail->project_name) }}</option>
                         @endforeach
                     </select>
@@ -42,8 +42,7 @@
                         data-bs-target="#changeTransferStateModal" disabled><i class="fa fa-arrows-rotate me-1"></i>Change
                         Transfer
                         State</button>
-                    <button type="button" id="pulloutRequestBtn" class="btn btn-danger" data-bs-toggle="modal"
-                        data-bs-target="#pulloutRequestModal" disabled><i
+                    <button type="button" id="pulloutRequestBtn" class="btn btn-danger" disabled><i
                             class="fa fa-truck-arrow-right me-1"></i>Pull-Out</button>
                 </div>
             </div>
@@ -56,7 +55,6 @@
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
-                            <th style="text-align: left; font-size: 14px;">Request#</th>
                             <th style="text-align: left; font-size: 14px;">PO Number</th>
                             <th style="text-align: left; font-size: 14px;">Asset Code</th>
                             <th style="text-align: left; font-size: 14px;">Serial#</th>
@@ -96,6 +94,7 @@
     <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <script src="{{ asset('js/plugins/masked-inputs/jquery.maskedinput.min.js')}}"></script>
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
   </script> --}}
@@ -129,9 +128,6 @@
                 columns: [{
                         data: null,
                         render: DataTable.render.select()
-                    },
-                    {
-                        data: 'teis_number'
                     },
                     {
                         data: 'po_number'
@@ -202,7 +198,7 @@
                             <td>${data[i].tools_status}</td>
                             <td style="width: 180px;">
                                 <select data-id="${data[i].id}" class="form-select selectState" name="example-select">
-                                    <option selected disabled>Select State</option>
+                                    <option value="" selected disabled>Select State</option>
                                     <option value="0">Currently Use</option>
                                     <option value="1">Available to Transfer</option>
                                 </select>
@@ -222,8 +218,8 @@
 
 
             $('#selectProjectCode').change(function() {
-                const pCode = $(this).val();
-                table.ajax.url('{{ route('fetch_my_te') }}?pCode=' + pCode).load();
+                const projectId = $(this).val();
+                table.ajax.url('{{ route('fetch_my_te') }}?projectId=' + projectId).load();
 
             });
 
@@ -303,6 +299,26 @@
 
             $("#pulloutRequestBtn").click(function() {
 
+                const sitesId = [];
+
+                const datas = table.rows({
+                    selected: true
+                }).data();
+
+                for (let i = 0; i < datas.length; i++) {
+                    sitesId.push(datas[i].current_site_id)
+                }
+                
+
+                const allsiteId = sitesId.every( data => data === sitesId[0])
+
+                if(!allsiteId){
+                    showToast('warning', 'Pullout of tools must be per project site')
+                    return
+                }
+                
+                
+                $("#pulloutRequestModal").modal('show')
                 const currentSiteId = $(this).data('current_site')
 
                 $.ajax({
@@ -339,7 +355,7 @@
                 for (var i = 0; i < data.length; i++) {
 
                     $("#tbodyPulloutModal").append(
-                        `<tr><td>${data[i].teis_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option disabled selected="">Select Status</option><option value="good">Good</option><option value="repair">Need Repair</option></select></td></tr>`
+                        `<tr><td>${data[i].teis_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="repair">Need Repair</option></select></td></tr>`
                     );
                     //<option value="dispose">Disposal</option>
                 }
@@ -356,13 +372,32 @@
 
                 const inputData = $("#pulloutFrom").serializeArray();
 
-                console.log(inputData)
+                /// kapag walang laman ang contact #, date to pickup and reason
+                if(!inputData[3].value || !inputData[4].value || !inputData[8].value){
+                    showToast('warning', 'Fill out all fields')
+                    return
+                }
+                
+                if($("#contact").val().length > 11 || $("#contact").val().length < 11){
+                    showToast("warning", "It seems that your contact number is not correct")
+                    return
+                }
 
+
+
+                /// kunin ang id ng tools and yung status na nilagay ng user
                 const id = $("#tbodyPulloutModal input[type=hidden]").map((i, id) => id.value);
                 const toolsStatus = $(".toolsStatus").map((i, toolsStatus) => toolsStatus.value);
 
 
+                /// destructures ng data and gawing property sa final data
+                inputData.forEach(({name,value}) => {
+                    
+                    finalData[`${name}`] = value
+                    
+                })
 
+                /// kunin ang lahat ng ids and tools status na nilagay ng requestor and i attach sa final data
                 const selectedItemId = [];
 
                 for (var i = 0; i < id.length; i++) {
@@ -372,17 +407,12 @@
                     })
                 }
 
-                // const arrayToString = JSON.stringify(selectedItemId);
-
-
-                inputData.forEach(({
-                    name,
-                    value
-                }) => {
-
-                    finalData[`${name}`] = value
-
-                })
+                /// check if all select status have value
+                const hasEmptyStatus = selectedItemId.some(data => !data.tools_status);
+                if(hasEmptyStatus){
+                    showToast("info", "Please select tools status first.")
+                    return
+                }
 
                 finalData.tableData = selectedItemId
 
@@ -427,6 +457,13 @@
 
                 });
 
+
+                const hasEmptyState = allData.some(data => !data.state);
+
+                if(hasEmptyState){
+                    showToast("info", "Please select state first.")
+                    return
+                }
 
                 const stringData = JSON.stringify(allData)
 

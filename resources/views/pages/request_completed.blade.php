@@ -37,6 +37,7 @@
                             <th>Status</th>
                             <th>Type</th>
                             <th>TEIS</th>
+                            <th>TERS</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -106,7 +107,10 @@
                         data: 'request_type'
                     },
                     {
-                        data: 'uploads'
+                        data: 'teis'
+                    },
+                    {
+                        data: 'ters'
                     },
                     {
                         data: 'action'
@@ -161,6 +165,9 @@
                         },
                         {
                             data: 'warehouse_name'
+                        },
+                        {
+                            data: 'price'
                         },
                         {
                             data: 'tools_status'

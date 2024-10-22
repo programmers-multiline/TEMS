@@ -117,7 +117,7 @@
                                         <label class="form-label" for="company">Company <span
                                                 class="text-danger">*</span></label>
                                         <select class="form-select" id="company" name="company" size="1">
-                                            <option disabled selected>Select Company</option>
+                                            <option value="" disabled selected>Select Company</option>
                                             @foreach ($companies as $company)
                                                 <option value="{{ $company->id }}">{{ $company->code }}</option>
                                             @endforeach
@@ -128,7 +128,7 @@
                                         <label class="form-label" for="department">Department <span
                                                 class="text-danger">*</span></label>
                                         <select class="form-select" id="department" name="department" size="1">
-                                            <option disabled selected>Select Department</option>
+                                            <option value="" disabled selected>Select Department</option>
                                             @foreach ($departments as $department)
                                                 <option value="{{ $department->id }}">{{ $department->department_name }}
                                                 </option>
@@ -141,7 +141,7 @@
                                         <label class="form-label" for="position">Position <span
                                                 class="text-danger">*</span></label>
                                         <select class="form-select" id="position" name="position" size="1">
-                                            <option disabled selected>Select Position</option>
+                                            <option value="" disabled selected>Select Position</option>
                                             @foreach ($positions as $position)
                                                 <option value="{{ $position->id }}">{{ $position->position }}</option>
                                             @endforeach
@@ -151,7 +151,7 @@
                                         <label class="form-label" for="userType">Account Type <span
                                                 class="text-danger">*</span></label>
                                         <select class="form-select" id="userType" name="userType" size="1">
-                                            <option disabled selected>Select Type</option>
+                                            <option value="" disabled selected>Select Type</option>
                                             <option value='1'>Admin</option>
                                             <option value='2'>Warehouse</option>
                                             <option value='3'>PM</option>

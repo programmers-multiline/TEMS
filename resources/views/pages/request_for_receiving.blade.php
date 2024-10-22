@@ -154,6 +154,7 @@
                             success(result) {
                                 
                                 $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
 
                             }
                         })
@@ -219,6 +220,9 @@
                         },
                         {
                             data: 'warehouse_name'
+                        },
+                        {
+                            data: 'price'
                         },
                         {
                             data: 'tools_status'

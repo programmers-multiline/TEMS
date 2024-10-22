@@ -25,28 +25,21 @@
 @section('content-title', 'List of RFTEIS')
 
 @section('content')
-<div class="loader-container" id="loader" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
-    <dotlottie-player src="{{asset('js/loader.json')}}" background="transparent" speed="1" style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal" loop autoplay>Loading</dotlottie-player>
-</div>
     <!-- Page Content -->
     <div class="content">
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table"
-                    class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table" class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th>Items</th>
-                            <th>Approved By</th>
                             <th>Request#</th>
                             <th>Subcon</th>
-                            <th>Customer Name</th>
                             <th>Project Code</th>
                             <th>Project Name</th>
                             <th>Project Address</th>
                             <th>Date Requested</th>
-                            <th>Date Approved</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -58,6 +51,7 @@
         </div>
     </div>
     <!-- END Page Content -->
+
 
     @include('pages.modals.ongoing_teis_request_modal')
 
@@ -88,7 +82,6 @@
     <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
     </script>
-    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
 
     <!-- Fileupload JS -->
@@ -101,42 +94,21 @@
 
     <script>
         $(document).ready(function() {
-
-            const utid = {{ Auth::user()->user_type_id }};
-
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
-                "aoColumnDefs": [
-                    {
-                        // visible ang approver_name kapag 3 or 5 ang userType.
-                        "targets": [1],
-                        "visible": [3, 5].includes(utid),
-                        "searchable": [3, 5].includes(utid)
-                    }
-                ],
                 ajax: {
-                    type: 'post',
-                    url: '{{ route('fetch_rfteis_approver') }}',
-                    data: {
-                        path: $("#path").val(),
-                        _token : '{{ csrf_token() }}'
-                    }
+                    type: 'get',
+                    url: '{{ route('fetch_teis_request_acc') }}'
                 },
                 columns: [{
                         data: 'view_tools'
-                    },
-                    {
-                        data: 'approver_name'
                     },
                     {
                         data: 'teis_number'
                     },
                     {
                         data: 'subcon'
-                    },
-                    {
-                        data: 'customer_name'
                     },
                     {
                         data: 'project_name'
@@ -151,20 +123,41 @@
                         data: 'date_requested'
                     },
                     {
-                        data: 'date_approved'
-                    },
-                    {
                         data: 'action'
                     },
                 ],
             });
 
+
+
             $(document).on('click', '.teisNumber', function() {
+
+                $(document).on('keydown', '.price', function(e) {
+                    // Allow: Backspace, Delete, Tab, Escape, Enter, Arrow keys
+                    if (
+                        $.inArray(e.key, ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+                            'ArrowLeft', 'ArrowRight'
+                        ]) !== -1 ||
+                        // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X (for copy-pasting)
+                        (e.ctrlKey && $.inArray(e.key, ['a', 'c', 'v', 'x']) !== -1)
+                    ) {
+                        return; // Do not block the key
+                    }
+
+                    // Allow numbers and single period, block if multiple periods
+                    if (!/[0-9.]/.test(e.key) || (e.key === '.' && $(this).val().includes('.'))) {
+                        e.preventDefault();
+                    }
+                });
+
+
+
 
                 const id = $(this).data("id");
 
 
                 const modalTable = $("#modalTable").DataTable({
+                    scrollX: true,
                     processing: true,
                     serverSide: false,
                     destroy: true,
@@ -199,16 +192,138 @@
                             data: 'warehouse_name'
                         },
                         {
-                            data: 'price'
+                            data: 'add_price'
                         },
                         {
                             data: 'tools_status'
                         },
                         {
                             data: 'action'
-                        }
+                        },
                     ],
                 });
+            })
+
+            // $('.price').on('keypress', function(e) {
+            //     alert()
+            //     if (['-', 'e'].includes(String.fromCharCode(e.which || e.keyCode))) {
+            //         e.preventDefault();
+            //     }
+            // });
+
+
+
+
+
+
+            $("#addPriceBtn").click(function() {
+
+
+                const allData = [];
+                const prices = [];
+
+                $('.price').each(function(i, obj) {
+
+
+                    const id = $(this).data('id')
+                    const price = obj.value
+
+                    prices.push(price)
+
+                    const data = {
+                        id,
+                        price
+                    }
+
+                    if (price) {
+                        allData.push(data)
+                    }
+
+                });
+
+                console.log(prices)
+
+                const allPrices = prices.every(price => price == "")
+
+                if (allPrices) {
+                    showToast('error', 'No Price Inputed!')
+                    return
+                }
+
+
+                const stringData = JSON.stringify(allData)
+
+                const type = 'rfteis';
+
+                $.ajax({
+                    url: '{{ route('add_price_acc') }}',
+                    method: 'post',
+                    data: {
+                        type,
+                        priceDatas: stringData,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success() {
+                        showToast("success", "Price Added!");
+                        $("#ongoingTeisRequestModal").modal('hide')
+                        $("#table").DataTable().ajax.reload();
+                    }
+                })
+
+            })
+
+            $(document).on('click', '.approveBtn', function() {
+                const requestNum = $(this).data('requestnum');
+
+                const confirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success ms-2",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+
+                confirm.fire({
+                    title: "Proceed?",
+                    html: `Are you sure you want to proceed this request? <br><br> <span class="text-primary fs-3 fw-bold">#${requestNum}</span>`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes!",
+                    cancelButtonText: "Close",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: '{{ route('rfteis_acc_proceed') }}',
+                            method: 'post',
+                            data: {
+                                requestNum,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            beforeSend() {
+                                $("#loader").show()
+                            },
+                            success() {
+                                $("#loader").hide()
+                                table.ajax.reload();
+                                confirm.fire({
+                                    title: "Approved!",
+                                    text: "Items Approved Successfully.",
+                                    icon: "success"
+                                });
+                            }
+                        })
+
+                    } else if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+
+                    }
+                });
+
+
             })
 
         })

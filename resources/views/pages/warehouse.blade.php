@@ -28,7 +28,7 @@
             border: 1px solid red !important;
         }
 
-        #accordion_tac{
+        #accordion_tac {
             /* transition: all 1s ease-out; */
         }
     </style>
@@ -55,7 +55,7 @@
                 <div class="d-flex align-items-center">
                     <i class="fa fa-filter fs-2 me-2 text-secondary"></i>
                     <select class="form-select" id="selectWarehouse" name="example-select">
-                        <option disabled selected="">Select Warehouse</option>
+                        <option value="" disabled selected>Select Warehouse</option>
                         @foreach ($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}">{{ $warehouse->warehouse_name }}</option>
                         @endforeach
@@ -165,7 +165,7 @@
                                     <label class="form-label" for="location">Location <span
                                             class="text-danger">*</span></label>
                                     <select class="form-select" id="location" name="location" size="1">
-                                        <option disabled selected>Select Location</option>
+                                        <option value="" disabled selected>Select Location</option>
                                         @foreach ($warehouses as $warehouse)
                                             <option value="{{ $warehouse->id }}">{{ $warehouse->warehouse_name }}</option>
                                         @endforeach
@@ -175,7 +175,7 @@
                                     <label class="form-label" for="status">Tools Status <span
                                             class="text-danger">*</span></label>
                                     <select class="form-select" id="status" name="status" size="1">
-                                        <option disabled selected>Select Status</option>
+                                        <option value="" disabled selected>Select Status</option>
                                         <option value="good">Good</option>
                                         <option value="repair">Need Repair</option>
                                         <option value="dispose">Disposal</option>
@@ -259,7 +259,7 @@
                                     <label class="form-label" for="editLocation">Location <span
                                             class="text-danger">*</span></label>
                                     <select class="form-select" id="editLocation" name="editLocation" size="1">
-                                        <option disabled selected>Select Location</option>
+                                        <option value="" disabled selected>Select Location</option>
                                         <option value="1">Warehouse 1</option>
                                         <option value="2">Warehouse 2</option>
                                         <option value="3">Warehouse 3</option>
@@ -270,7 +270,7 @@
                                     <label class="form-label" for="editStatus">Tools Status <span
                                             class="text-danger">*</span></label>
                                     <select class="form-select" id="editStatus" name="editStatus" size="1">
-                                        <option disabled selected>Select Status</option>
+                                        <option value="" disabled selected>Select Status</option>
                                         <option value="good">Good</option>
                                         <option value="repair">Need Repair</option>
                                         <option value="dispose">Disposal</option>
@@ -404,7 +404,7 @@
                         if ($(this).hasClass('bg-gray')) {
                             table.row($(this)).deselect();
                             showToast("error",
-                            "Cannot select, This tools is currently on process!");
+                                "Cannot select, This tools is currently on process!");
                         }
                     })
                 }
@@ -502,7 +502,7 @@
                         table.ajax.reload();
                         $('#closeEditToolsModal').click();
                         // console.log(e)
-                        alert()
+                        // alert()
                     }
                 })
             })
@@ -580,12 +580,12 @@
             //     }
             // });
 
-            $("#backAgreement").click(function(){
+            $("#backAgreement").click(function() {
                 $('#inputCheck').prop('checked', false);
                 $("#requestToolsModalBtn").prop('disabled', true);
             })
 
-            $("#agree").click(function(){
+            $("#agree").click(function() {
                 $('#inputCheck').prop('checked', true);
                 $("#requestToolsModalBtn").prop('disabled', false);
             })
@@ -603,14 +603,14 @@
                 const projectCode = $("#projectCode").val();
                 const projectAddress = $("#projectAddress").val();
 
-                if(!projectCode){
+                if (!projectCode) {
                     showToast('info', 'Select Project Code first!')
                     return
                 }
 
                 const id = $("#tbodyModal input[type=hidden]").map((i, id) => id.defaultValue);
 
-                if(id.length == 0){
+                if (id.length == 0) {
                     showToast("error", "No Selected Item!");
                     return
                 }
@@ -646,6 +646,13 @@
                         table.ajax.reload();
                         showToast("success", "Request Successfully");
                         // $("#requesToolstBtn").prop('disabled', true);
+                        $("#subcon").val('');
+                        $("#customerName").val('');
+                        $("#projectName").val('');
+                        $("#projectCode").val('');
+                        $("#projectAddress").val('');
+                        $('#inputCheck').prop('checked', false);
+                        $("#tbodyModal").empty()
                     }
                 })
 
@@ -671,7 +678,7 @@
             });
 
             //delete selected tools in modal
-            $(document).on('click','.deleteToolRequestBtnModal', function(){
+            $(document).on('click', '.deleteToolRequestBtnModal', function() {
                 $(this).closest('tr').remove();
             })
 

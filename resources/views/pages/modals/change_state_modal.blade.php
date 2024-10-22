@@ -35,7 +35,7 @@
                     <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis" data-bs-dismiss="modal">
                         Close
                     </button>
-                    <button id="addStateBtn" type="button" class="btn btn-alt-primary closeModalRfteis">
+                    <button id="addStateBtn" type="button" class="btn btn-alt-primary">
                         Change  
                     </button>
                 </div>

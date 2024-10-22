@@ -2,6 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('css/track_request.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -51,6 +52,7 @@
     <!-- END Page Content -->
 
     @include('pages.modals.ongoing_pullout_request_modal')
+    @include('pages.modals.track_request_modal')
 
 @endsection
 
@@ -118,6 +120,37 @@
                         data: 'action'
                     },
                 ],
+                drawCallback: function() {
+                    $(".trackBtn").tooltip();
+
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnum');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+
+                                $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
+
+                                // $("#requestProgress li").each(function(index) {
+                                //     if (index < result) {
+                                //         $(this).addClass("active");
+                                //     }
+                                // });
+
+                            }
+                        })
+                    })
+                }
             });
 
             $(document).on('click', '.pulloutNumber', function() {

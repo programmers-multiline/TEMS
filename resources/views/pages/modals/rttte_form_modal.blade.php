@@ -22,7 +22,7 @@
                             <label class="form-label" for="projectName">Project Name <span
                                     class="text-danger">*</span></label>
                             <select class="form-select" id="projectName" name="projectName" size="1">
-                                <option disabled selected>Select Project Code</option>
+                                <option value="" disabled selected>Select Project Name</option>
                                 @foreach ($pg as $project_detail)
                                     <option data-pcode="{{ Str::title($project_detail->project_code) }}"
                                         data-paddress="{{ Str::title($project_detail->project_address) }}"

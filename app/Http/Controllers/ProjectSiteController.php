@@ -167,8 +167,7 @@ class ProjectSiteController extends Controller
                     $action = '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="' . $row->id . '" data-po="' . $row->po_number . '" data-asset="' . $row->asset_code . '" data-serial="' . $row->serial_number . '" data-itemcode="' . $row->item_code . '" data-itemdesc="' . $row->item_description . '" data-brand="' . $row->brand . '" data-location="' . $row->location . '" data-status="' . $row->tools_status . '" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
                 <i class="fa fa-pencil-alt"></i></button>';
                 } else if ($user_type == 3 || $user_type == 4 || $user_type == 5) {
-                    $action = '<button data-bs-toggle="modal" data-bs-target="#modalRequestWarehouse" type="button" id="requestWhBtn" class="btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
-                <i class="fa fa-file-pen"></i></button>';
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 }
                 return $action;
             })
@@ -399,7 +398,7 @@ class ProjectSiteController extends Controller
 
                 $is_have_value = $row->price ? 'disabled' : '';
 
-                $add_price = '<input value="' . $row->price . '" data-id="' . $row->pstri_id . '" style="width: 100px;" type="number" class="price" name="price" min="1">';
+                $add_price = '<input class="form-control price" value="' . $row->price . '" data-id="' . $row->pstri_id . '" style="width: 100px;" type="number" name="price" min="1">';
                 return $add_price;
             })
 
@@ -422,13 +421,23 @@ class ProjectSiteController extends Controller
 
         $price_datas = json_decode($request->priceDatas);
 
-        foreach ($price_datas as $data) {
-            $pstri = PsTransferRequestItems::where('status', 1)->where('id', $data->id)->first();
+        // return $price_datas;
 
-            $pstri->price = $data->price;
+        if($request->type == 'rfteis'){
+            foreach ($price_datas as $data) {
+               TransferRequestItems::where('status', 1)->where('id', $data->id)->update([
+                    'price' => $data->price,
+                ]);
+            }
+        }else{
+            foreach ($price_datas as $data) {
+                PsTransferRequestItems::where('status', 1)->where('id', $data->id)->update([
+                    'price' => $data->price
+                ]);
 
-            $pstri->update();
+            }
         }
+        
 
     }
 }

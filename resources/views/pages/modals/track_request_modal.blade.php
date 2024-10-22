@@ -34,11 +34,18 @@
                               </ul>
                   
                               <div class="d-flex justify-content-between">
+                                {{-- <div class="d-lg-flex align-items-center">
+                                  <i class="fas fa-hourglass-half fa-3x me-lg-4 mb-3 mb-lg-0"></i>
+                                  <div>
+                                    <p class="fw-bold mb-1">Request</p>
+                                    <p class="fw-bold mb-0">Pending</p>
+                                  </div>
+                                </div> --}}
                                 <div class="d-lg-flex align-items-center">
                                   <i class="fas fa-clipboard-list fa-3x me-lg-4 mb-3 mb-lg-0"></i>
                                   <div>
                                     <p class="fw-bold mb-1">Request</p>
-                                    <p class="fw-bold mb-0">Processed</p>
+                                    <p class="fw-bold mb-0">Approved</p>
                                   </div>
                                 </div>
                                 <div class="d-lg-flex align-items-center">
@@ -59,7 +66,7 @@
                                   <i class="fas fa-building fa-3x me-lg-4 mb-3 mb-lg-0"></i>
                                   <div>
                                     <p class="fw-bold mb-1">Request</p>
-                                    <p class="fw-bold mb-0">Delivered</p>
+                                    <p class="fw-bold mb-0">Received</p>
                                   </div>
                                 </div>
                               </div>

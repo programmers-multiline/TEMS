@@ -30,7 +30,7 @@
                                 <th>Brand</th>
                                 <th>Location</th>
                                 <th>Status</th>
-                                @if (Request::is('pages/pullout_for_receiving', 'pages/pullout_ongoing'))
+                                @if (Request::is('pages/pullout_for_receiving', 'pages/pullout_ongoing', 'pages/approved_pullout'))
                                 <th>User Evaluation</th>
                                 @endif
                                 @if (Request::is('pages/pullout_ongoing', 'pages/approved_pullout', 'pages/pullout_completed'))

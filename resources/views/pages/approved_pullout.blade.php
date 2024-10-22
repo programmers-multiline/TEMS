@@ -170,6 +170,9 @@
                             data: 'tools_status'
                         },
                         {
+                            data: 'new_tools_status'
+                        },
+                        {
                             data: 'action'
                         }
                     ],

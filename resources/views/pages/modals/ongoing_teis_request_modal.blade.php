@@ -18,7 +18,7 @@
                             <button type="button" id="receiveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Receive</button>
                         @endif
                         {{-- approved btn --}}
-                        @if (Request::is(['pages/rfteis', 'pages/site_to_site_transfer']))
+                        @if (Request::is(['pages/rfteis', 'pages/site_to_site_transfer']) && Auth::user()->user_type_id != 4)
                             <button type="button" id="approveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Approve</button>
                         @endif
                         <table id="modalTable"
@@ -28,7 +28,7 @@
                                 @if (Request::is('pages/request_for_receiving'))
                                     <th id="selectToolsContainer" style="padding-right: 10px;"></th>
                                 @endif
-                                @if (!Request::is('pages/rfteis') && !Request::is('pages/rfteis_approved'))
+                                @if (!Request::is('pages/rfteis') && !Request::is('pages/rfteis_approved') && !Request::is('pages/rfteis_acc'))
                                 <th class="pictureHeader">Picture</th>
                                 @endif
                                 <th>PO Number</th>
@@ -38,6 +38,11 @@
                                 <th>Item Desc</th>
                                 <th>Brand</th>
                                 <th>Location</th>
+                                @if (Auth::user()->user_type_id == 7)
+                                <th>Add Price</th>
+                                @elseif (Auth::user()->user_type_id != 7)
+                                <th>Price</th>
+                                @endif
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -51,9 +56,11 @@
                         <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalBtn" data-bs-dismiss="modal">
                             Close
                         </button>
-                        {{-- <button id="btnAddTools" type="button" class="btn btn-alt-primary">
-                            Done
-                        </button> --}}
+                        @if (Auth::user()->user_type_id == 7)
+                            <button id="addPriceBtn" type="button" class="btn btn-alt-primary">
+                                Add Price
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

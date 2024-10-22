@@ -282,7 +282,8 @@
                         return;
                     }
 
-                    const allData = [];
+                     const allData = [];
+                    const whEval = [];
                     const prevCount = parseInt($("#pulloutForReceivingCount").text());
 
 
@@ -297,7 +298,16 @@
                             pri_id,
                             user_eval
                         }
+
+                        whEval.push(tool_eval)
                         allData.push(datas)
+                    }
+
+                    /// check if all select status have value
+                    const hasEmptyStatus = whEval.some(status => status === null || status === "");
+                    if(hasEmptyStatus){
+                        showToast("info", "Please select tools evaluation first.")
+                        return
                     }
 
 

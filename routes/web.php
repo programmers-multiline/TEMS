@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/rfteis', 'pages.rfteis');
     Route::view('/pages/barcode_scanner', 'pages.barcode_scanner');
     Route::view('/pages/rttte_acc', 'pages.rttte_acc');
+    Route::view('/pages/rfteis_acc', 'pages.rfteis_acc');
     Route::view('/pages/daf', 'pages.daf');
     Route::view('/pages/site_to_site_transfer', 'pages.site_to_site_transfer');
     Route::view('/pages/pullout_completed', 'pages.pullout_completed');
@@ -102,6 +103,8 @@ Route::controller(TransferRequestController::class)->group(function () {
     Route::post('track_request', 'track_request')->name('track_request');
     Route::get('completed_sts_request', 'completed_sts_request')->name('completed_sts_request');
     Route::get('sts_request_approved', 'sts_request_approved')->name('sts_request_approved');
+    Route::get('fetch_teis_request_acc', 'fetch_teis_request_acc')->name('fetch_teis_request_acc');
+    Route::post('rfteis_acc_proceed', 'rfteis_acc_proceed')->name('rfteis_acc_proceed');
     
     
 });

@@ -156,6 +156,7 @@
                     processing: true,
                     serverSide: false,
                     destroy: true,
+                    scrollX: true,
                     ajax: {
                         type: 'get',
                         url: '{{ route('ongoing_teis_request_modal') }}',
@@ -189,6 +190,9 @@
                         },
                         {
                             data: 'warehouse_name'
+                        },
+                        {
+                            data: 'price'
                         },
                         {
                             data: 'tools_status'

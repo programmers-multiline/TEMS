@@ -50,6 +50,20 @@ class PullOutController extends Controller
             
             return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="pulloutNumber btn text-primary fs-6 d-block">View</button>';
         })
+
+        ->addColumn('subcon', function($row){
+            if(!$row->subcon){
+                return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+            }
+        })
+
+        ->addColumn('approved_sched_date', function($row){
+            if(!$row->approved_sched_date){
+                return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+            }
+        })
+
+
         ->addColumn('action', function($row){
 
             $tool = PulloutRequest::where('status', 1)
@@ -64,7 +78,7 @@ class PullOutController extends Controller
             $have_sched2 = $row->is_deliver ? 'd-none' : 'd-block';
             if($user_type == 4){
                 $action =  '<div class="d-flex">
-                <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                 <button '.$have_sched.' data-num="'.$row->pullout_number.'" data-type="'.$row->tr_type.'" type="button" class="deliverBtn '.$have_sched2.' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 </div>';
             }else if($user_type == 3 || $user_type == 5){
@@ -83,7 +97,7 @@ class PullOutController extends Controller
 
         // })
 
-        ->rawColumns(['view_tools', 'action'])
+        ->rawColumns(['view_tools','subcon', 'approved_sched_date', 'action'])
         ->toJson();
     }
 
@@ -119,10 +133,10 @@ class PullOutController extends Controller
             if($request->path == "pages/pullout_for_receiving"){
                 $action =  '
                   <select style="width: 150px;" class="whEval form-select">
-                        <option disabled selected="">Select Status</option>
+                        <option value="" disabled selected>Select Status</option>
                         <option value="good">Good</option>
                         <option value="repair">Need Repair</option>
-                        <option value="disposal">Disposal</option>
+                        <option value="dispose">Disposal</option>
                     </select>
                 ';
             }
