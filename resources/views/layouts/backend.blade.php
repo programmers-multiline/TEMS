@@ -369,19 +369,21 @@
 
     //My TEIS Request - for receiving
     
-    $request_tools_for_receiving = App\Models\TransferRequest::select('teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'tr_type')
-    ->where('status', 1)
-    ->where('progress', 'ongoing')
-    ->where('request_status', 'approved')
-    ->where('pe', Auth::user()->id)
-    ->whereNotNull('is_deliver');
+    $request_tools_for_receiving =  App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+        ->where('status', 1)
+        ->where(function($query) {
+            $query->where('progress', 'ongoing')
+                ->orWhere('progress', 'partial');
+        })
+        ->where('pe', Auth::user()->id)
+        ->whereNotNull('is_deliver');
 
-    $ps_request_tools_for_receiving = App\Models\PsTransferRequests::select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'tr_type')
-    ->where('status', 1)
-    ->where('progress', 'ongoing')
-    ->where('request_status', 'approved')
-    ->where('user_id', Auth::user()->id)
-    ->whereNotNull('is_deliver');
+    $ps_request_tools_for_receiving =  App\Models\PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+        ->where('status', 1)
+        ->where('progress', 'ongoing')
+        ->where('request_status', 'approved')
+        ->where('user_id', Auth::user()->id)
+        ->whereNotNull('is_deliver');
 
     $unioned_tables_for_receiving = $request_tools_for_receiving->union($ps_request_tools_for_receiving)->count();
 
