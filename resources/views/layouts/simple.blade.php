@@ -32,52 +32,52 @@
 
   <!-- Alternatively, you can also include a specific color theme after the main stylesheet to alter the default color theme of the template -->
   {{-- @vite(['resources/sass/main.scss', 'resources/sass/codebase/themes/corporate.scss', 'resources/js/codebase/app.js']) --}}
-  @yield('js')
+  @yield('css')
 </head>
 
 <body>
   <!-- Page Container -->
   <!--
     Available classes for #page-container:
-
+    
     SIDEBAR & SIDE OVERLAY
 
-      'sidebar-r'                                 Right Sidebar and left Side Overlay (default is left Sidebar and right Side Overlay)
-      'sidebar-mini'                              Mini hoverable Sidebar (screen width > 991px)
-      'sidebar-o'                                 Visible Sidebar by default (screen width > 991px)
-      'sidebar-o-xs'                              Visible Sidebar by default (screen width < 992px)
-      'sidebar-dark'                              Dark themed sidebar
-
-      'side-overlay-hover'                        Hoverable Side Overlay (screen width > 991px)
-      'side-overlay-o'                            Visible Side Overlay by default
-
-      'enable-page-overlay'                       Enables a visible clickable Page Overlay (closes Side Overlay on click) when Side Overlay opens
-
-      'side-scroll'                               Enables custom scrolling on Sidebar and Side Overlay instead of native scrolling (screen width > 991px)
-
+    'sidebar-r'                                 Right Sidebar and left Side Overlay (default is left Sidebar and right Side Overlay)
+    'sidebar-mini'                              Mini hoverable Sidebar (screen width > 991px)
+    'sidebar-o'                                 Visible Sidebar by default (screen width > 991px)
+    'sidebar-o-xs'                              Visible Sidebar by default (screen width < 992px)
+    'sidebar-dark'                              Dark themed sidebar
+    
+    'side-overlay-hover'                        Hoverable Side Overlay (screen width > 991px)
+    'side-overlay-o'                            Visible Side Overlay by default
+    
+    'enable-page-overlay'                       Enables a visible clickable Page Overlay (closes Side Overlay on click) when Side Overlay opens
+    
+    'side-scroll'                               Enables custom scrolling on Sidebar and Side Overlay instead of native scrolling (screen width > 991px)
+    
     HEADER
-
-      ''                                          Static Header if no class is added
-      'page-header-fixed'                         Fixed Header
-
+    
+    ''                                          Static Header if no class is added
+    'page-header-fixed'                         Fixed Header
+    
     HEADER STYLE
-
-      ''                                          Classic Header style if no class is added
-      'page-header-modern'                        Modern Header style
-      'page-header-dark'                          Dark themed Header (works only with classic Header style)
-      'page-header-glass'                         Light themed Header with transparency by default
-                                                  (absolute position, perfect for light images underneath - solid light background on scroll if the Header is also set as fixed)
-      'page-header-glass page-header-dark'        Dark themed Header with transparency by default
-                                                  (absolute position, perfect for dark images underneath - solid dark background on scroll if the Header is also set as fixed)
-
+    
+    ''                                          Classic Header style if no class is added
+    'page-header-modern'                        Modern Header style
+    'page-header-dark'                          Dark themed Header (works only with classic Header style)
+    'page-header-glass'                         Light themed Header with transparency by default
+    (absolute position, perfect for light images underneath - solid light background on scroll if the Header is also set as fixed)
+    'page-header-glass page-header-dark'        Dark themed Header with transparency by default
+    (absolute position, perfect for dark images underneath - solid dark background on scroll if the Header is also set as fixed)
+    
     MAIN CONTENT LAYOUT
-
-      ''                                          Full width Main Content if no class is added
-      'main-content-boxed'                        Full width Main Content with a specific maximum width (screen width > 1200px)
-      'main-content-narrow'                       Full width Main Content with a percentage width (screen width > 1200px)
-
+    
+    ''                                          Full width Main Content if no class is added
+    'main-content-boxed'                        Full width Main Content with a specific maximum width (screen width > 1200px)
+    'main-content-narrow'                       Full width Main Content with a percentage width (screen width > 1200px)
+    
     DARK MODE
-
+    
       'sidebar-dark page-header-dark dark-mode'   Enable dark mode (light sidebar/header is not supported with dark mode)
   -->
   <div id="page-container" class="main-content-boxed">
@@ -88,17 +88,13 @@
     <!-- END Main Container -->
   </div>
   <!-- END Page Container -->
-
-  <script src="{{asset('public/js/codebase.app.min.js')}}"></script>
-
-    <!-- jQuery (required for BS Notify plugin) -->
-    <script src="{{asset('public/js/lib/jquery.min.js')}}"></script>
-
-    {{-- <!-- Page JS Plugins -->
-    <script src="{{asset('public/js/plugins/bootstrap-notify/bootstrap-notify.min.js')}}"></script>
-
-    <!-- Page JS Helpers (BS Notify Plugin) -->
-    <script>Codebase.helpersOnLoad(['jq-notify']);</script> --}}
+  
+  {{-- <!-- Page JS Plugins -->
+  <script src="{{asset('public/js/plugins/bootstrap-notify/bootstrap-notify.min.js')}}"></script>
+  
+  <!-- Page JS Helpers (BS Notify Plugin) -->
+  <script>Codebase.helpersOnLoad(['jq-notify']);</script> --}}
+  @yield('js')
 </body>
 
 </html>

@@ -27,6 +27,7 @@
                     </div>
                     <input type="hidden" id="tersNumModalhidden" name="tersNum">
                     <input type="hidden" id="trTypeModalhidden" name="trType">
+                    <input type="hidden" id="path" value="{{ request()->path() }}" name="path">
                     <div class="block-content block-content-full block-content-sm text-end border-top">
                         <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis"
                             data-bs-dismiss="modal">

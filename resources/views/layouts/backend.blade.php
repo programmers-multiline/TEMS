@@ -35,15 +35,15 @@
                 ->where('request_type', 1)
                 ->count();
         } elseif ($approver->sequence == 1) {
-            $prev_approver = App\Models\RequestApprover::where('status', 1)
-                ->where('request_id', $approver->request_id)
-                ->where('sequence', 0)
-                ->where('series', $series)
-                ->where('request_type', 1)
-                ->orderBy('approver_status', 'desc')
-                ->first();
+            // $prev_approver = App\Models\RequestApprover::where('status', 1)
+            //     ->where('request_id', $approver->request_id)
+            //     ->where('sequence', 0)
+            //     ->where('series', $series)
+            //     ->where('request_type', 1)
+            //     ->orderBy('approver_status', 'desc')
+            //     ->first();
 
-            if ($prev_approver->approver_status == 1) {
+            // if ($prev_approver->approver_status == 1) {
                 $tool_approvers = App\Models\RequestApprover::leftjoin(
                     'transfer_requests',
                     'transfer_requests.id',
@@ -63,9 +63,9 @@
                     ->where('request_type', 1)
                     ->where('for_pricing', 2)
                     ->count();
-            } else {
-                $tool_approvers = 0;
-            }
+            // } else {
+            //     $tool_approvers = 0;
+            // }
         } else {
             $prev_sequence = $approver->sequence - 1;
 
@@ -213,90 +213,91 @@
                 ->where('current_pe', Auth::user()->id)
                 ->count();
         } else {
-            $approver = App\Models\RequestApprover::where('status', 1)
-                ->where('approver_id', Auth::user()->id)
-                ->where('series', $series)
-                ->where('request_type', 2)
-                ->first();
+            // $approver = App\Models\RequestApprover::where('status', 1)
+            //     ->where('approver_id', Auth::user()->id)
+            //     ->where('series', $series)
+            //     ->where('request_type', 2)
+            //     ->first();
+            //! alisin mo to boss palitan mo
+            // if ($approver->sequence == 1) {
+            //     $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
+            //         'request_approvers',
+            //         'request_approvers.request_id',
+            //         'ps_transfer_requests.id',
+            //     )
+            //         ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+            //         ->select(
+            //             'users.fullname',
+            //             'request_number',
+            //             'daf_status',
+            //             'request_status',
+            //             'subcon',
+            //             'customer_name',
+            //             'project_name',
+            //             'project_code',
+            //             'project_address',
+            //             'date_requested',
+            //             'tr_type',
+            //             'request_approvers.id as request_approver_id',
+            //             'request_approvers.request_id',
+            //             'request_approvers.series',
+            //         )
+            //         ->where('ps_transfer_requests.status', 1)
+            //         ->where('request_approvers.status', 1)
+            //         // ->where('current_pe', Auth::user()->id)
+            //         ->where('request_approvers.approver_id', Auth::user()->id)
+            //         ->where('progress', 'ongoing')
+            //         // ->where('series', $series)
+            //         ->where('approver_status', 0)
+            //         ->where('request_type', 2)
+            //         ->count();
+            // } else {
+            //     $prev_sequence = $approver->sequence - 1;
 
-            if ($approver->sequence == 1) {
-                $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
-                    'request_approvers',
-                    'request_approvers.request_id',
-                    'ps_transfer_requests.id',
-                )
-                    ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                    ->select(
-                        'users.fullname',
-                        'request_number',
-                        'daf_status',
-                        'request_status',
-                        'subcon',
-                        'customer_name',
-                        'project_name',
-                        'project_code',
-                        'project_address',
-                        'date_requested',
-                        'tr_type',
-                        'request_approvers.id as request_approver_id',
-                        'request_approvers.request_id',
-                        'request_approvers.series',
-                    )
-                    ->where('ps_transfer_requests.status', 1)
-                    ->where('request_approvers.status', 1)
-                    // ->where('current_pe', Auth::user()->id)
-                    ->where('request_approvers.approver_id', Auth::user()->id)
-                    ->where('progress', 'ongoing')
-                    // ->where('series', $series)
-                    ->where('approver_status', 0)
-                    ->where('request_type', 2)
-                    ->count();
-            } else {
-                $prev_sequence = $approver->sequence - 1;
+            //     $prev_approver = App\Models\RequestApprover::where('status', 1)
+            //         ->where('request_id', $approver->request_id)
+            //         ->where('sequence', $prev_sequence)
+            //         ->where('series', $series)
+            //         ->where('request_type', 2)
+            //         ->first();
 
-                $prev_approver = App\Models\RequestApprover::where('status', 1)
-                    ->where('request_id', $approver->request_id)
-                    ->where('sequence', $prev_sequence)
-                    ->where('series', $series)
-                    ->where('request_type', 2)
-                    ->first();
-
-                if ($prev_approver->approver_status == 1) {
-                    $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
-                        'request_approvers',
-                        'request_approvers.request_id',
-                        'ps_transfer_requests.id',
-                    )
-                        ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                        ->select(
-                            'users.fullname',
-                            'request_number',
-                            'daf_status',
-                            'request_status',
-                            'subcon',
-                            'customer_name',
-                            'project_name',
-                            'project_code',
-                            'project_address',
-                            'date_requested',
-                            'tr_type',
-                            'request_approvers.id as request_approver_id',
-                            'request_approvers.request_id',
-                            'request_approvers.series',
-                        )
-                        ->where('ps_transfer_requests.status', 1)
-                        ->where('request_approvers.status', 1)
-                        // ->where('current_pe', Auth::user()->id)
-                        ->where('request_approvers.approver_id', Auth::user()->id)
-                        ->where('progress', 'ongoing')
-                        // ->where('series', $series)
-                        ->where('approver_status', 0)
-                        ->where('request_type', 2)
-                        ->count();
-                } else {
-                    $ps_request_tools = 0;
-                }
-            }
+            //     if ($prev_approver->approver_status == 1) {
+            //         $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
+            //             'request_approvers',
+            //             'request_approvers.request_id',
+            //             'ps_transfer_requests.id',
+            //         )
+            //             ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+            //             ->select(
+            //                 'users.fullname',
+            //                 'request_number',
+            //                 'daf_status',
+            //                 'request_status',
+            //                 'subcon',
+            //                 'customer_name',
+            //                 'project_name',
+            //                 'project_code',
+            //                 'project_address',
+            //                 'date_requested',
+            //                 'tr_type',
+            //                 'request_approvers.id as request_approver_id',
+            //                 'request_approvers.request_id',
+            //                 'request_approvers.series',
+            //             )
+            //             ->where('ps_transfer_requests.status', 1)
+            //             ->where('request_approvers.status', 1)
+            //             // ->where('current_pe', Auth::user()->id)
+            //             ->where('request_approvers.approver_id', Auth::user()->id)
+            //             ->where('progress', 'ongoing')
+            //             // ->where('series', $series)
+            //             ->where('approver_status', 0)
+            //             ->where('request_type', 2)
+            //             ->count();
+            //     } else {
+            //         $ps_request_tools = 0;
+            //     }
+            // }
+            $ps_request_tools = 0;
         }
         // tignan sa upload kung andun ang number niya, pag andun wag isama sa bilang
         // if(request()->path() == 'pages/rftte'){
@@ -331,22 +332,37 @@
     }
 
     //RFTTE - warehouse
-    $request_tools = App\Models\TransferRequest::leftjoin('teis_uploads','teis_uploads.teis_number','transfer_requests.teis_number')
-    ->select('transfer_requests.teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'transfer_requests.tr_type')
-    ->where('transfer_requests.status', 1)
-    // ->where('teis_uploads.status', 1)
-    ->where('progress', 'ongoing')
-    ->where('request_status', 'approved')
-    ->whereNull('is_deliver');
+    // $request_tools = App\Models\TransferRequest::leftjoin('teis_uploads','teis_uploads.teis_number','transfer_requests.teis_number')
+    // ->select('transfer_requests.teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'transfer_requests.tr_type')
+    // ->where('transfer_requests.status', 1)
+    // // ->where('teis_uploads.status', 1)
+    // ->where('progress', 'ongoing')
+    // ->where('request_status', 'approved')
+    // ->whereNull('is_deliver');
 
-    $ps_request_tools_wh = App\Models\PsTransferRequests::leftjoin('teis_uploads','teis_uploads.teis_number','ps_transfer_requests.request_number')
-    ->leftjoin('ters_uploads','ters_uploads.pullout_number','ps_transfer_requests.request_number')
-    ->select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'ps_transfer_requests.tr_type')
-    ->where('ps_transfer_requests.status', 1)
-    ->where('progress', 'ongoing')
-    ->where('request_status', 'approved')
-    ->whereNotNull('acc')
-    ->whereNull('is_deliver');
+    // $ps_request_tools_wh = App\Models\PsTransferRequests::leftjoin('teis_uploads','teis_uploads.teis_number','ps_transfer_requests.request_number')
+    // ->leftjoin('ters_uploads','ters_uploads.pullout_number','ps_transfer_requests.request_number')
+    // ->select('request_number as teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address','date_requested', 'ps_transfer_requests.tr_type')
+    // ->where('ps_transfer_requests.status', 1)
+    // ->where('progress', 'ongoing')
+    // ->where('request_status', 'approved')
+    // ->whereNotNull('acc')
+    // ->whereNull('is_deliver');
+
+
+    $request_tools = App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->whereNull('is_deliver');
+
+    $ps_request_tools_wh = App\Models\PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+        ->where('status', 1)
+        ->where('progress', 'ongoing')
+        ->where('request_status', 'approved')
+        ///dahil inalis ko yung inputing of price sa acc
+        // ->whereNotNull('acc')
+        ->whereNull('is_deliver');
 
     $unioned_tables = $request_tools->union($ps_request_tools_wh)->count();
 
@@ -592,6 +608,30 @@
                                                 style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables }}</span>
                                             </span>
                                         </li>
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/rftte_signed_form_proof') ? ' active' : '' }}"
+                                                href="/pages/rftte_signed_form_proof">
+                                                <span class="nav-main-link-name">
+                                                    Proof of Receiving
+                                                </span>
+                                            </a>
+                                            <span class="countContainer nav-main-link text-light "><span
+                                                id="rftteCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;"></span>
+                                            </span>
+                                        </li>
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/not_serve_items') ? ' active' : '' }}"
+                                                href="/pages/not_serve_items">
+                                                <span class="nav-main-link-name">
+                                                    Not Serve Items
+                                                </span>
+                                            </a>
+                                            <span class="countContainer nav-main-link text-light"><span
+                                                id="rftteCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;"></span>
+                                            </span>
+                                        </li>
                                         <li class="nav-main-item">
                                             <a class="nav-main-link{{ request()->is('pages/rftte_completed') ? ' active' : '' }}"
                                                 href="/pages/rftte_completed">
@@ -637,6 +677,14 @@
                                         </li>
                                     </ul>
                                 </li>
+                                <li class="nav-main-heading">Generator</li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/qrcode_generator') ? ' active' : '' }}"
+                                        href="/pages/qrcode_generator">
+                                        <i class="nav-main-link-icon fa fa-qrcode"></i>
+                                        <span class="nav-main-link-name">Qr Code Generator</span>
+                                    </a>
+                                </li>
                             @endif
 
                             @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
@@ -660,7 +708,7 @@
                                             @if (Auth::user()->user_type_id == 4)
                                                 My
                                             @endif
-                                            Pull-Out Request
+                                            Request for Pull-Out
                                         </span>
                                     </a>
                                     <ul class="nav-main-submenu">
@@ -697,42 +745,44 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
-                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/request_ongoing', 'pages/request_completed') ? ' active' : '' }}"
-                                        data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
-                                        <i class="nav-main-link-icon fa fa-file-pen"></i>
-                                        <span class="nav-main-link-name">
-                                            @if (Auth::user()->user_type_id == 4)
-                                                My
-                                            @endif
-                                            TEIS Request
-                                        </span>
-                                    </a>
-                                    <ul class="nav-main-submenu">
-                                        <li class="nav-main-item">
-                                            <a class="nav-main-link{{ request()->is('pages/request_ongoing') ? ' active' : '' }}"
-                                                href="/pages/request_ongoing">
-                                                <span class="nav-main-link-name">Ongoing</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
-                                            <a class="nav-main-link{{ request()->is('pages/request_for_receiving') ? ' active' : '' }}"
-                                                href="/pages/request_for_receiving">
-                                                <span class="nav-main-link-name">For Receiving</span>
-                                            </a>
-                                            <span class="countContainer nav-main-link text-light {{$unioned_tables_for_receiving == 0 ? 'd-none' : '' }}"><span
-                                                id="forReceivingCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables_for_receiving }}</span>
+                                @if (Auth::user()->user_type_id == 4)
+                                    <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
+                                        <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/request_ongoing', 'pages/request_completed') ? ' active' : '' }}"
+                                            data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
+                                            <i class="nav-main-link-icon fa fa-file-pen"></i>
+                                            <span class="nav-main-link-name">
+                                                @if (Auth::user()->user_type_id == 4)
+                                                    My
+                                                @endif
+                                                Request for TEIS
                                             </span>
-                                        </li>
-                                        <li class="nav-main-item">
-                                            <a class="nav-main-link{{ request()->is('pages/request_completed') ? ' active' : '' }}"
-                                                href="/pages/request_completed">
-                                                <span class="nav-main-link-name">Completed</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
+                                        </a>
+                                        <ul class="nav-main-submenu">
+                                            <li class="nav-main-item">
+                                                <a class="nav-main-link{{ request()->is('pages/request_ongoing') ? ' active' : '' }}"
+                                                    href="/pages/request_ongoing">
+                                                    <span class="nav-main-link-name">Ongoing</span>
+                                                </a>
+                                            </li>
+                                            <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                                <a class="nav-main-link{{ request()->is('pages/request_for_receiving') ? ' active' : '' }}"
+                                                    href="/pages/request_for_receiving">
+                                                    <span class="nav-main-link-name">For Receiving</span>
+                                                </a>
+                                                <span class="countContainer nav-main-link text-light {{$unioned_tables_for_receiving == 0 ? 'd-none' : '' }}"><span
+                                                    id="forReceivingCount" class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables_for_receiving }}</span>
+                                                </span>
+                                            </li>
+                                            <li class="nav-main-item">
+                                                <a class="nav-main-link{{ request()->is('pages/request_completed') ? ' active' : '' }}"
+                                                    href="/pages/request_completed">
+                                                    <span class="nav-main-link-name">Completed</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                @endif
                                 {{-- <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/site_to_site_transfer') ? ' active' : '' }}"
                                         href="/pages/site_to_site_transfer">
@@ -748,7 +798,7 @@
                                 </li> --}}
 
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
-                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/site_to_site_transfer', 'pages/sts_request_completed') ? ' active' : '' }}"
+                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/site_to_site_transfer', 'pages/sts_request_completed', 'pages/ps_request_for_receiving') ? ' active' : '' }}"
                                         data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
                                         <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
                                         <span class="nav-main-link-name">
@@ -774,6 +824,19 @@
                                                     style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>
                                             </span>
                                         </li>
+                                        {{-- @if (Auth::user()->user_type_id == 4)
+                                            <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                                <a class="nav-main-link{{ request()->is('pages/ps_request_for_receiving') ? ' active' : '' }}"
+                                                    href="/pages/ps_request_for_receiving">
+                                                    <span class="nav-main-link-name">For Receiving</span>
+                                                </a>
+                                                <span class="countContainer nav-main-link text-light {{$unioned_tables_for_receiving == 0 ? 'd-none' : '' }}"><span
+                                                    id="forReceivingCount" class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables_for_receiving }}</span>
+                                                </span>
+                                            </li> 
+                                        @endif --}}
+                                        
                                         @if (Auth::user()->user_type_id == 4)
                                             <li class="nav-main-item">
                                             <a class="nav-main-link{{ request()->is('pages/sts_request_completed') ? ' active' : '' }}"
@@ -829,6 +892,18 @@
                                         </ul>
                                     </li>
                                 @endif
+
+                                @if (Auth::user()->user_type_id == 5)
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link{{ request()->is('project_tagging') ? ' active' : '' }}"
+                                            href="/project_tagging">
+                                            <i class="nav-main-link-icon fa fa-user-tag"></i>
+                                            <span class="nav-main-link-name">
+                                                Project Assignment
+                                            </span>
+                                        </a>
+                                    </li>
+                                @endif
                             @endif
 
                             @if (Auth::user()->user_type_id == 4)
@@ -836,8 +911,8 @@
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/barcode_scanner') ? ' active' : '' }}"
                                         href="/pages/barcode_scanner">
-                                        <i class="nav-main-link-icon fa fa-barcode"></i>
-                                        <span class="nav-main-link-name">Barcode Scannner</span>
+                                        <i class="nav-main-link-icon fa fa-qrcode"></i>
+                                        <span class="nav-main-link-name">Qr Code Scannner</span>
                                     </a>
                                 </li>
                             @endif
@@ -931,6 +1006,17 @@
                                     <span class="nav-main-link-name">Project Sites</span>
                                 </a>
                             </li>
+
+                            @if (Auth::user()->user_type_id == 4)
+                                <li class="nav-main-heading">Reports</li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/report_pe_logs') ? ' active' : '' }}"
+                                        href="/pages/report_pe_logs">
+                                        <i class="nav-main-link-icon fa fa-book-bookmark"></i>
+                                        <span class="nav-main-link-name">Item Logs</span>
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </div>
                     <!-- END Side Navigation -->
@@ -990,7 +1076,7 @@
                                 </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item d-flex align-items-center justify-content-between space-x-1"
-                                    href="{{ route('logout') }}">
+                                    href="#" onclick="logoutUser()">
                                     <span>Sign Out</span>
                                     <i class="fa fa-fw fa-sign-out-alt opacity-25"></i>
                                 </a>
@@ -1292,9 +1378,32 @@
 
             $(".closeModalBtn").click(function(){
                 if(path == "pages/request_for_receiving"){
-                    location.reload();
+                    // location.reload();
+                    $("#requestFormLayout").empty();
+                }else{
+                    $("#requestFormLayout").empty();
                 }
             })
+
+
+
+            function logoutUser() {
+                $.ajax({
+                    url: '{{ route("logout") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        window.history.pushState(null, "", window.location.href);
+                        window.onpopstate = function() {
+                            window.history.pushState(null, "", window.location.href);
+                        };
+                        window.location.href = '{{ route("login") }}';
+                    }
+                });
+            }
+
     </script>
 
     @yield('js')

@@ -11,11 +11,12 @@
                         </button>
                     </div>
                 </div>
+                <input type="hidden" id="path" value="{{ request()->path() }}">
                 <div class="block-content fs-sm">
-                    @if (Request::is('pages/pullout_for_receiving'))
+                    {{-- @if (Request::is('pages/pullout_for_receiving'))
                         <button type="button" id="receiveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Receive</button>
                     @endif
-                <input type="hidden" id="path" value="{{ request()->path() }}">
+                    <input type="hidden" id="path" value="{{ request()->path() }}">
                     <table id="modalTable" class="table fs-sm table-bordered table-hover table-vcenter w-100 js-dataTable-responsive">
                         <thead>
                             <tr>
@@ -44,7 +45,10 @@
                         <tbody>
 
                         </tbody>
-                    </table>
+                    </table> --}}
+                    <div id="requestFormLayout">
+
+                    </div>
                 </div>
                 <div class="block-content block-content-full block-content-sm text-end border-top">
                     <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalBtn" data-bs-dismiss="modal">

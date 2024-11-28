@@ -28,6 +28,9 @@
                     
                     <input type="hidden" id="pstersNumModalhidden" name="tersNum">
                     <input type="hidden" id="pstrTypeModalhidden" name="trType">
+                    <input type="hidden" id="pstoolIdModalhidden" name="psToolId">
+                    <input type="hidden" id="prevReqNumModalhidden" name="prevReqNum">
+                    <input type="hidden" id="prevPeModalhidden" name="prevPe">
                     <div class="block-content block-content-full block-content-sm text-end border-top">
                         <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis"
                             data-bs-dismiss="modal">

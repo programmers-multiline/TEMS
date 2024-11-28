@@ -3,6 +3,10 @@
 @section('css')
 <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
 <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
+{{-- <link rel="stylesheet" href="{{ asset('css/track_request.css') }}"> --}}
+<link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
+<link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
+<link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
 
 <style>
     #table > thead > tr > th.text-center.dt-orderable-none.dt-ordering-asc > span.dt-column-order{
@@ -11,6 +15,16 @@
 
     #table > thead > tr > th.dt-orderable-none.dt-select.dt-ordering-asc > span.dt-column-order{
         display: none;
+    }
+    .filepond--credits{
+        display: none;
+    }
+    .pictureContainer{
+        display: block;
+        white-space: nowrap; 
+        width: 110px !important; 
+        overflow-x: hidden;
+        text-overflow: ellipsis;
     }
 
 </style>
@@ -32,6 +46,7 @@
                     <thead>
                         <tr>
                             <th>Items</th>
+                            <th>Request#</th>
                             <th>Requestor</th>
                             <th>Subcon</th>
                             <th>Customer Name</th>
@@ -53,6 +68,8 @@
     <!-- END Page Content -->
 
 @include('pages.modals.ongoing_teis_request_modal')
+@include('pages.modals.track_request_modal')
+@include('pages.modals.upload_picture_modal')
 
 @endsection
 
@@ -67,6 +84,17 @@
 <script src="{{asset('js/plugins/datatables-select/js/select.dataTables.js')}}"></script>
 <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
 <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+
+<script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-file-encode/filepond-plugin-file-encode.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
+<script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}"></script>
 
 <script type="module">
     Codebase.helpersOnLoad(['jq-magnific-popup']);
@@ -93,6 +121,9 @@
                 columns: [
                     {
                         data: 'view_tools'
+                    },
+                    {
+                        data: 'request_number'
                     },
                     {
                         data: 'fullname'
@@ -122,82 +153,210 @@
                         data: 'action'
                     },
                 ],
+                drawCallback: function() {
+                    $(".trackBtn").tooltip();
+
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnumber');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+
+                                $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
+
+                                // $("#requestProgress li").each(function(index) {
+                                //     if (index < result) {
+                                //         $(this).addClass("active");
+                                //     }
+                                // });
+
+                            }
+                        })
+                    })
+                }
             });
 
             $(document).on('click','.teisNumber',function(){
 
+                // const id = $(this).data("id");
+                // const type = $(this).data("transfertype");
+                // const path = $("#path").val();
+
+
                 const id = $(this).data("id");
-                const type = $(this).data("transfertype");
-                const path = $("#path").val();
+                const pstrid = $(this).data("pstrid");
+                const pe = $(this).data("pe");
+                const path = $('#path').val();
 
-
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
+                    $.ajax({
+                        url: '{{ route('rttte_approvers_view') }}',
+                        method: 'get',
                         data: {
-                            id, 
-                            type,
+                            id,
+                            pstrid,
+                            pe,
                             path,
-                            _token:'{{csrf_token()}}'
-                        }
-                        
-                    },
-                    columns: [
-                        {
-                            data: 'picture'
+                            _token: '{{ csrf_token() }}',
                         },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'price'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
-                        }
-                    ],
-                    scrollX: true,
-                    drawCallback: function() {
-                        // if(type == 'rttte'){
-                        //     $('table thead th.pictureHeader').show();
-                        // }else{
-                        //     $('table thead th.pictureHeader').hide();
-                        // }
-                    }
-                });
+                        success(result) {
+                            $("#requestFormLayout").html(result)
 
-                if (type == 'rttte') {
-                    modalTable.column(0).visible(true);
-                    // modalTable.column(0).searchable(true);
-                } else {
-                    modalTable.column(0).visible(false);
-                    modalTable.column(0).searchable(false);
-                }
+                            const modalTable = $("#modalTable").DataTable({
+                                paging: false,
+                                order: false,
+                                searching: false,
+                                info: false,
+                                sort: false,
+                                processing: true,
+                                serverSide: false,
+                                destroy: true,
+                                // scrollX: true,
+                                ajax: {
+                                    type: 'get',
+                                    url: '{{ route('ps_ongoing_teis_request_modal') }}',
+                                    data: {
+                                        id,
+                                        _token: '{{ csrf_token() }}'
+                                    }
+
+                                },
+                                columns: [{
+                                        data: 'picture'
+                                    },
+                                    {
+                                        data: 'item_no'
+                                    },
+                                    {
+                                        data: 'teis_no'
+                                    },
+                                    {
+                                        data: 'item_code'
+                                    },
+                                    {
+                                        data: 'item_description'
+                                    },
+                                    {
+                                        data: 'serial_number'
+                                    },
+                                    {
+                                        data: 'qty'
+                                    },
+                                    {
+                                        data: 'unit'
+                                    },
+                                    {
+                                        data: 'tools_status'
+                                    },
+                                    {
+                                        data: 'reason_for_transfer'
+                                    },
+                                    {
+                                        data: 'action'
+                                    },
+                                ],
+                                initComplete: function() {
+                                    const data = modalTable.rows().data();
+
+                                    for (var i = 0; i < data.length; i++) {
+
+                                        $("#itemListDaf").append(
+                                            `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
+                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                                (${data[i].price ? data[i].price : '<span class="text-danger">No Price</span>'})
+                                            </p>`
+                                        );
+
+                                        // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
+                                    }
+
+                                    // console.log(data)
+                                },
+                                drawCallback: function() {
+                                    $('table thead th.pictureHeader').show();
+                                }
+                            });
+
+                        }
+                    })
+
+                /// old viewing of tools
+                // const modalTable = $("#modalTable").DataTable({
+                //     processing: true,
+                //     serverSide: false,
+                //     destroy: true,
+                //     ajax: {
+                //         type: 'get',
+                //         url: '{{ route('ongoing_teis_request_modal') }}',
+                //         data: {
+                //             id, 
+                //             type,
+                //             path,
+                //             _token:'{{csrf_token()}}'
+                //         }
+                        
+                //     },
+                //     columns: [
+                //         {
+                //             data: 'picture'
+                //         },
+                //         {
+                //             data: 'po_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'serial_number'
+                //         },
+                //         {
+                //             data: 'item_code'
+                //         },
+                //         {
+                //             data: 'item_description'
+                //         },
+                //         {
+                //             data: 'brand'
+                //         },
+                //         {
+                //             data: 'warehouse_name'
+                //         },
+                //         {
+                //             data: 'price'
+                //         },
+                //         {
+                //             data: 'tools_status'
+                //         },
+                //         {
+                //             data: 'action'
+                //         }
+                //     ],
+                //     scrollX: true,
+                //     drawCallback: function() {
+                //         // if(type == 'rttte'){
+                //         //     $('table thead th.pictureHeader').show();
+                //         // }else{
+                //         //     $('table thead th.pictureHeader').hide();
+                //         // }
+                //     }
+                // });
+
+                // if (type == 'rttte') {
+                //     modalTable.column(0).visible(true);
+                //     // modalTable.column(0).searchable(true);
+                // } else {
+                //     modalTable.column(0).visible(false);
+                //     modalTable.column(0).searchable(false);
+                // }
             })
 
             $("#approveBtnModal").click(function(){
@@ -206,9 +365,11 @@
 
 
             $(document).on('click', '.approveBtn', function() {
-                const id = $(this).data('id');
+                const id = $(this).data('approverid');
                 const requestId = $(this).data('requestid');
-                const series = $(this).data('series');
+                const toolId = $(this).data('toolid');
+                const requestorId = $(this).data('requestorid');
+                const number = $(this).data('requestnumber');
 
                 const prevCount = parseInt($("#siteToSiteCount").text());
 
@@ -237,7 +398,9 @@
                             data: {
                                 id,
                                 requestId, 
-                                series,
+                                toolId,
+                                requestorId,
+                                number,
                                 _token: '{{ csrf_token() }}'
                             },
                             beforeSend(){
@@ -411,7 +574,9 @@
             // $(".closeModalRfteis").click(function(){
             //     $("#tbodyModal").empty()
             // })
+
             
         })
-    </script>
+        </script>
+        <script src="{{ asset('js\lib\fileupload.js') }}"></script>
 @endsection

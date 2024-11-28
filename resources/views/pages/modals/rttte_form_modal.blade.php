@@ -45,11 +45,15 @@
                                     placeholder="Enter Project code" disabled>
                             </div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-12 mb-3">
                             <label class="form-label" for="projectAddress">Project Address <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="projectAddress" name="projectAddress"
                                 placeholder="Enter Project Address" disabled>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="reason">Reason for transfer <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reasonForTransfer" name="reason" rows="3" placeholder="Enter Your Reason.."></textarea>
                         </div>
                         <hr class="mt-5 mb-3">
                         <div>
@@ -105,8 +109,8 @@
                         <thead>
                             <tr>
                                 <th>Item Code</th>
+                                <th>Asset Code</th>
                                 <th class="d-lg-table-cell" style="width: 60%;">Item Description</th>
-                                <th>Upload Picture</th>
                             </tr>
                         </thead>
                         <tbody id="tbodyModal">

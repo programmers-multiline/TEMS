@@ -25,9 +25,12 @@
 @section('content-title', 'List of RFTEIS')
 
 @section('content')
-<div class="loader-container" id="loader" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
-    <dotlottie-player src="{{asset('js/loader.json')}}" background="transparent" speed="1" style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal" loop autoplay>Loading</dotlottie-player>
-</div>
+    <div class="loader-container" id="loader"
+        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+        <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+            style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
+            loop autoplay>Loading</dotlottie-player>
+    </div>
     <!-- Page Content -->
     <div class="content">
         <input type="hidden" id="path" value="{{ request()->path() }}">
@@ -109,7 +112,7 @@
                     url: '{{ route('fetch_rfteis_approver') }}',
                     data: {
                         path: $("#path").val(),
-                        _token : '{{ csrf_token() }}'
+                        _token: '{{ csrf_token() }}'
                     }
                 },
                 columns: [{
@@ -145,67 +148,144 @@
             $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
+                const trid = $(this).data("trid");
+                const pe = $(this).data("pe");
+                const path = $('#path').val();
 
-
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
-                        data: {
-                            id,
-                            _token: '{{ csrf_token() }}'
-                        }
-
+                $.ajax({
+                    url: '{{ route('rfteis_approvers_view') }}',
+                    method: 'get',
+                    data: {
+                        id,
+                        trid,
+                        pe,
+                        path,
+                        _token: '{{ csrf_token() }}',
                     },
-                    columns: [
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'price'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
-                        }
-                    ],
-                });
+                    success(result) {
+                        $("#requestFormLayout").html(result)
+
+                        const modalTable = $("#modalTable").DataTable({
+                            paging: false,
+                            order: false,
+                            searching: false,
+                            info: false,
+                            sort: false,
+                            processing: true,
+                            serverSide: false,
+                            destroy: true,
+                            ajax: {
+                                type: 'get',
+                                url: '{{ route('ongoing_teis_request_modal') }}',
+                                data: {
+                                    id,
+                                    _token: '{{ csrf_token() }}'
+                                }
+
+                            },
+                            columns: [{
+                                    data: 'qty'
+                                },
+                                {
+                                    data: 'unit'
+                                },
+                                {
+                                    data: 'item_description'
+                                },
+                                {
+                                    data: 'item_code'
+                                },
+                                {
+                                    data: 'action'
+                                },
+                            ],
+                            // scrollX: true,
+                            initComplete: function() {
+                                const data = modalTable.rows().data();
+
+                                for (var i = 0; i < data.length; i++) {
+
+                                    $("#itemListDaf").append(
+                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
+                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                                (${data[i].price ? data[i].price : '<span class="text-danger">No Price</span>'})
+                                            </p>`
+                                    );
+
+                                    // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
+                                }
+
+                                // console.log(data)
+                            },
+                            drawCallback: function() {
+
+                            }
+                        });
+
+                    }
+                })
+
+                /// old modal view
+                // const modalTable = $("#modalTable").DataTable({
+                //     processing: true,
+                //     serverSide: false,
+                //     destroy: true,
+                //     ajax: {
+                //         type: 'get',
+                //         url: '{{ route('ongoing_teis_request_modal') }}',
+                //         data: {
+                //             id,
+                //             _token: '{{ csrf_token() }}'
+                //         }
+
+                //     },
+                //     columns: [
+                //         {
+                //             data: 'po_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'serial_number'
+                //         },
+                //         {
+                //             data: 'item_code'
+                //         },
+                //         {
+                //             data: 'item_description'
+                //         },
+                //         {
+                //             data: 'brand'
+                //         },
+                //         {
+                //             data: 'warehouse_name'
+                //         },
+                //         {
+                //             data: 'price'
+                //         },
+                //         {
+                //             data: 'tools_status'
+                //         },
+                //         {
+                //             data: 'action'
+                //         }
+                //     ],
+                // });
             })
 
-            $("#approveBtnModal").click(function(){
+            $("#approveBtnModal").click(function() {
                 $(".approveBtn").click();
             })
 
 
             $(document).on('click', '.approveBtn', function() {
-                const id = $(this).data('id');
+
+                const id = $(this).data('approverid');
                 const requestId = $(this).data('requestid');
-                const series = $(this).data('series');
                 const toolId = $(this).data('toolid');
                 const requestorId = $(this).data('requestorid');
+                const requestNumber = $(this).data('requestumber');
 
                 const prevCount = parseInt($("#rfteisCount").text());
 
@@ -233,13 +313,13 @@
                             method: 'post',
                             data: {
                                 id,
-                                requestId, 
-                                series,
+                                requestId,
                                 toolId,
                                 requestorId,
+                                requestNumber,
                                 _token: '{{ csrf_token() }}'
                             },
-                            beforeSend(){
+                            beforeSend() {
                                 $("#loader").show();
                             },
                             success() {
@@ -251,9 +331,9 @@
                                 });
                                 $("#loader").hide();
                                 $("#ongoingTeisRequestModal").modal('hide');
-                                if(prevCount == 1){
+                                if (prevCount == 1) {
                                     $(".countContainer").addClass("d-none")
-                                }else{
+                                } else {
                                     $("#rfteisCount").text(prevCount - 1);
                                 }
                             }
@@ -267,6 +347,54 @@
                     }
                 });
 
+
+            })
+
+
+            $(document).on('click', '.removeToolRequestBtn', function() {
+                const triId = $(this).data('triid');
+                const number = $(this).data('number');
+
+                const confirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success ms-2",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+
+                confirm.fire({
+                    title: "Remove?",
+                    text: "Are you sure you want to remove this tool?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes!",
+                    cancelButtonText: "Back",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: '{{ route('remove_tool') }}',
+                            method: 'post',
+                            data: {
+                                triId,
+                                number,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success() {
+                                $("#modalTable").DataTable().ajax.reload();
+                                showToast('success','remove tool success')
+                            }
+                        })
+
+                    } else if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+
+                    }
+                });
 
             })
 

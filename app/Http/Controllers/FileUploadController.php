@@ -2,13 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PeLogs;
 use App\Models\Uploads;
+use App\Models\RttteLogs;
+use App\Models\RfteisLogs;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Support\Str;
+use App\Models\ToolPictures;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
+use App\Models\ReceivingProof;
+use App\Models\TransferRequest;
+use App\Models\ToolsAndEquipment;
 use Illuminate\Http\UploadedFile;
+use App\Models\PsTransferRequests;
+use App\Models\TransferRequestItems;
+use Illuminate\Support\Facades\Auth;
 
 class FileUploadController extends Controller
 {
@@ -26,6 +36,30 @@ class FileUploadController extends Controller
                 ]);
                 $teis->move('uploads/teis_form/', $teis_name);
 
+                if($request->trType == 'rfteis'){
+                    $remarks = "galing sa warehouse";
+                }else{
+                    //! mali ito dapat sa previous owner hindi sa nanghihiram ngayon
+                    $remarks = "galing kay mmmmm" . $request->pe;
+                }
+
+                $tool_ids = explode(',', $request->toolId);
+
+
+                foreach($tool_ids as $tool_id){
+                  PeLogs::create([
+                    'request_number' => $request->teisNum,
+                    'tool_id' => $tool_id,
+                    'teis_upload_id' => $uploads->id,
+                    'pe' => $request->pe,
+                    'tr_type' => $request->trType,
+                    'remarks' => $remarks
+                ]);  
+
+                }
+
+                
+                
                 // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
                 TeisUploads::create([
@@ -33,6 +67,35 @@ class FileUploadController extends Controller
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
                 ]);
+
+
+                /// for logs
+                if($request->trType == 'rfteis'){
+                    RfteisLogs::create([
+                        'page' => 'rftte',
+                        'request_number' => $request->teisNum,
+                        'title' => 'Upload TEIS',
+                        'message' => Auth::user()->fullname .' '. 'upload TEIS.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/teis_form') . '/' .
+                        $teis_name . '">
+                            <span>View</span>
+                            </a>',
+                        'action' => 4,
+                        'approver_name' => Auth::user()->fullname,
+                    ]);
+                }else{
+                    RttteLogs::create([
+                        'page' => 'rftte',
+                        'request_number' => $request->teisNum,
+                        'title' => 'Upload TEIS',
+                        'message' => Auth::user()->fullname .' '. 'upload TEIS.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/teis_form') . '/' .
+                        $teis_name . '">
+                            <span>View</span>
+                            </a>',
+                        'action' => 5,
+                        'approver_name' => Auth::user()->fullname,
+                    ]);
+                }
+                
             }
         }
 
@@ -70,7 +133,7 @@ class FileUploadController extends Controller
         // );
     }
 
-
+    // RTTTE - TERS
     public function ps_upload_process_ters(Request $request)
     {
         if ($request->hasFile('ters_upload')) {
@@ -88,10 +151,37 @@ class FileUploadController extends Controller
 
                 // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
+                $tool_ids = explode(',', $request->psToolId);
+
+                //! pwede idagdag pa ang pe_id or yung prev_tr_type sa parameter dito ispin mo ulit kung alin dyan sa dalawa para maging unique lang at di mapunta sa iba ang uploaded
+                foreach($tool_ids as $tool_id){
+                    PeLogs::where('status', 1)
+                    ->where('request_number', $request->prevReqNum)
+                    ->where('tool_id', $tool_id)
+                    ->where('pe', $request->prevPe)
+                    ->update([
+                        'ters_upload_id' => $uploads->id
+                    ]);
+                };
+
                 TersUploads::create([
-                    'pullout_number' => $request->tersNum,
+                    // 'pullout_number' => $request->tersNum, lagyan ng palatandaan
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
+                ]);
+
+
+                /// for logs
+                RttteLogs::create([
+                    'page' => 'rftte',
+                    'request_number' => $request->tersNum,
+                    'title' => 'Upload TERS',
+                    'message' => Auth::user()->fullname .' '. 'upload TERS.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+                    $ters_name . '">
+                        <span>View</span>
+                        </a>',
+                    'action' => 4,
+                    'approver_name' => Auth::user()->fullname,
                 ]);
             }
         }
@@ -125,11 +215,140 @@ class FileUploadController extends Controller
                     'tr_type' => $request->trType,
                 ]);
 
-                PulloutRequest::where('status', 1)->where('pullout_number', $request->tersNum)->update([
-                    'progress' => 'completed',
+                ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
+                TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
+                    'clear' => 1
                 ]);
+
+                $tr_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->whereNull('is_remove')->pluck('clear');
+                ///tignan kung ang bawat row is 1 lahat
+                $is_all_clear = collect($tr_tools)->every(function ($value) {
+                    return $value === 1;
+                });
+
+                if($is_all_clear){
+                    TransferRequest::where('status', 1)->where('teis_number', $request->tersNum)->update([
+                        'progress' => 'completed'
+                    ]);
+                }
+                
+                /// for logs
+                RfteisLogs::create([
+                    'page' => 'not_serve_items',
+                    'request_number' => $request->tersNum,
+                    'title' => 'Upload TERS',
+                    'message' => Auth::user()->fullname .' '. 'upload TERS due to "Not served" tool redelivery unavailable.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+                    $ters_name . '">
+                        <span>View</span>
+                        </a>',
+                    'action' => 11,
+                    'approver_name' => Auth::user()->fullname,
+                ]);
+
+                ///para lang kasi ito sa pullout
+                if($request->path != 'pages/not_serve_items'){
+                    PulloutRequest::where('status', 1)->where('pullout_number', $request->tersNum)->update([
+                        'progress' => 'completed',
+                    ]);
+                }
+
             }
         }
 
     }
+
+
+    // Upload Picture of Tools
+
+    public function upload_tools_pic(Request $request)
+    {
+        //  dd($request->all());
+        if ($request->hasFile('picture_upload')) {
+            
+
+            $toolPicture = $request->picture_upload;
+
+            foreach ($toolPicture as $pic) {
+                $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->extension();
+                $uploads = Uploads::create([
+                    'name' => $pic_name,
+                    'original_name' => $pic->getClientOriginalName(),
+                    'extension' => $pic->extension(),
+                ]);
+                $pic->move('uploads/tool_pictures/', $pic_name);
+
+                // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+
+                ToolPictures::create([
+                    'pstr_id' => $request->reqNum,
+                    'tool_id' => $request->toolId,
+                    'upload_id' => $uploads->id,
+                    'tr_type' => 'rttte',
+                ]);
+
+
+                 /// for logs
+                 $tools_desc = ToolsAndEquipment::where('status', 1)->where('id', $request->toolId)->value('item_description');
+                 
+                 RttteLogs::create([
+                    'page' => 'site_to_site_transfer',
+                    'request_number' => $request->reqNum,
+                    'title' => 'Tool Picture Uploaded (Owner)',
+                    'message' => Auth::user()->fullname .' '. 'uploaded a picture of '. $tools_desc .'.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_picture') . '/' .
+                    $pic_name . '">
+                        <span>View</span>
+                        </a>',
+                    'action' => 2,
+                    'approver_name' => Auth::user()->fullname,
+                ]);
+
+            }
+        }
+
+    }
+
+
+
+    public function upload_proof_of_receiving(Request $request)
+    {
+        //  dd($request->all());
+        if ($request->hasFile('proof_upload')) {
+            
+
+            $por = $request->proof_upload;
+
+            foreach ($por as $proof) {
+                $proof_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $proof->extension();
+                $uploads = Uploads::create([
+                    'name' => $proof_name,
+                    'original_name' => $proof->getClientOriginalName(),
+                    'extension' => $proof->extension(),
+                ]);
+                $proof->move('uploads/receiving_proofs/', $proof_name);
+
+                ReceivingProof::create([
+                    'request_number' => $request->reqNum,
+                    'upload_id' => $uploads->id,
+                    'tr_type' => $request->trType,
+                ]);
+
+                if($request->trType == 'rfteis'){
+                    TransferRequest::where('status', 1)->where('teis_number', $request->reqNum)->update([
+                        'is_proof_upload' => now()
+                    ]);
+                }else{
+                    PsTransferRequests::where('status', 1)->where('request_number', $request->reqNum)->update([
+                        'is_proof_upload' => now()
+                    ]);
+                }
+
+            }
+        }
+
+    }
+
+
+
+ 
+
 }

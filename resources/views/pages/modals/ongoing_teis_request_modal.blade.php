@@ -1,4 +1,10 @@
     {{-- modal add tools --}}
+    <style>
+        #requestFormLayout{
+            height: 80vh;
+            overflow-y: scroll;
+        }
+    </style>
 
     <div class="modal fade" id="ongoingTeisRequestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
@@ -13,11 +19,11 @@
                             </button>
                         </div>
                     </div>
-                    <div id="aaa" class="block-content fs-sm">
-                        @if (Request::is('pages/request_for_receiving'))
+                    {{-- <div id="aaa" class="block-content fs-sm">
+                        @if (Request::is('pages/request_for_receiving', 'pages/ps_request_for_receiving'))
                             <button type="button" id="receiveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Receive</button>
                         @endif
-                        {{-- approved btn --}}
+                        approved btn
                         @if (Request::is(['pages/rfteis', 'pages/site_to_site_transfer']) && Auth::user()->user_type_id != 4)
                             <button type="button" id="approveBtnModal" class="btn btn-primary mb-3 d-block ms-auto"><i class="fa fa-clipboard-check me-1"></i>Approve</button>
                         @endif
@@ -25,7 +31,7 @@
                         class="table fs-sm table-bordered table-hover table-vcenter w-100">
                         <thead>
                             <tr>
-                                @if (Request::is('pages/request_for_receiving'))
+                                @if (Request::is('pages/request_for_receiving', 'pages/ps_request_for_receiving'))
                                     <th id="selectToolsContainer" style="padding-right: 10px;"></th>
                                 @endif
                                 @if (!Request::is('pages/rfteis') && !Request::is('pages/rfteis_approved') && !Request::is('pages/rfteis_acc'))
@@ -51,6 +57,9 @@
     
                         </tbody>
                     </table>
+                    </div> --}}
+                    <div id="requestFormLayout">
+
                     </div>
                     <div class="block-content block-content-full block-content-sm text-end border-top">
                         <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalBtn" data-bs-dismiss="modal">

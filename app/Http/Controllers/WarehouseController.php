@@ -6,11 +6,15 @@ use Carbon\Carbon;
 use App\Models\Daf;
 use App\Models\DafItems;
 use App\Models\Warehouse;
+use App\Models\RfteisLogs;
 use App\Mail\ApproverEmail;
 use App\Models\PmGroupings;
+use App\Models\ProjectSites;
 use Illuminate\Http\Request;
+use App\Models\SetupApprover;
 use App\Models\RequestApprover;
 use App\Models\TransferRequest;
+use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\TransferRequestItems;
@@ -25,15 +29,17 @@ class WarehouseController extends Controller
     public function view_warehouse()
     {
 
-        $pg = PmGroupings::leftjoin('assigned_projects', 'assigned_projects.pm_group_id', 'pm_groupings.id')
-            ->leftjoin('project_sites', 'project_sites.id', 'assigned_projects.project_id')
-            ->select('project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address', )
+        $pg = AssignedProjects::leftJoin('project_sites', 'project_sites.id', '=', 'assigned_projects.project_id')
+            ->select('assigned_projects.project_id as id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
             ->where('assigned_projects.status', 1)
-            ->where('pm_groupings.status', 1)
             ->where('project_sites.status', 1)
-            ->where('pm_groupings.pe_code', Auth::user()->emp_id)
-            ->orwhere('pm_groupings.pm_code', Auth::user()->emp_id)
+            ->where(function($query) {
+                $query->where('assigned_projects.emp_id', Auth::user()->emp_id)
+                    ->orWhere('assigned_projects.assigned_by', Auth::user()->id);
+            })
+            ->groupBy('assigned_projects.project_id','project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
             ->get();
+
 
 
         $warehouses = Warehouse::where('status', 1)->get();
@@ -97,6 +103,7 @@ class WarehouseController extends Controller
                 ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.wh_ps', 'wh')
+                ->where('tools_and_equipment.tools_status', 'good')
                 ->get();
         }
 
@@ -158,7 +165,24 @@ class WarehouseController extends Controller
                 }
                 return $action;
             })
-            ->rawColumns(['tools_status', 'action'])
+
+            ->addColumn('po_number', function($row){
+                if(!$row->po_number){
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                }else{
+                    return $row->po_number;
+                }
+            })
+
+            ->addColumn('brand', function($row){
+                if(!$row->brand){
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                }else{
+                    return $row->brand;
+                }
+            })
+
+            ->rawColumns(['tools_status', 'action', 'po_number', 'brand'])
             ->toJson();
     }
 
@@ -195,10 +219,16 @@ class WarehouseController extends Controller
 
     public function request_tools(Request $request)
     {
+        $project_site_id = ProjectSites::where('status', 1)->where('project_code', $request->projectCode)->value('id');
+        $assigned = AssignedProjects::where('status', 1)->where('project_id', $project_site_id)->where('pos', 'pm')->first();
+        $setup_approvers = SetupApprover::where('status', 1)->where('requestor', Auth::user()->id)->where('request_type', 1)->orderBy('sequence', 'asc')->get();
 
         // return $request->idArray;
-
-
+        if(!$assigned){
+            return 1;
+        }elseif($setup_approvers->isEmpty()){
+            return 2;
+        }
         $mail_data = [];
         $mail_approvers = [];
         $mail_Items = [];
@@ -225,7 +255,37 @@ class WarehouseController extends Controller
             'status' => 1,
         ]);
 
+        /// for logs
+        RfteisLogs::create([
+            'approver_name' => Auth::user()->fullname,
+            'page' => 'warehouse',
+            'request_number' => $new_teis_number,
+            'title' => 'Request'.' '.'#'. $new_teis_number,
+            'message' => Auth::user()->fullname .' '. 'created a RFTEIS request.',
+            'action' => 1,
+        ]);
 
+
+        $approvers = [];
+
+        $approvers[] = $assigned->user_id;
+        $approvers[] = $assigned->assigned_by;
+        
+        foreach($setup_approvers as $approver){
+            $approvers[] = $approver->user_id;
+        }
+
+        foreach ($approvers as $key => $approver) {
+            RequestApprover::create([
+                'request_id' => $req->id,
+                'approver_id' => $approver,
+                'sequence' => $key + 1,
+                'request_type' => 1,
+            ]);  
+        }
+
+
+        
         Daf::create([
             'daf_number' => $new_teis_number,
             'user_id' => Auth::user()->id,
@@ -233,7 +293,7 @@ class WarehouseController extends Controller
             'tr_type' => 'rfteis',
         ]);
 
-        $req = TransferRequest::orderBy('id', 'desc')->first();
+        // $req = TransferRequest::orderBy('id', 'desc')->first();
 
 
         $array_id = json_decode($request->idArray);

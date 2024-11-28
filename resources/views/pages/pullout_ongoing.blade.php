@@ -2,7 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
-    <link rel="stylesheet" href="{{ asset('css/track_request.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('css/track_request.css') }}"> --}}
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -158,66 +158,177 @@
                 const id = $(this).data("id");
                 const path = $("#path").val();
 
-                
-
-                console.log(path)
-
-
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_pullout_request_modal') }}',
-                        data: {
-                            id,
-                            path,
-                            _token: '{{ csrf_token() }}'
-                        }
-
+                $.ajax({
+                    url: '{{ route('view_pullout_request') }}',
+                    method: 'get',
+                    data: {
+                        id,
+                        path,
+                        _token: '{{ csrf_token() }}',
                     },
-                    columns: [
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'new_tools_status'
-                        },
-                        {
-                            data: 'action'
-                        }
-                    ],
-                    scrollX: true,
-                });
-            })
+                    success(result) {
+                        $("#requestFormLayout").html(result)
 
+
+                        const modalTable = $("#modalTable").DataTable({
+                            paging: false,
+                            order: false,
+                            searching: false,
+                            info: false,
+                            sort: false,
+                            processing: true,
+                            serverSide: false,
+                            destroy: true,
+                            ajax: {
+                                type: 'get',
+                                url: '{{ route('ongoing_pullout_request_modal') }}',
+                                data: {
+                                    id,
+                                    path,
+                                    _token: '{{ csrf_token() }}'
+                                }
+
+                            },
+                            columns: [{
+                                    data: 'item_no'
+                                },
+                                {
+                                    data: 'asset_code'
+                                },
+                                {
+                                    data: 'teis_no_dr_ar'
+                                },
+                                {
+                                    data: 'item_description'
+                                },
+                                {
+                                    data: 'new_tools_status'
+                                },
+                                {
+                                    data: 'new_tools_status_defective'
+                                },
+                                {
+                                    data: 'reason'
+                                },
+                                // {
+                                //     data: 'action'
+                                // }
+                            ],
+                            drawCallback: function() {
+
+                            },
+                            // scrollX: true,
+                        });
+
+                        /// old viewing of tools
+                        // const modalTable = $("#modalTable").DataTable({
+                        //     processing: true,
+                        //     serverSide: false,
+                        //     destroy: true,
+                        //     ajax: {
+                        //         type: 'get',
+                        //         url: '{{ route('ongoing_pullout_request_modal') }}',
+                        //         data: {
+                        //             id,
+                        //             path,
+                        //             _token: '{{ csrf_token() }}'
+                        //         }
+
+                        //     },
+                        //     columns: [{
+                        //             data: 'po_number'
+                        //         },
+                        //         {
+                        //             data: 'asset_code'
+                        //         },
+                        //         {
+                        //             data: 'serial_number'
+                        //         },
+                        //         {
+                        //             data: 'item_code'
+                        //         },
+                        //         {
+                        //             data: 'item_description'
+                        //         },
+                        //         {
+                        //             data: 'brand'
+                        //         },
+                        //         {
+                        //             data: 'warehouse_name'
+                        //         },
+                        //         {
+                        //             data: 'tools_status'
+                        //         },
+                        //         {
+                        //             data: 'new_tools_status'
+                        //         },
+                        //         {
+                        //             data: 'action'
+                        //         }
+                        //     ],
+                        //     drawCallback: function() {
+
+                        //     },
+                        //     scrollX: true,
+                        // });
+
+                    }
+                })
+
+            })
+            
+            /// old view of tools
+            // const modalTable = $("#modalTable").DataTable({
+            //     processing: true,
+            //     serverSide: false,
+            //     destroy: true,
+            //     ajax: {
+            //         type: 'get',
+            //         url: '{{ route('ongoing_pullout_request_modal') }}',
+            //         data: {
+            //             id,
+            //             path,
+            //             _token: '{{ csrf_token() }}'
+            //         }
+
+            //     },
+            //     columns: [{
+            //             data: 'po_number'
+            //         },
+            //         {
+            //             data: 'asset_code'
+            //         },
+            //         {
+            //             data: 'serial_number'
+            //         },
+            //         {
+            //             data: 'item_code'
+            //         },
+            //         {
+            //             data: 'item_description'
+            //         },
+            //         {
+            //             data: 'brand'
+            //         },
+            //         {
+            //             data: 'warehouse_name'
+            //         },
+            //         {
+            //             data: 'tools_status'
+            //         },
+            //         {
+            //             data: 'new_tools_status'
+            //         },
+            //         {
+            //             data: 'action'
+            //         }
+            //     ],
+            //     scrollX: true,
+            // });
 
             $(document).on('click', '.pulloutApproveBtn', function() {
                 const id = $(this).data('id');
                 const requestId = $(this).data('requestid');
-                const series = $(this).data('series');
 
                 const prevCount = parseInt($("#pulloutCount").text());
 
@@ -245,21 +356,21 @@
                             method: 'post',
                             data: {
                                 id,
-                                requestId, 
-                                series,
+                                requestId,
                                 _token: '{{ csrf_token() }}'
                             },
                             success() {
-                                table.ajax.reload();
+                                $("#table").DataTable().ajax.reload()
+                                $("#ongoingPulloutRequestModal").modal('hide')
                                 confirm.fire({
                                     title: "Approved!",
                                     text: "Items Approved Successfully.",
                                     icon: "success"
                                 });
 
-                                if(prevCount == 1){
+                                if (prevCount == 1) {
                                     $(".countContainer").addClass("d-none")
-                                }else{
+                                } else {
                                     $("#rfteisCount").text(prevCount - 1);
                                 }
                             }
@@ -277,7 +388,7 @@
             })
 
 
-            $(document).on('click', '.deliverBtn', function(){
+            $(document).on('click', '.deliverBtn', function() {
                 const requestNum = $(this).data('num');
                 const type = $(this).data('type');
 
@@ -327,7 +438,7 @@
                 });
 
             })
-            
+
 
 
         })

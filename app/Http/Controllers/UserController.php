@@ -47,17 +47,13 @@ class UserController extends Controller
     }
 
 
-    public function auth_logout()
+    public function auth_logout(Request $request)
     {
         Auth::logout();
-    
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect('/');
     }
 
-    public function datatables(Request $request) {
-        $users = User::get();
-
-        return DataTables::of($users)->toJson();
-    }
     
 }

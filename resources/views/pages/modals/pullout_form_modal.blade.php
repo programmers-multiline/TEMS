@@ -82,7 +82,7 @@
                     <table class="table table-hover table-bordered table-vcenter">
                         <thead>
                             <tr>
-                                <th>TEIS</th>
+                                <th>Asset Code</th>
                                 <th>Item Code</th>
                                 <th>Item Description</th>
                                 <th>PM/TL/PE Recommendation</th>

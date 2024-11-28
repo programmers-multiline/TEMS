@@ -558,7 +558,7 @@
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 
                     $("#tbodyModal").append(
-                        `<tr><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td> <td class="d-sm-table-cell"><button type="button" class="deleteToolRequestBtnModal btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete"><i class="fa fa-times"></i></td></tr>`
+                        `<tr><td>${data[i].asset_code}</td><td>${data[i].serial_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell">${data[i].item_description}</td> <td class="d-sm-table-cell"><button type="button" class="deleteToolRequestBtnModal btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete"><i class="fa fa-times"></i></td></tr>`
                     );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
@@ -641,8 +641,24 @@
                         $("#requestToolsModal").modal('hide')
                         $("#loader").show()
                     },
-                    success() {
+                    success(result) {
                         $("#loader").hide()
+                        if(result == 1){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "No assigned Project Manager to the selected project site, please contact your OM.",
+                                icon: "error"
+                            });
+                        return
+                        }else if(result == 2){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "walang naka assigned na cnc and whm sa setup approver.",
+                                icon: "error"
+                            });
+                            return
+                        }
+
                         table.ajax.reload();
                         showToast("success", "Request Successfully");
                         // $("#requesToolstBtn").prop('disabled', true);

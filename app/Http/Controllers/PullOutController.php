@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Uploads;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use App\Models\ProjectSites;
@@ -13,38 +14,69 @@ use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PulloutRequestItems;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ToolsAndEquipmentLogs;
+use App\Models\ToolPictureReceivingUploads;
 
 class PullOutController extends Controller
 {
 
     public function fetch_ongoing_pullout(){
 
-        $series = 1;
-        
-        $approver = RequestApprover::where('status', 1)
-        ->where('approver_id', Auth::user()->id)
-        ->where('series', $series)
-        ->where('request_type', 3)
-        ->first();
+        $approvers = RequestApprover::where('status', 1)
+            ->where('approver_id', Auth::user()->id)
+            ->where('approver_status', 0)
+            ->where('request_type', 3)
+            ->get();
 
-        $pullout_tools = RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
-        ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
-        ->where('pullout_requests.status', 1)
-        ->where('request_approvers.status', 1)
-        ->where('request_approvers.approver_id', Auth::user()->id)
-        // ->where('series', $series)
-        ->where('approver_status', 0)
-        ->where('request_type', 3)
-        ->get();  
+        $tool_approvers = collect();
+
+        foreach ($approvers as $approver) {
+            $current_approvers = collect();
+
+            if($approver->sequence == 1){
+                $current_approvers = RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
+                ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                ->where('pullout_requests.status', 1)
+                ->where('request_approvers.status', 1)
+                ->where('request_approvers.approver_id', Auth::user()->id)
+                // ->where('series', $series)
+                ->where('approver_status', 0)
+                ->where('request_type', 3)
+                ->get();  
+            }else{
+                $prev_sequence = $approver->sequence - 1;
+    
+                $prev_approver = RequestApprover::where('status', 1)
+                    ->where('request_id', $approver->request_id)
+                    ->where('sequence', $prev_sequence)
+                    ->where('request_type', 3)
+                    ->first();
+    
+                if ($prev_approver && $prev_approver->approver_status == 1) {
+                    $current_approvers = RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
+                    ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                    ->where('pullout_requests.status', 1)
+                    ->where('request_approvers.status', 1)
+                    ->where('request_approvers.approver_id', Auth::user()->id)
+                    // ->where('series', $series)
+                    ->where('approver_status', 0)
+                    ->where('request_type', 3)
+                    ->get(); 
+                }
+            }
+
+            // Merge the current approvers to the tool_approvers array
+            $tool_approvers = $tool_approvers->merge($current_approvers)->unique('request_id');
+        }
 
 
         if(Auth::user()->user_type_id == 4){
 
-            $pullout_tools = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->get();
+            $tool_approvers = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->get();
         }
 
         
-        return DataTables::of($pullout_tools)
+        return DataTables::of($tool_approvers)
         
         ->addColumn('view_tools', function($row){
             
@@ -54,12 +86,16 @@ class PullOutController extends Controller
         ->addColumn('subcon', function($row){
             if(!$row->subcon){
                 return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+            }else{
+                return $row->subcon;
             }
         })
 
         ->addColumn('approved_sched_date', function($row){
             if(!$row->approved_sched_date){
                 return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+            }else{
+                return $row->approved_sched_date;
             }
         })
 
@@ -107,43 +143,105 @@ class PullOutController extends Controller
         if($request->path == "pages/pullout_for_receiving"){
             $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
             ->leftjoin('warehouses','warehouses.id','tools_and_equipment.location')
-            ->select('tools_and_equipment.*','pullout_request_items.tool_id', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.id as pri_id')
+            ->leftJoin('pullout_requests', 'pullout_requests.id', 'pullout_request_items.pullout_request_id')
+            ->select('tools_and_equipment.*', 'pullout_requests.reason', 'pullout_requests.pullout_number','pullout_request_items.tool_id',  'pullout_request_items.teis_no_dr_ar',  'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.wh_tool_eval', 'pullout_request_items.checker', 'pullout_request_items.id as pri_id','pullout_request_items.item_status')
             ->where('pullout_request_items.status', 1)
-            ->where('pullout_request_items.item_status', 0)
+            ->where('pullout_requests.status', 1)
+            ->where('tools_and_equipment.status', 1)
+            /// sa data na receiving
+            // ->where('pullout_request_items.item_status', 0)
             ->where('pullout_request_items.pullout_number', $request->id)
             ->get();
         }else{
             $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
             ->leftjoin('warehouses','warehouses.id','tools_and_equipment.location')
-            ->select('tools_and_equipment.*','pullout_request_items.tool_id', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.id as pri_id')
+            ->leftJoin('pullout_requests', 'pullout_requests.id', 'pullout_request_items.pullout_request_id')
+            ->select('tools_and_equipment.*', 'pullout_requests.reason', 'pullout_requests.pullout_number', 'pullout_request_items.tool_id', 'pullout_request_items.teis_no_dr_ar', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.wh_tool_eval', 'pullout_request_items.checker', 'pullout_request_items.id as pri_id','pullout_request_items.item_status')
+            ->where('pullout_request_items.status', 1)
+            ->where('pullout_requests.status', 1)
+            ->where('tools_and_equipment.status', 1)
             ->where('pullout_request_items.status', 1)
             ->where('pullout_request_items.pullout_number', $request->id)
             ->get();
         }
 
 
-        
+        $count = 1; 
         
         return DataTables::of($tools)
+
+        ->addColumn('item_no', function() use (&$count){
+            return '<span style="display: block; text-align: center;">'.$count++.'</span>';
+        })
 
         ->addColumn('action', function($row) use ($request){
             $action =  '
             <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-file-circle-check"></i></button>
             ';
+
             if($request->path == "pages/pullout_for_receiving"){
-                $action =  '
-                  <select style="width: 150px;" class="whEval form-select">
-                        <option value="" disabled selected>Select Status</option>
-                        <option value="good">Good</option>
-                        <option value="repair">Need Repair</option>
-                        <option value="dispose">Disposal</option>
-                    </select>
-                ';
+                if($row->item_status == 1){
+                    $action = '<div class="text-center"><span class="badge bg-success text-center">Served</span></div>';
+                }elseif($row->item_status == 2){
+                    $action = '<div class="text-center"><span class="badge bg-danger">Not Served</span></div>';
+                }else{
+                    if (Auth::user()->user_type_id == 2 && $request->path == 'pages/pullout_for_receiving') {
+                        $action = '<div class="d-flex gap-2 justify-content-center align-items-center">
+                    <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" type="button" class="receivedBtn btn btn-sm btn-alt-success" data-bs-toggle="tooltip" aria-label="Receive Tool" data-bs-original-title="Receive Tool"><i class="fa fa-circle-check"></i></button>
+                    <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" type="button" class="notReceivedBtn btn btn-sm btn-alt-danger" data-bs-toggle="tooltip" aria-label="Not Serve" data-bs-original-title="Not Serve"><i class="fa fa-circle-xmark"></i></button>
+                    </div>';
+                    } else {
+                        $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                    }
+    
+                    if ($request->path == 'pages/site_to_site_transfer') {
+                        $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                    }
+                }
             }
+
             if($request->path == "pages/pullout_completed" || $request->path == "pages/pullout_ongoing" || $request->path == "pages/approved_pullout"){
                 $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
             }
             return $action;
+        })
+
+        ->addColumn('wh_eval', function($row) use ($request){
+            if($request->path == "pages/pullout_for_receiving"){
+
+                if($row->wh_tool_eval){
+                    return '<div style="text-align:center">'.ucwords($row->wh_tool_eval).'</div>';
+                }elseif($row->item_status){
+                    return '';
+                }else{
+                    return   '  
+                    <select class="whEval form-select">
+                        <option value="" disabled selected>Select Status</option>
+                        <option value="good">Good</option>
+                        <option value="defective">Defective</option>
+                    </select>
+                ';
+                }
+                
+            }
+        })
+
+        ->addColumn('checker', function($row) use ($request){
+            if($request->path == "pages/pullout_for_receiving"){
+
+                if($row->checker){
+                    return '<div style="text-align:center">'.$row->checker.'</div>';
+                }elseif($row->item_status){
+                    return '';
+                }else{
+                    return '
+                        <input type="text"
+                        class="form-control checker" name="checker"
+                        placeholder="Enter checker of tools">
+                ';
+                }
+                
+            };
         })
         
         ->addColumn('tools_status', function($row){
@@ -161,14 +259,28 @@ class PullOutController extends Controller
         ->addColumn('new_tools_status', function($row){
             $status = $row->tool_status_eval;
             if($status == 'good'){
-                $status = '<span class="badge bg-success">'.$status.'</span>';
-            }else if($status == 'repair'){
-                $status =  '<span class="badge bg-warning">'.$status.'</span>';
+                $status = '<i class="fa fa-check d-block text-center"></i>';
             }else{
-                $status =  '<span class="badge bg-danger">'.$status.'</span>';
+                $status =  '<div>&nbsp;</div>';
             }
             return $status;
         })
+
+        ->addColumn('new_tools_status_defective', function($row){
+            $status = $row->tool_status_eval;
+            if($status == 'defective'){
+                $status =  '<i class="fa fa-check d-block text-center"></i>';
+            }else{
+                $status =  '<div>&nbsp;</div>';
+            }
+            return $status;
+        })
+
+        ->addColumn('empty_tools_status', function(){
+            return '<div>&nbsp;</div>';
+        })
+
+
 
         ->addColumn('warehouse_name', function ($row){
             if($row->current_site_id){
@@ -179,7 +291,7 @@ class PullOutController extends Controller
             }
         })
 
-        ->rawColumns(['tools_status', 'action', 'new_tools_status'])
+        ->rawColumns(['tools_status', 'action', 'new_tools_status', 'new_tools_status_defective', 'checker', 'wh_eval', 'item_no'])
         ->toJson();
     }
 
@@ -235,14 +347,7 @@ class PullOutController extends Controller
 
     public function fetch_pullout_request(Request $request){
 
-        $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
-        ->select('pullout_requests.*', 'users.fullname')
-        ->where('pullout_requests.status', 1)
-        ->where('users.status', 1)
-        ->where('progress', 'ongoing')
-        ->where('request_status', 'approved')
-        ->whereNull('approved_sched_date')
-        ->get();
+
 
         if($request->path == "pages/pullout_for_receiving"){
             //! lumaa
@@ -272,6 +377,15 @@ class PullOutController extends Controller
             ->whereNotNull('is_deliver')
             ->get();
 
+        }else{
+            $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('progress', 'ongoing')
+            ->where('request_status', 'approved')
+            ->whereNull('is_deliver')
+            ->get();
         }
         // $request_tools = App\Models\TransferRequest::leftjoin('teis_uploads','teis_uploads.teis_number','transfer_requests.teis_number')
         // ->select('transfer_requests.teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'transfer_requests.tr_type')
@@ -282,6 +396,22 @@ class PullOutController extends Controller
         // ->whereNull('teis_uploads.teis_number');
         
         return DataTables::of($request_tools)
+
+        ->setRowClass(function ($row) use ($request) {
+            if ($request->path != "pages/pullout_for_receiving") {
+                $ids = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+                ->select('pullout_requests.*', 'users.fullname')
+                ->where('pullout_requests.status', 1)
+                ->where('users.status', 1)
+                ->where('progress', 'ongoing')
+                ->where('request_status', 'approved')
+                ->whereNotNull('approved_sched_date')
+                ->pluck('id')
+                ->toArray();
+
+                return in_array($row->id, $ids) ? 'bg-gray' : '';
+            }
+        })
         
         ->addColumn('view_tools', function($row){
             
@@ -327,13 +457,13 @@ class PullOutController extends Controller
             return $action;
         })
         ->addColumn('ters', function ($row) {
-            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->get()->toArray();
+            $ters_uploads = TersUploads::with('uploads')->where('status', 1)->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->get()->toArray();
             $uploads_file = [];
             $uploads_file ='<div class="row mx-auto">';
             foreach($ters_uploads as $item) {
                 
                 $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/ters_form/'.$item['uploads']['name'].'">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.asset('uploads/ters_form') . '/' .$item['uploads']['name'].'">
                     <span>TERS.pdf</span>
                     </a>
                 </div>';
@@ -353,28 +483,32 @@ class PullOutController extends Controller
         $tools->approver_status = 1;
         $tools->date_approved = Carbon::now();
         $tools->approved_by = Auth::user()->id;
+        // sinama dahil nagbago na, parehas na sila dapat mag approved
+        $tools->can_be_view_by = $tools->approver_id;
         $tools->update();
 
 
-        $tobeApproveTools = RequestApprover::where('status', 1)
+        $last_sequence = RequestApprover::where('status', 1)
         ->where('request_id', $request->requestId)
-        ->where('series', $request->series)
         ->where('request_type', 3)
-        ->orderBy('approver_status', 'asc')
-        ->first();
+        ->orderBy('sequence', 'desc')
+        ->value('sequence');
 
-        $tobeApproveTools->approver_status = 1;
-        $tobeApproveTools->can_be_view_by = Auth::user()->id;
-        $tobeApproveTools->date_approved = Carbon::now();
-        $tobeApproveTools->update();
+        // $tobeApproveTools->approver_status = 1;
+        // $tobeApproveTools->can_be_view_by = Auth::user()->id;
+        // $tobeApproveTools->date_approved = Carbon::now();
+        // $tobeApproveTools->update();
         
-        $tools->can_be_view_by = $tobeApproveTools->approver_id;
-        $tools->update();
+        // $tools->can_be_view_by = $tobeApproveTools->approver_id;
+        // $tools->update();
 
-        $pullout_request = PulloutRequest::find($request->requestId);
-        $pullout_request->request_status = "approved";
+        if($tools->sequence == $last_sequence){
+            $pullout_request = PulloutRequest::find($request->requestId);
+            $pullout_request->request_status = "approved";
 
-        $pullout_request->update();
+            $pullout_request->update();
+        }
+
     }
 
 
@@ -398,13 +532,13 @@ class PullOutController extends Controller
             return $view_tools = '<button data-id="'.$row->pullout_number.'" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="pulloutNumber btn text-primary fs-6 d-block">View</button>';
         })
         ->addColumn('ters', function ($row) {
-            $ters_uploads = TersUploads::with('uploads')->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->where('status', 1)->get()->toArray();
+            $ters_uploads = TersUploads::with('uploads')->where('status', 1)->where('pullout_number', $row->pullout_number)->where('tr_type', $row->tr_type)->where('status', 1)->get()->toArray();
             $uploads_file = [];
             $uploads_file ='<div class="row mx-auto">';
             foreach($ters_uploads as $item) {
                 
                 $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.env('APP_URL').'uploads/ters_form/'.$item['uploads']['name'].'">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.asset('uploads/ters_form') . '/' .$item['uploads']['name'].'">
                     <span>TERS.pdf</span>
                     </a>
                 </div>';
@@ -482,15 +616,49 @@ class PullOutController extends Controller
             }
 
         }else{
-            $received_tools = PulloutRequestItems::find($request->id);
+            $received_tools = PulloutRequestItems::find($request->priId);
+
+            if ($request->has('photo')) {
+                $toolPicture = $request->photo;
+            
+                // Decode base64 image
+                $image = explode(',', $toolPicture)[1]; // Remove "data:image/jpeg;base64,"
+                $image = base64_decode($image);
+            
+                // Generate a unique file name
+                $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.jpg';
+            
+                // Save the file to the desired directory
+                $uploadPath = public_path('uploads/tool_picture_receiving_uploads/');
+                $filePath = $uploadPath . $pic_name;
+            
+                // Ensure directory exists
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0777, true);
+                }
+            
+                file_put_contents($filePath, $image);
+            
+                $uploads = Uploads::create([
+                    'name' => $pic_name,
+                    'original_name' => $pic_name,
+                    'extension' => 'jpg',
+                ]);
+            
+                ToolPictureReceivingUploads::create([
+                    'request_item_id' => $received_tools->id, 
+                    'tool_id' => $received_tools->tool_id,
+                    'upload_id' => $uploads->id,
+                    'user_id' => Auth::id(),
+                    'tr_type' => 'pullout',
+                ]);
+            }
+
 
             $received_tools->item_status = 1;
-    
+            $received_tools->wh_tool_eval = $request->whEval;
+            $received_tools->checker = ucwords(strtolower($request->checker));
             $received_tools->update();
-    
-            $tr = PulloutRequest::where('status', 1)->where('id', $received_tools->pullout_request_id)->first();
-            $project_site = ProjectSites::where('status', 1)->where('project_code', $tr->project_code)->first();
-    
     
             $tools = ToolsAndEquipment::where('status', 1)->where('id', $received_tools->tool_id)->first();
     
@@ -499,6 +667,14 @@ class PullOutController extends Controller
             $tools->current_site_id = null;
     
             $tools->update();  
+
+            // for logs
+            ToolsAndEquipmentLogs::create([
+                'tool_id' => $received_tools->tool_id,
+                'pe' => Auth::id(),
+                'tr_type' => 'pullout',
+                'remarks' => 'Received in warehouse',
+            ]);
 
         }
 
@@ -516,6 +692,12 @@ class PullOutController extends Controller
         //     $tool_requests->progress = 'completed';
         //     $tool_requests->update();
         // }
+    }
+
+    public function pullout_not_received(Request $request){
+        $received_tools = PulloutRequestItems::find($request->priId);
+        $received_tools->item_status = 2;
+        $received_tools->update(); 
     }
 
     public function fetch_current_site(Request $request){

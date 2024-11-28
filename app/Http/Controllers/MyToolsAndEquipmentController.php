@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Mail\ApproverEmail;
 use App\Models\PmGroupings;
+use App\Models\PulloutLogs;
 use App\Models\ProjectSites;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
 use App\Models\TransferRequest;
+use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PulloutRequestItems;
@@ -22,16 +24,17 @@ class MyToolsAndEquipmentController extends Controller
 {
 
     public function view_my_te(){
-        $pg = PmGroupings::leftjoin('assigned_projects', 'assigned_projects.pm_group_id', 'pm_groupings.id')
-        ->leftjoin('project_sites', 'project_sites.id','assigned_projects.project_id')
-        ->select('project_sites.customer_name','project_sites.project_name','project_sites.project_code','project_sites.project_address', 'project_sites.id')
-        ->where('assigned_projects.status', 1)
-        ->where('pm_groupings.status', 1)
-        ->where('project_sites.status', 1)
-        ->where('pm_groupings.pe_code', Auth::user()->emp_id)
-        ->orwhere('pm_groupings.pm_code', Auth::user()->emp_id)
-        ->orwhere('pm_groupings.om_code', Auth::user()->emp_id)
-        ->get();
+
+        $pg = AssignedProjects::leftJoin('project_sites', 'project_sites.id', '=', 'assigned_projects.project_id')
+            ->select('assigned_projects.project_id as id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
+            ->where('assigned_projects.status', 1)
+            ->where('project_sites.status', 1)
+            ->where(function($query) {
+                $query->where('assigned_projects.emp_id', Auth::user()->emp_id)
+                    ->orWhere('assigned_projects.assigned_by', Auth::user()->id);
+            })
+            ->groupBy('assigned_projects.project_id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address', 'project_sites.id')
+            ->get();
 
         // return $pg;
 
@@ -114,11 +117,11 @@ class MyToolsAndEquipmentController extends Controller
         return DataTables::of($tools)
 
         ->setRowClass(function ($row) {
-            $tool_ids = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
-            ->select('transfer_request_items.*')
-            ->where('transfer_requests.progress', 'ongoing')
-            ->where('transfer_request_items.item_status', 0)
-            ->where('transfer_requests.status', 1)
+            $tool_ids = PulloutRequestItems::leftjoin('pullout_requests', 'pullout_requests.id', 'pullout_request_items.pullout_request_id')
+            ->select('pullout_request_items.*')
+            ->where('pullout_requests.progress', 'ongoing')
+            ->where('pullout_request_items.item_status', 0)
+            ->where('pullout_requests.status', 1)
             ->pluck('tool_id')
             ->toArray();
 
@@ -184,13 +187,36 @@ class MyToolsAndEquipmentController extends Controller
             }
         })
 
+        ->addColumn('po_number', function($row){
+            if(!$row->po_number){
+                return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+            }else{
+                return $row->po_number;
+            }
+        })
 
-        ->rawColumns(['transfer_state','tools_status','action'])
+        ->addColumn('brand', function($row){
+            if(!$row->brand){
+                return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+            }else{
+                return $row->brand;
+            }
+        })
+
+
+        ->rawColumns(['transfer_state','tools_status','po_number','brand','action'])
         ->toJson();
     }
 
 
     public function pullout_request(Request $request){
+
+        $project_site_id = ProjectSites::where('status', 1)->where('project_code', $request->projectCode)->value('id');
+        $assigned = AssignedProjects::where('status', 1)->where('project_id', $project_site_id)->where('pos', 'pm')->first();
+
+        if(!$assigned){
+            return 1;
+        }
 
         $prev_pn = PulloutRequest::where('status', 1)->orderBy('pullout_number', 'desc')->first();
         
@@ -218,8 +244,19 @@ class MyToolsAndEquipmentController extends Controller
         ]);
 
 
+        $approvers = [];
 
-        // $req = PulloutRequest::orderBy('id', 'desc')->first();
+        $approvers[] = $assigned->user_id;
+        $approvers[] = $assigned->assigned_by;
+
+        foreach ($approvers as $key => $approver) {
+            RequestApprover::create([
+                'request_id' => $req->id,
+                'approver_id' => $approver,
+                'sequence' => $key + 1,
+                'request_type' => 3,
+            ]);  
+        }
 
         $last = 0;
 
@@ -280,8 +317,18 @@ class MyToolsAndEquipmentController extends Controller
             // Mail::to($approver->email)->send(new ApproverEmail($mail_data));
         }
 
-        
+         PulloutLogs::create([
+            'approver_name' => Auth::user()->fullname,
+            'page' => 'my_te',
+            'request_number' => $new_pullout_number,
+            'title' => 'Request'.' '.'#'. $new_pullout_number,
+            'message' => Auth::user()->fullname .' '. 'created a Pullout request.',
+            'action' => 1,
+        ]);
     }
+
+
+   
 
 
     public function add_state(Request $request){

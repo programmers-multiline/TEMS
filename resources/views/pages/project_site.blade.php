@@ -24,6 +24,12 @@
             <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
                 data-bs-target="#rttteModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
         @endif
+        <select class="form-select w-25 mb-3" id="selectProjectSite" name="example-select">
+            <option value="" disabled selected>Select Project Site</option>
+            @foreach ($all_pg as $site)
+                <option value="{{ $site->id }}">{{ $site->project_name }}</option>
+            @endforeach
+        </select>
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -35,15 +41,17 @@
                             <th>ID</th>
                             <th>Current PE</th>
                             <th>Current Site</th>
+                            <th>Previous Request Number</th>
                             <th>PO Number</th>
                             <th>Asset Code</th>
                             <th>Serial#</th>
                             <th>Item Code</th>
                             <th>Item Desc</th>
                             <th>Brand</th>
+                            <th>Project name</th>
                             <th>Location</th>
                             <th>Status</th>
-                            <th>Transfer State</th>
+                            {{-- <th>Transfer State</th> --}}
                             <th>Action</th>
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
@@ -92,7 +100,7 @@
                         "aTargets": [0]
                     },
                     {
-                        "targets": [1, 2, 3],
+                        "targets": [1, 2, 3, 4],
                         "visible": false,
                         "searchable": false
                     },
@@ -120,6 +128,9 @@
                         data: 'current_site_id'
                     },
                     {
+                        data: 'prev_request_num'
+                    },
+                    {
                         data: 'po_number'
                     },
                     {
@@ -138,14 +149,17 @@
                         data: 'brand'
                     },
                     {
+                        data: 'project_name'
+                    },
+                    {
                         data: 'project_location'
                     },
                     {
                         data: 'tools_status'
                     },
-                    {
-                        data: 'transfer_state'
-                    },
+                    // {
+                    //     data: 'transfer_state'
+                    // },
                     {
                         data: 'action'
                     },
@@ -157,6 +171,9 @@
                 },
             });
 
+            table.select.selector('td:first-child');
+
+            /// search
             var searchVal = new URLSearchParams(window.location.search).get('searchVal');
 
             if (searchVal) {
@@ -164,6 +181,11 @@
                 table.search(searchVal).draw();
 
             }
+            ///filter Project Site
+            $("#selectProjectSite").change(function() {
+                const projectSiteId = $(this).val();
+                table.ajax.url('{{ route('fetch_tools_ps') }}?projectSiteId=' + projectSiteId).load();
+            })
 
 
             table.on('select', function(e, dt, type, indexes) {
@@ -172,7 +194,7 @@
                     $.each(rows, function() {
                         if ($(this).hasClass('bg-gray')) {
                             table.row($(this)).deselect();
-                            showToast("error", "Currently on transfer process or on use!");
+                            showToast("error", "Currently on transfer process!");
                         }
                     })
 
@@ -237,16 +259,19 @@
                 for (var i = 0; i < data.length; i++) {
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 
+                    /// dati nung nasa request pa ang pagupload ng pic ng tools
+                    // <td class="d-sm-table-cell">
+                    //             <form id="formRequest-${data[i].id}" method="POST" enctype="multipart/form-data">
+                    //                 @csrf
+                    //             <input type="file" class="picUpload form-control" name="file" style="width: 88%" data-id="${data[i].id}" multiple data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept="image/*">
+                    //             </form>
+                    //         </td>
+
                     $("#tbodyModal").append(
                         `<tr>
-                            <td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> </td>
+                            <td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> <input class="prevReqNum" type="hidden" value="${data[i].prev_request_num}"> </td>
+                            <td class="d-sm-table-cell">${data[i].asset_code}</td>
                             <td class="d-sm-table-cell">${data[i].item_description}</td>
-                            <td class="d-sm-table-cell">
-                                <form id="formRequest-${data[i].id}" method="POST" enctype="multipart/form-data">
-                                    @csrf
-                                <input type="file" class="picUpload form-control" name="file" style="width: 88%" data-id="${data[i].id}" multiple data-allow-reorder="true" data-max-file-size="10MB" data-max-files="6" accept="image/*">
-                                </form>
-                            </td>
                             </tr>`
                     );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
@@ -279,9 +304,12 @@
                 const projectName = $("#projectName").val();
                 const projectCode = $("#projectCode").val();
                 const projectAddress = $("#projectAddress").val();
+                const reason = $("#reasonForTransfer").val();
 
                 const currentPe = $("#tbodyModal .currentPe").val();
                 const currentSiteId = $("#tbodyModal .currentSiteId").val();
+                const prevReqNum = $("#tbodyModal .prevReqNum").val();
+
 
                 if(!projectName){
                     showToast('warning','Fill up all fields!');
@@ -299,16 +327,16 @@
 
                 const arrayToString = JSON.stringify(selectedItemId);
 
+                /// sa hinihiraman dapat ito kaya inalis
+                // if (Object.keys(files).length === 0) {
+                //     showToast('warning','No picture selected!');
+                //     return;
+                // }
 
-                if (Object.keys(files).length === 0) {
-                    showToast('warning','No picture selected!');
-                    return;
-                }
-
-                if(Object.keys(files).length !== selectedItemId.length){
-                    showToast('warning','Add picture to all selected tools!');
-                    return;
-                }
+                // if(Object.keys(files).length !== selectedItemId.length){
+                //     showToast('warning','Add picture to all selected tools!');
+                //     return;
+                // }
 
 
                 var formData = new FormData();
@@ -321,9 +349,11 @@
 
                 formData.append('currentSiteId', currentSiteId);
                 formData.append('currentPe', currentPe);
+                formData.append('prevReqNum', prevReqNum);
                 formData.append('projectName', projectName);
                 formData.append('projectCode', projectCode);
                 formData.append('projectAddress', projectAddress);
+                formData.append('reason', reason);
                 formData.append('idArray', arrayToString);
                 formData.append('_token', $('input[name=_token]').val());
 
@@ -338,7 +368,23 @@
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success() {
+                    success(result) {
+                        if(result == 1){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "No assigned Project Manager to the selected project site, please contact your OM.",
+                                icon: "error"
+                            });
+                        return
+                        }else if(result == 2){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "ang hinihiraman mong project site ay walang naka assigned na pm",
+                                icon: "error"
+                            });
+                            return
+                        }
+                        showToast('success', 'Request Successful')
                         $("#rttteModal").modal('hide')
                         table.ajax.reload();
                     }

@@ -136,8 +136,10 @@
                     <table class="table table-hover table-bordered table-vcenter">
                         <thead>
                             <tr>
+                                <th>Asset Code</th>
+                                <th>Serial Number</th>
                                 <th>Item Code</th>
-                                <th class="d-none d-lg-table-cell" style="width: 60%;">Item Description</th>
+                                <th class="d-none d-lg-table-cell" style="width: 50%;">Item Description</th>
                                 <th>Action</th>
                             </tr>
                         </thead>

@@ -47,7 +47,7 @@ class AdminController extends Controller
             ->where('companies.status', 1)
             ->where('request_type', $request->requestType)
             ->where('company_id', $request->company)
-            ->where('area', $request->area)
+            ->where('setup_approvers.area', $request->area)
             ->where('requestor', $request->requestor)
             ->orderBy('sequence', 'asc')
             ->get();
@@ -112,10 +112,16 @@ class AdminController extends Controller
             $fetch_approver_count = SetupApprover::where('status', 1)
                 ->where('company_id', $request->selectedComp)
                 ->where('request_type', $request->selectedRT)
-                ->orderBy('sequence', 'desc')
+                ->where('area', $request->selectedArea)
+                // ->orderBy('sequence', 'desc')
                 ->count();
 
-            $sequence = 1;
+            
+            if($request->selectedRT == 1){
+                $sequence = 3;
+            }else{
+                $sequence = 1;
+            }
 
             if ($fetch_approver_count) {
                 $sequence = $fetch_approver_count + 1;
@@ -153,12 +159,12 @@ class AdminController extends Controller
     public function user_per_area(Request $request)
     {
 
-        $requestors = PmGroupings::where('status', 1)->where('area', $request->selectArea)->get(['id', 'project_engineer']);
+        $requestors = User::where('status', 1)->where('area', $request->selectArea)->where('user_type_id', 4)->get(['id', 'fullname']);
         
         $html = "";
             $html .= '<option selected disabled>Select Requestor</option>';
         foreach ($requestors as $requestor) {
-            $html .= '<option value=' . $requestor->id . '>' . $requestor->project_engineer. '</option>';
+            $html .= '<option value=' . $requestor->id . '>' . $requestor->fullname. '</option>';
 
         }
 

@@ -51,6 +51,7 @@
     <!-- END Page Content -->
 
     @include('pages.modals.ongoing_teis_request_modal')
+    @include('pages.modals.track_request_modal')
 
 @endsection
 
@@ -118,6 +119,34 @@
                 ],
                 drawCallback: function() {
                     $(".trackBtn").tooltip();
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnumber');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+
+
+                                $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
+
+                                // $("#requestProgress li").each(function(index) {
+                                //     if (index < result) {
+                                //         $(this).addClass("active");
+                                //     }
+                                // });
+
+                            }
+                        })
+                    })
                 }
             });
 
@@ -126,75 +155,191 @@
                 const id = $(this).data("id");
                 const type = $(this).data("transfertype");
 
-
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
-                        data: {
-                            id,
-                            type,
-                            _token: '{{ csrf_token() }}'
-                        }
-
+                $.ajax({
+                    url: '{{ route('view_transfer_request') }}',
+                    method: 'get',
+                    data: {
+                        id,
+                        type,
+                        _token: '{{ csrf_token() }}',
                     },
-                    columns: [
-                        {
-                            data: 'picture'
-                        },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'price'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
+                    success(result) {
+                        $("#requestFormLayout").html(result)
+
+                        if (type == 'rfteis') {
+                            const modalTable = $("#modalTable").DataTable({
+                                paging: false,
+                                order: false,
+                                searching: false,
+                                info: false,
+                                sort: false,
+                                processing: true,
+                                serverSide: false,
+                                destroy: true,
+                                ajax: {
+                                    type: 'get',
+                                    url: '{{ route('ongoing_teis_request_modal') }}',
+                                    data: {
+                                        id,
+                                        type,
+                                        _token: '{{ csrf_token() }}'
+                                    }
+
+                                },
+                                columns: [{
+                                        data: 'qty'
+                                    },
+                                    {
+                                        data: 'unit'
+                                    },
+                                    {
+                                        data: 'item_description'
+                                    },
+                                    {
+                                        data: 'item_code'
+                                    },
+                                    {
+                                        data: 'action'
+                                    }
+
+                                ],
+                                scrollX: true,
+                                drawCallback: function() {
+                                    $(".receivedBtn").tooltip();
+                                }
+                            });
+                        } else {
+                            const modalTable = $("#modalTable").DataTable({
+                                paging: false,
+                                order: false,
+                                searching: false,
+                                info: false,
+                                sort: false,
+                                processing: true,
+                                serverSide: false,
+                                destroy: true,
+                                scrollX: true,
+                                ajax: {
+                                    type: 'get',
+                                    url: '{{ route('ps_ongoing_teis_request_modal') }}',
+                                    data: {
+                                        id,
+                                        _token: '{{ csrf_token() }}'
+                                    }
+
+                                },
+                                columns: [{
+                                        data: 'picture'
+                                    },
+                                    {
+                                        data: 'item_no'
+                                    },
+                                    {
+                                        data: 'teis_no'
+                                    },
+                                    {
+                                        data: 'item_code'
+                                    },
+                                    {
+                                        data: 'item_description'
+                                    },
+                                    {
+                                        data: 'serial_number'
+                                    },
+                                    {
+                                        data: 'qty'
+                                    },
+                                    {
+                                        data: 'unit'
+                                    },
+                                    {
+                                        data: 'tools_status'
+                                    },
+                                    {
+                                        data: 'reason_for_transfer'
+                                    },
+                                    {
+                                        data: 'action'
+                                    },
+                                ],
+                                drawCallback: function() {
+                                    $('table thead th.pictureHeader').show();
+                                }
+                            });
                         }
-                    ],
-                    scrollX: true,
-                    drawCallback: function() {
-                        $(".receivedBtn").tooltip();
 
-                        // if(type == 'rttte'){
-                        //     $('table thead th.pictureHeader').show();
-                        // }else{
-                        //     $('table thead th.pictureHeader').hide();
-                        // }
                     }
-                });
+                })
 
-                if (type == 'rttte') {
-                    modalTable.column(0).visible(true);
-                    modalTable.column(0).searchable(true);
-                } else {
-                    modalTable.column(0).visible(false);
-                    modalTable.column(0).searchable(false);
-                }
+                ///old viewing of tools
+                // const modalTable = $("#modalTable").DataTable({
+                //     processing: true,
+                //     serverSide: false,
+                //     destroy: true,
+                //     ajax: {
+                //         type: 'get',
+                //         url: '{{ route('ongoing_teis_request_modal') }}',
+                //         data: {
+                //             id,
+                //             type,
+                //             _token: '{{ csrf_token() }}'
+                //         }
+
+                //     },
+                //     columns: [
+                //         {
+                //             data: 'picture'
+                //         },
+                //         {
+                //             data: 'po_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'serial_number'
+                //         },
+                //         {
+                //             data: 'item_code'
+                //         },
+                //         {
+                //             data: 'item_description'
+                //         },
+                //         {
+                //             data: 'brand'
+                //         },
+                //         {
+                //             data: 'warehouse_name'
+                //         },
+                //         {
+                //             data: 'price'
+                //         },
+                //         {
+                //             data: 'tools_status'
+                //         },
+                //         {
+                //             data: 'action'
+                //         }
+                //     ],
+                //     scrollX: true,
+                //     drawCallback: function() {
+                //         $(".receivedBtn").tooltip();
+
+                //         // if(type == 'rttte'){
+                //         //     $('table thead th.pictureHeader').show();
+                //         // }else{
+                //         //     $('table thead th.pictureHeader').hide();
+                //         // }
+                //     }
+                // });
+
+                // if (type == 'rttte') {
+                //     modalTable.column(0).visible(true);
+                //     modalTable.column(0).searchable(true);
+                // } else {
+                //     modalTable.column(0).visible(false);
+                //     modalTable.column(0).searchable(false);
+                // }
 
             })
 

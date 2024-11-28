@@ -238,7 +238,7 @@
                                 });
 
                                 confirm.fire({
-                                    title: "Recieved?",
+                                    title: "Receive?",
                                     text: "Are you sure you want to Received this tool?",
                                     icon: "warning",
                                     showCancelButton: true,

@@ -19,6 +19,14 @@
         .filepond--credits {
             display: none;
         }
+
+        .pictureContainer{
+            display: block;
+            white-space: nowrap; 
+            width: 110px !important; 
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 @endsection
 
@@ -151,62 +159,155 @@
             $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
-                const type = $(this).data("type");
+                const pe = $(this).data("pe");
+                const pstrid = $(this).data("pstrid");
                 const path = $("#path").val();
 
 
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    scrollX: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
+                $.ajax({
+                        url: '{{ route('rttte_approvers_view') }}',
+                        method: 'get',
                         data: {
                             id,
-                            type,
+                            pstrid,
+                            pe,
                             path,
-                            _token: '{{ csrf_token() }}'
-                        }
+                            _token: '{{ csrf_token() }}',
+                        },
+                        success(result) {
+                            $("#requestFormLayout").html(result)
 
-                    },
-                    columns: [
-                        {
-                            data: 'picture'
-                        },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'price'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
+                            const modalTable = $("#modalTable").DataTable({
+                                paging: false,
+                                order: false,
+                                searching: false,
+                                info: false,
+                                sort: false,
+                                processing: true,
+                                serverSide: false,
+                                destroy: true,
+                                scrollX: true,
+                                ajax: {
+                                    type: 'get',
+                                    url: '{{ route('ps_ongoing_teis_request_modal') }}',
+                                    data: {
+                                        id,
+                                        _token: '{{ csrf_token() }}'
+                                    }
+
+                                },
+                                columns: [{
+                                        data: 'picture'
+                                    },
+                                    {
+                                        data: 'item_no'
+                                    },
+                                    {
+                                        data: 'teis_no'
+                                    },
+                                    {
+                                        data: 'item_code'
+                                    },
+                                    {
+                                        data: 'item_description'
+                                    },
+                                    {
+                                        data: 'serial_number'
+                                    },
+                                    {
+                                        data: 'qty'
+                                    },
+                                    {
+                                        data: 'unit'
+                                    },
+                                    {
+                                        data: 'tools_status'
+                                    },
+                                    {
+                                        data: 'reason_for_transfer'
+                                    },
+                                    {
+                                        data: 'action'
+                                    },
+                                ],
+                                initComplete: function() {
+                                    const data = modalTable.rows().data();
+
+                                    for (var i = 0; i < data.length; i++) {
+
+                                        $("#itemListDaf").append(
+                                            `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
+                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                                (${data[i].price ? data[i].price : '<span class="text-danger">No Price</span>'})
+                                            </p>`
+                                        );
+
+                                        // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
+                                    }
+
+                                    // console.log(data)
+                                },
+                                drawCallback: function() {
+                                    $('table thead th.pictureHeader').show();
+                                }
+                            });
+
                         }
-                    ],
-                });
+                    })
+
+                /// old viewing of tools
+                // const modalTable = $("#modalTable").DataTable({
+                //     processing: true,
+                //     serverSide: false,
+                //     destroy: true,
+                //     scrollX: true,
+                //     ajax: {
+                //         type: 'get',
+                //         url: '{{ route('ongoing_teis_request_modal') }}',
+                //         data: {
+                //             id,
+                //             type,
+                //             path,
+                //             _token: '{{ csrf_token() }}'
+                //         }
+
+                //     },
+                //     columns: [
+                //         {
+                //             data: 'picture'
+                //         },
+                //         {
+                //             data: 'po_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'serial_number'
+                //         },
+                //         {
+                //             data: 'item_code'
+                //         },
+                //         {
+                //             data: 'item_description'
+                //         },
+                //         {
+                //             data: 'brand'
+                //         },
+                //         {
+                //             data: 'warehouse_name'
+                //         },
+                //         {
+                //             data: 'price'
+                //         },
+                //         {
+                //             data: 'tools_status'
+                //         },
+                //         {
+                //             data: 'action'
+                //         }
+                //     ],
+                // });
             })
 
         })

@@ -130,52 +130,115 @@
                 const id = $(this).data("id");
                 const path = $("#path").val()
 
-
-
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_pullout_request_modal') }}',
-                        data: {
-                            id,
-                            path,
-                            _token: '{{ csrf_token() }}'
-                        }
-
+                $.ajax({
+                    url: '{{ route('view_pullout_request') }}',
+                    method: 'get',
+                    data: {
+                        id,
+                        path,
+                        _token: '{{ csrf_token() }}',
                     },
-                    columns: [
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'item_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
-                        }
-                    ],
-                });
+                    success(result) {
+                        $("#requestFormLayout").html(result)
+
+
+                        const modalTable = $("#modalTable").DataTable({
+                            paging: false,
+                            order: false,
+                            searching: false,
+                            info: false,
+                            sort: false,
+                            processing: true,
+                            serverSide: false,
+                            destroy: true,
+                            ajax: {
+                                type: 'get',
+                                url: '{{ route('ongoing_pullout_request_modal') }}',
+                                data: {
+                                    id,
+                                    path,
+                                    _token: '{{ csrf_token() }}'
+                                }
+
+                            },
+                            columns: [{
+                                    data: 'item_no'
+                                },
+                                {
+                                    data: 'asset_code'
+                                },
+                                {
+                                    data: 'teis_no_dr_ar'
+                                },
+                                {
+                                    data: 'item_description'
+                                },
+                                {
+                                    data: 'new_tools_status'
+                                },
+                                {
+                                    data: 'new_tools_status_defective'
+                                },
+                                {
+                                    data: 'reason'
+                                },
+                                // {
+                                //     data: 'action'
+                                // }
+                            ],
+                            drawCallback: function() {
+
+                            },
+                            // scrollX: true,
+                        });
+
+                    }
+                })
+                ///old viewing of tools
+                // const modalTable = $("#modalTable").DataTable({
+                //     processing: true,
+                //     serverSide: false,
+                //     destroy: true,
+                //     ajax: {
+                //         type: 'get',
+                //         url: '{{ route('ongoing_pullout_request_modal') }}',
+                //         data: {
+                //             id,
+                //             path,
+                //             _token: '{{ csrf_token() }}'
+                //         }
+
+                //     },
+                //     columns: [
+                //         {
+                //             data: 'po_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'serial_number'
+                //         },
+                //         {
+                //             data: 'item_code'
+                //         },
+                //         {
+                //             data: 'item_description'
+                //         },
+                //         {
+                //             data: 'brand'
+                //         },
+                //         {
+                //             data: 'warehouse_name'
+                //         },
+                //         {
+                //             data: 'tools_status'
+                //         },
+                //         {
+                //             data: 'action'
+                //         }
+                //     ],
+                // });
             })
 
 

@@ -38,10 +38,10 @@
                     </select>
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="button" id="changeStateBtn" class="btn btn-success" data-bs-toggle="modal"
+                    {{-- <button type="button" id="changeStateBtn" class="btn btn-success" data-bs-toggle="modal"
                         data-bs-target="#changeTransferStateModal" disabled><i class="fa fa-arrows-rotate me-1"></i>Change
                         Transfer
-                        State</button>
+                        State</button> --}}
                     <button type="button" id="pulloutRequestBtn" class="btn btn-danger" disabled><i
                             class="fa fa-truck-arrow-right me-1"></i>Pull-Out</button>
                 </div>
@@ -51,7 +51,7 @@
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
                 <table id="table"
-                    class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                    class="table js-table-checkable w-100 fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
@@ -63,7 +63,7 @@
                             <th style="text-align: left; font-size: 14px;">Brand</th>
                             <th style="text-align: left; font-size: 14px;">Location</th>
                             <th style="text-align: left; font-size: 14px;">Status</th>
-                            <th style="text-align: left; font-size: 14px;"> Transfer State</th>
+                            {{-- <th style="text-align: left; font-size: 14px;"> Transfer State</th> --}}
                             {{-- <th style="text-align: left; font-size: 14px;">Action</th> --}}
                             {{-- <th style="width: 15%;">Access</th>
                     <th class="d-none d-sm-table-cell text-center" style="width: 15%;">Profile</th> --}}
@@ -153,9 +153,9 @@
                     {
                         data: 'tools_status'
                     },
-                    {
-                        data: 'transfer_state'
-                    },
+                    // {
+                    //     data: 'transfer_state'
+                    // },
                     // {
                     //     data: 'action'
                     // },
@@ -334,7 +334,7 @@
                         $("#projectName").val(currenSite.project_name)
                         $("#projectCode").val(currenSite.project_code)
 
-                        $("#pulloutRequestBtn").prop('disabled', true);
+                        // $("#pulloutRequestBtn").prop('disabled', true);
                         $("#changeStateBtn").prop('disabled', true);
                     },
                     complete() {
@@ -355,7 +355,7 @@
                 for (var i = 0; i < data.length; i++) {
 
                     $("#tbodyPulloutModal").append(
-                        `<tr><td>${data[i].teis_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="repair">Need Repair</option></select></td></tr>`
+                        `<tr><td>${data[i].asset_code}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="defective">Defective</option></select></td></tr>`
                     );
                     //<option value="dispose">Disposal</option>
                 }
@@ -425,8 +425,17 @@
                         $("#loader").show();
                         $("#pulloutRequestModal").modal("hide")
                     },
-                    success() {
+                    success(result) {
                         $("#loader").hide();
+                        if(result == 1){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "No assigned Project Manager to the selected project site, please contact your OM.",
+                                icon: "error"
+                            });
+                        return
+                        }
+
                         table.ajax.reload();
                         showToast("success", "Request Pullout Successfully");
 

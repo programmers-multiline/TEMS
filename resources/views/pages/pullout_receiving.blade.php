@@ -102,6 +102,8 @@
     <script>
         $(document).ready(function() {
 
+            const path = $("#path").val();
+
             let pulloutNum;
 
             $(document).on('click', '#addSchedBtn', function() {
