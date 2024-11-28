@@ -599,7 +599,7 @@ class TransferRequestController extends Controller
                 } else if ($status == 2) {
                     $status ='<div class="text-center"><span class="badge bg-danger">Not Served</span></div>';
                 } else {
-                    $status = '<span class="badge bg-danger">' . $status . '</span>';
+                    $status = '<div class="text-center"><span class="badge bg-warning">Waiting</span></div>';
                 }
                 return $status;
             })
@@ -2945,14 +2945,13 @@ class TransferRequestController extends Controller
             $tool->item_status = 0;
         }else{
             $tool->transfer_state = 2;
-            $tool->update();
 
             PeLogs::where('status', 1)->where('request_number', $tool->teis_number)->where('tool_id', $tool->tool_id)->where('pe', $tool->pe)->first()->update([
                 'status' => 0
             ]);
 
         }
-
+        $tool->update();
 
 
         

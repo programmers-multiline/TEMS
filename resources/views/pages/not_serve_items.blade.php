@@ -44,7 +44,7 @@
                             <th>Project Address</th>
                             <th>Date Requested</th>
                             <th>TEIS</th>
-                            <th>TERS</th>
+                            {{-- <th>TERS</th> --}}
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -139,9 +139,9 @@
                     {
                         data: 'teis'
                     },
-                    {
-                        data: 'ters'
-                    },
+                    // {
+                    //     data: 'ters'
+                    // },
                     {
                         data: 'progress'
                     },
@@ -357,7 +357,7 @@
                                 table.ajax.reload();
                                 if (type == 'rfteis') {
                                     confirm.fire({
-                                        title: "En Route!",
+                                        title: "On the way!",
                                         text: "The tools are out for Delivery.",
                                         icon: "success"
                                     });

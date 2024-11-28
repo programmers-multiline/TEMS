@@ -516,7 +516,7 @@
             </li>
             <li class="d-flex align-items-center mb-3">
                 <span class="fs-4 me-2">🚚</span>
-                <p class="m-0">Request En Route - Pending</p>
+                <p class="m-0">Request On the way - Pending</p>
             </li>
             <li class="d-flex align-items-center mb-3">
                 <span class="fs-4 me-2">🏢</span>

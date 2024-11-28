@@ -31,7 +31,7 @@
                             <th>Item Code</th>
                             <th>Item Desc</th>
                             <th>TEIS</th>
-                            <th>TERS</th>
+                            {{-- <th>TERS</th> --}}
                             <th>Remarks</th>
                             <th>Action</th>
                         </tr>
@@ -90,9 +90,9 @@
                     {
                         data: 'teis'
                     },
-                    {
-                        data: 'ters'
-                    },
+                    // {
+                    //     data: 'ters'
+                    // },
                     {
                         data: 'remarks'
                     },

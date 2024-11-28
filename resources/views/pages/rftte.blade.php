@@ -415,7 +415,7 @@
                                 table.ajax.reload();
                                 if (type == 'rfteis') {
                                     confirm.fire({
-                                        title: "En Route!",
+                                        title: "On the way!",
                                         text: "The tools are out for Delivery.",
                                         icon: "success"
                                     });

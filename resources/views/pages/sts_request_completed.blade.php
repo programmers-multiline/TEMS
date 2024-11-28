@@ -37,7 +37,7 @@
                             <th>Status</th>
                             <th>Type</th>
                             <th>TEIS</th>
-                            <th>TERS</th>
+                            {{-- <th>TERS</th> --}}
                         </tr>
                     </thead>
                     <tbody>
@@ -108,9 +108,9 @@
                     {
                         data: 'teis'
                     },
-                    {
-                        data: 'ters'
-                    },
+                    // {
+                    //     data: 'ters'
+                    // },
                 ],
                 drawCallback: function() {
                     $(".trackBtn").tooltip();

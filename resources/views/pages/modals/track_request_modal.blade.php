@@ -239,7 +239,7 @@
                                   <i class="fas fa-shipping-fast fa-3x me-lg-4 mb-3 mb-lg-0"></i>
                                   <div>
                                     <p class="fw-bold mb-1">Request</p>
-                                    <p class="fw-bold mb-0">En Route</p>
+                                    <p class="fw-bold mb-0">On the way</p>
                                   </div>
                                 </div>
                                 <div class="d-lg-flex align-items-center">

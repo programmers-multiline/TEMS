@@ -37,7 +37,7 @@
                             <th>Status</th>
                             <th>Type</th>
                             <th>TEIS</th>
-                            <th>TERS</th>
+                            {{-- <th>TERS</th> --}}
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -110,9 +110,9 @@
                     {
                         data: 'teis'
                     },
-                    {
-                        data: 'ters'
-                    },
+                    // {
+                    //     data: 'ters'
+                    // },
                     {
                         data: 'action'
                     },
