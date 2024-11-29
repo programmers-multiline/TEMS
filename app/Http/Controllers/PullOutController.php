@@ -665,6 +665,7 @@ class PullOutController extends Controller
             $tools->wh_ps = 'wh';
             $tools->current_pe = null;
             $tools->current_site_id = null;
+            $tools->tools_status = $request->whEval;
     
             $tools->update();  
 

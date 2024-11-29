@@ -37,7 +37,7 @@ class FileUploadController extends Controller
                 $teis->move('uploads/teis_form/', $teis_name);
 
                 if($request->trType == 'rfteis'){
-                    $remarks = "galing sa warehouse";
+                    $remarks = "From Warehouse";
                 }else{
                     //! mali ito dapat sa previous owner hindi sa nanghihiram ngayon
                     $remarks = "galing kay mmmmm" . $request->pe;
@@ -165,9 +165,10 @@ class FileUploadController extends Controller
                 };
 
                 TersUploads::create([
-                    // 'pullout_number' => $request->tersNum, lagyan ng palatandaan
+                    'pullout_number' => $request->tersNum, //lagyan ng palatandaan
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
+                    'prev_req_num' => $request->prevReqNum,
                 ]);
 
 

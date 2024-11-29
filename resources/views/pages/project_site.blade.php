@@ -255,7 +255,7 @@
 
                 // const arrItem = []
 
-
+                // console.log(data)
                 for (var i = 0; i < data.length; i++) {
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 

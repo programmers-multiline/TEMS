@@ -723,6 +723,7 @@
                                 success(result) {
                                     showToast("success", "Tool Received");
                                     $("#modalTable").DataTable().ajax.reload();
+                                    $("#table").DataTable().ajax.reload();
                                 },
                                 error(err) {
                                     showToast("error",

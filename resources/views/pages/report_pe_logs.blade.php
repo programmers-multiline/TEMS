@@ -26,12 +26,13 @@
                     class="table js-table-checkable fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
                     <thead>
                         <tr>
+                            <th>Request#</th>
                             <th>PO Number</th>
                             <th>Asset Code</th>
                             <th>Item Code</th>
                             <th>Item Desc</th>
                             <th>TEIS</th>
-                            {{-- <th>TERS</th> --}}
+                            <th>TERS</th>
                             <th>Remarks</th>
                             <th>Action</th>
                         </tr>
@@ -76,6 +77,9 @@
                 },
                 columns: [
                     {
+                        data: 'request_number'
+                    },
+                    {
                         data: 'po_number'
                     },
                     {
@@ -90,9 +94,9 @@
                     {
                         data: 'teis'
                     },
-                    // {
-                    //     data: 'ters'
-                    // },
+                    {
+                        data: 'ters'
+                    },
                     {
                         data: 'remarks'
                     },

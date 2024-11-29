@@ -932,7 +932,7 @@ class ViewFormsController extends Controller
             $name_third = $approvers[2]->fullname;
             $date_approved_third = $approvers[2]->date_approved;
         } else if ($approvers[1]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer') {
-            $name_third = '<button id="peProceedBtn" type="button" ' . $picAllUploaded . ' data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
+            $name_third = '<button id="peProceedBtn" data-requestnumber="'.$request_tools->request_number.'" type="button" ' . $picAllUploaded . ' data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
             $date_approved_third = '--';
         } else {
             $name_third = '<span class="text-warning">Pending</span>';
@@ -1064,7 +1064,8 @@ class ViewFormsController extends Controller
             ->first();
 
         $approvers = RequestApprover::leftJoin('users', 'users.id', 'request_approvers.approver_id')
-            ->select('request_approvers.*', 'users.fullname')
+            ->leftJoin('positions', 'positions.id', 'users.pos_id')
+            ->select('request_approvers.*', 'users.fullname', 'positions.position')
             ->where('request_approvers.status', 1)
             ->where('users.status', 1)
             ->where('request_id', $pullout_tools->id)
@@ -1093,7 +1094,7 @@ class ViewFormsController extends Controller
         if ($firstApprover) {
             $name_first = $approvers[0]->fullname;
             $date_approved_first = $approvers[0]->date_approved;
-        }else if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5) {
+        }else if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5 && $request->path == 'pages/pullout_ongoing') {
             $name_first = $action;
             $date_approved_first = '--';
         } else {
@@ -1105,7 +1106,7 @@ class ViewFormsController extends Controller
         if ($secondApprover) {
             $name_second = $approvers[1]->fullname;
             $date_approved_second = $approvers[1]->date_approved;
-        }else if ($approvers[0]->approver_status == 1 && (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)) {
+        }else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/pullout_ongoing' && (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)) {
             $name_second = $action;
             $date_approved_second = '--';
         } else {
