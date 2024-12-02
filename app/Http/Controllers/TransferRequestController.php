@@ -582,7 +582,7 @@ class TransferRequestController extends Controller
                     }
                 }  
                 /// sa approver na pm and om
-                if($user_type == 3 || $user_type == 5){
+                if(($user_type == 3 || $user_type == 5) && $request->path == "pages/rfteis"){
                     $action = '<button data-trtype="rfteis" data-triid="' . $row->tri_id . '" data-number="' . $row->r_number . '" type="button" class="removeToolRequestBtn btn btn-sm btn-alt-danger d-block mx-auto" data-bs-toggle="tooltip" aria-label="Remove this tool?" data-bs-original-title="Remove this tool?"><i class="fa fa-xmark"></i></button>';
                 }elseif($user_type == 4 && $row->is_remove){
                     $name = User::where('status', 1)->where('id', $row->remove_by)->value('fullname');
@@ -1181,9 +1181,10 @@ class TransferRequestController extends Controller
 
                 $items = json_encode($tools);
 
-                $action = '<div class="d-flex gap-1"><button type="button" data-requestorid="' . $row->pe . '" data-toolid="' . $items . '" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>
-            </div>
-            ';
+            //     $action = '<div class="d-flex gap-1"><button type="button" data-requestorid="' . $row->pe . '" data-toolid="' . $items . '" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>
+            // </div>
+            // ';
+                $action = '<button type="button" data-requestumber="'.$row->teis_number.'" data-requestorid="' . $row->pe . '" data-toolid="' . $items . '" data-requestid="' . $row->request_id . '"  data-approverid="' . $row->approver_id . '" class="approveBtn mx_auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
 
                 if ($request->path == 'pages/rfteis_approved') {
                     $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
@@ -1772,6 +1773,19 @@ class TransferRequestController extends Controller
                 $scannedTools->item_status = 2;
 
                 $scannedTools->update();
+
+
+                //for Logs
+                $tool_name = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->value('item_description');
+
+                RfteisLogs::create([
+                    'page' => 'request_for_receiving',
+                    'request_number' => $scannedTools->teis_number,
+                    'title' => 'Not Served',
+                    'message' => Auth::user()->fullname .' '. 'not received the ' . $tool_name,
+                    'action' => 9,
+                    'approver_name' => Auth::user()->fullname,
+                ]);
 
             }
 
@@ -2454,7 +2468,59 @@ class TransferRequestController extends Controller
         } elseif ($request->trType == 'pullout') {
     
         } else {
- 
+            $tool_requests = RttteLogs::where('status', 1)->where('request_number', $request->requestNumber)->get();
+
+            // return $tool_requests;
+
+            $html = '';
+            if(count($tool_requests) > 0){
+               foreach ($tool_requests as $tool_request) {
+
+                if($tool_request->action == 1){
+                    $icon = 'fa-file-pen bg-primary';
+                }elseif($tool_request->action == 2){
+                    $icon = 'fa-upload bg-elegance';
+                }elseif($tool_request->action == 3){
+                    $icon = 'fa-check bg-earth';
+                }elseif($tool_request->action == 4){
+                    $icon = 'fa-upload bg-corporate';
+                }elseif($tool_request->action == 5){
+                    $icon = 'fa-upload bg-primary';
+                }elseif($tool_request->action == 6){
+                    $icon = 'fa-truck-fast bg-info';
+                }elseif($tool_request->action == 7){
+                    $icon = 'fa-file-circle-check bg-corporate';
+                }elseif($tool_request->action == 8){
+                    $icon = 'fa-upload bg-success';
+                }elseif($tool_request->action == 9){
+                    $icon = 'fa-file-circle-xmark bg-danger';
+                }elseif($tool_request->action == 10){
+                    $icon = 'fa-upload bg-primary';
+                }elseif($tool_request->action == 11){
+                    $icon = 'fa-upload bg-elegance';
+                }else{
+                    $icon = 'fa-file bg-primary';
+                }
+
+
+                $createdAt = $tool_request->created_at; 
+                $timeAgo = Carbon::parse($createdAt)->diffForHumans();
+
+                $html .='
+                    <li class="timeline-event">
+                        <div class="timeline-event-time">'.$timeAgo.'</div>
+                        <i class="timeline-event-icon fa '.$icon.'"></i>
+                        <div class="timeline-event-block">
+                        <p class="fw-semibold">'.$tool_request->title.'</p>
+                        <p>'.$tool_request->message.'</p>
+                        </div>
+                    </li>
+                ';
+                } 
+            }
+            
+
+            return $html;
         }
 
 

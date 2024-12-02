@@ -179,6 +179,7 @@
                                 url: '{{ route('ongoing_teis_request_modal') }}',
                                 data: {
                                     id,
+                                    path,
                                     _token: '{{ csrf_token() }}'
                                 }
 
