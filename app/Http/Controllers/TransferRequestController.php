@@ -1388,6 +1388,7 @@ class TransferRequestController extends Controller
         $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
             ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number', 'transfer_request_items.item_status')
             ->where('transfer_request_items.status', 1)
+            ->whereNull('transfer_request_items.is_remove')
             ->where('transfer_request_items.teis_number', $request->request_number)
             ->get();
 

@@ -448,7 +448,7 @@ class ViewFormsController extends Controller
             //PM
             $firstApprover = $approvers[0]->approver_status;
             if ($firstApprover) {
-                $name_first = $approvers[0]->fullname;
+                $name_first = '<span class="seqCount">1. </span>' .$approvers[0]->fullname;
                 $date_approved_first = $approvers[0]->date_approved;
             } else {
                 $name_first = '<span class="text-warning">Pending</span>';
@@ -457,7 +457,7 @@ class ViewFormsController extends Controller
             // OM
             $secondApprover = $approvers[1]->approver_status;
             if ($secondApprover) {
-                $name_second = $approvers[1]->fullname;
+                $name_second = '<span class="seqCount">2. </span>' .$approvers[1]->fullname;
                 $date_approved_second = $approvers[1]->date_approved;
             } else {
                 $name_second = '<span class="text-warning">Pending</span>';
@@ -466,7 +466,7 @@ class ViewFormsController extends Controller
             // CNC
             $thirdApprover = $approvers[2]->approver_status;
             if ($thirdApprover) {
-                $name_third = $approvers[2]->fullname;
+                $name_third = '<span class="seqCount">3. </span>' .$approvers[2]->fullname;
                 $date_approved_third = $approvers[2]->date_approved;
             } else {
                 $name_third = '<span class="text-warning">Pending</span>';
@@ -475,7 +475,7 @@ class ViewFormsController extends Controller
             // Warehouse Manager
             $fourthApprover = $approvers[3]->approver_status;
             if ($fourthApprover) {
-                $name_fourth = $approvers[3]->fullname;
+                $name_fourth = '<span class="seqCount">4. </span>' .$approvers[3]->fullname;
                 $date_approved_fourth = $approvers[3]->date_approved;
             } else {
                 $name_fourth = '<span class="text-warning">Pending</span>';
@@ -540,7 +540,7 @@ class ViewFormsController extends Controller
             //PM ng nanghihiram
             $firstApprover = $approvers[0]->approver_status;
             if ($firstApprover) {
-                $name_first = $approvers[0]->fullname;
+                $name_first = '<span class="seqCount">1. </span>' .$approvers[0]->fullname;
                 $date_approved_first = $approvers[0]->date_approved;
             } else {
                 $name_first = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[0]->fullname.'">Pending</span>';
@@ -549,7 +549,7 @@ class ViewFormsController extends Controller
             // OM ng nanghihiram
             $secondApprover = $approvers[1]->approver_status;
             if ($secondApprover) {
-                $name_second = $approvers[1]->fullname;
+                $name_second = '<span class="seqCount">2. </span>' .$approvers[1]->fullname;
                 $date_approved_second = $approvers[1]->date_approved;
             } else {
                 $name_second = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[1]->fullname.'">Pending</span>';
@@ -558,7 +558,7 @@ class ViewFormsController extends Controller
             // pe na hinihiraman
             $thirdApprover = $approvers[2]->approver_status;
             if ($thirdApprover) {
-                $name_third = $approvers[2]->fullname;
+                $name_third = '<span class="seqCount">3. </span>' .$approvers[2]->fullname;
                 $date_approved_third = $approvers[2]->date_approved;
             } else {
                 $name_third = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[2]->fullname.'">Pending</span>';
@@ -567,7 +567,7 @@ class ViewFormsController extends Controller
             // PM ng hinihiraman
             $fourthApprover = $approvers[3]->approver_status;
             if ($fourthApprover) {
-                $name_fourth = $approvers[3]->fullname;
+                $name_fourth = '<span class="seqCount">4. </span>' .$approvers[3]->fullname;
                 $date_approved_fourth = $approvers[3]->date_approved;
             } else {
                 $name_fourth = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[3]->fullname.'">Pending</span>';
@@ -576,7 +576,7 @@ class ViewFormsController extends Controller
             // OM ng hinihiraman
             $fifthApprover = $approvers[4]->approver_status;
             if ($fifthApprover) {
-                $name_fifth = $approvers[4]->fullname;
+                $name_fifth = '<span class="seqCount">5. </span>' .$approvers[4]->fullname;
                 $date_approved_fifth = $approvers[4]->date_approved;
             } else {
                 $name_fifth = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[4]->fullname.'">Pending</span>';
@@ -727,7 +727,7 @@ class ViewFormsController extends Controller
         //PM    
         $firstApprover = $approvers[0]->approver_status;
         if ($firstApprover) {
-            $name_first = $approvers[0]->fullname;
+            $name_first = '<span class="seqCount">1. </span>' .$approvers[0]->fullname;
             $date_approved_first = $approvers[0]->date_approved;
         } else {
             $name_first = $action;
@@ -736,7 +736,7 @@ class ViewFormsController extends Controller
         // OM
         $secondApprover = $approvers[1]->approver_status;
         if ($secondApprover) {
-            $name_second = $approvers[1]->fullname;
+            $name_second = '<span class="seqCount">2. </span>' .$approvers[1]->fullname;
             $date_approved_second = $approvers[1]->date_approved;
         } else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/rfteis') {
             $name_second = $action;
@@ -748,7 +748,7 @@ class ViewFormsController extends Controller
         // CNC
         $thirdApprover = $approvers[2]->approver_status;
         if ($thirdApprover) {
-            $name_third = $approvers[2]->fullname;
+            $name_third = '<span class="seqCount">3. </span>' .$approvers[2]->fullname;
             $date_approved_third = $approvers[2]->date_approved;
         } else if ($approvers[1]->approver_status == 1 && $request->path == 'pages/rfteis') {
             $name_third = $action;
@@ -760,7 +760,7 @@ class ViewFormsController extends Controller
         // Warehouse Manager
         $fourthApprover = $approvers[3]->approver_status;
         if ($fourthApprover) {
-            $name_fourth = $approvers[3]->fullname;
+            $name_fourth = '<span class="seqCount">4. </span>' .$approvers[3]->fullname;
             $date_approved_fourth = $approvers[3]->date_approved;
         } else if ($approvers[2]->approver_status == 1 && $request->path == 'pages/rfteis') {
             $name_fourth = $action;
@@ -905,7 +905,7 @@ class ViewFormsController extends Controller
         //PM ng nanghihiram
         $firstApprover = $approvers[0]->approver_status;
         if ($firstApprover) {
-            $name_first = $approvers[0]->fullname;
+            $name_first = '<span class="seqCount">1. </span>' .$approvers[0]->fullname;
             $date_approved_first = $approvers[0]->date_approved;
         } else {
             $name_first = $action;
@@ -917,7 +917,7 @@ class ViewFormsController extends Controller
         // OM ng nanghihiram
         $secondApprover = $approvers[1]->approver_status;
         if ($secondApprover) {
-            $name_second = $approvers[1]->fullname;
+            $name_second = '<span class="seqCount">2. </span>' .$approvers[1]->fullname;
             $date_approved_second = $approvers[1]->date_approved;
         } else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer' && $user_type != 4) {
             $name_second = $action;
@@ -929,7 +929,7 @@ class ViewFormsController extends Controller
         // pe na hinihiraman
         $thirdApprover = $approvers[2]->approver_status;
         if ($thirdApprover) {
-            $name_third = $approvers[2]->fullname;
+            $name_third = '<span class="seqCount">3. </span>' .$approvers[2]->fullname;
             $date_approved_third = $approvers[2]->date_approved;
         } else if ($approvers[1]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer') {
             $name_third = '<button id="peProceedBtn" data-requestnumber="'.$request_tools->request_number.'" type="button" ' . $picAllUploaded . ' data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
@@ -941,7 +941,7 @@ class ViewFormsController extends Controller
         // PM ng hinihiraman
         $fourthApprover = $approvers[3]->approver_status;
         if ($fourthApprover) {
-            $name_fourth = $approvers[3]->fullname;
+            $name_fourth = '<span class="seqCount">4. </span>' .$approvers[3]->fullname;
             $date_approved_fourth = $approvers[3]->date_approved;
         } else if ($approvers[2]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer' && $approvers[3]->approver_id == Auth::id()) {
             $name_fourth = $action;
@@ -953,7 +953,7 @@ class ViewFormsController extends Controller
         // OM ng hinihiraman
         $fifthApprover = $approvers[4]->approver_status;
         if ($fifthApprover) {
-            $name_fifth = $approvers[4]->fullname;
+            $name_fifth = '<span class="seqCount">5. </span>' .$approvers[4]->fullname;
             $date_approved_fifth = $approvers[4]->date_approved;
         } else if ($approvers[3]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer' && $approvers[4]->approver_id == Auth::id()) {
             $name_fifth = $action;
@@ -1092,7 +1092,7 @@ class ViewFormsController extends Controller
         //PM
         $firstApprover = $approvers[0]->approver_status;
         if ($firstApprover) {
-            $name_first = $approvers[0]->fullname;
+            $name_first = '<span class="seqCount">1. </span>' .$approvers[0]->fullname;
             $date_approved_first = $approvers[0]->date_approved;
         }else if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5 && $request->path == 'pages/pullout_ongoing') {
             $name_first = $action;
@@ -1104,7 +1104,7 @@ class ViewFormsController extends Controller
         // OM
         $secondApprover = $approvers[1]->approver_status;
         if ($secondApprover) {
-            $name_second = $approvers[1]->fullname;
+            $name_second = '<span class="seqCount">2. </span>' .$approvers[1]->fullname;
             $date_approved_second = $approvers[1]->date_approved;
         }else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/pullout_ongoing' && (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)) {
             $name_second = $action;

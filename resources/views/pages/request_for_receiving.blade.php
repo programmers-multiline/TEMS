@@ -113,6 +113,9 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
+        <div class="loader-container" id="loader" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+            <dotlottie-player src="{{asset('js/loader.json')}}" background="transparent" speed="1" style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal" loop autoplay>Loading</dotlottie-player>
+        </div>
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -180,6 +183,7 @@
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="{{ asset('js/plugins/magnific-popup/jquery.magnific-popup.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/webcam-easy/dist/webcam-easy.min.js"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     <script type="module">
         Codebase.helpersOnLoad(['jq-magnific-popup']);
@@ -722,7 +726,11 @@
                                     photo: pictureDataURL, // Pass photo as base64
                                     _token: '{{ csrf_token() }}',
                                 },
+                                beforeSend(){
+                                    $("#loader").show()
+                                },
                                 success(result) {
+                                    $("#loader").hide()
                                     showToast("success", "Tool Received");
                                     $("#modalTable").DataTable().ajax.reload();
                                     $("#table").DataTable().ajax.reload();

@@ -222,7 +222,12 @@
     <div class="page-body">
         <div class="py-3">
             <div style="width: 1100px; height: 1056px;" class="containerPrint px-2">
-                <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
+                <div class="actionButtons">
+                    <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
+                    @if (Auth::user()->user_type_id == 2)
+                        <button id="pulloutPrintBtn" class="btn btn-success mb-2">Print Pullout</button>
+                    @endif
+                </div>
                 <div class="flex">
                     <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
                     <p style="font-size: 12px; margin-bottom: 2px;">827 Calderon Bldg., EDSA, South Triangle, Quezon City
@@ -268,25 +273,25 @@
                         <h6 style="">company</h6>
                         <div style="display: flex;">
                             <div style="padding-left: 15px; margin-top: 5px; margin-bottom: 5px;">
-                                <input class="form-check-input" type="checkbox" id="example-checkboxs-inline1"
+                                <input class="form-check-input compCheckbox" type="checkbox" id="example-checkboxs-inline1"
                                     name="example-checkboxs-inline" value="option1" {{ $pullout_tools->comp_id == 1 ? "checked" : "disabled" }}>
                                 <label class="form-check-label" style="font-size: 13px;"
                                     for="example-checkboxs-inline1">FMC</label>
                             </div>
                             <div style="padding-left: 15px; margin-top: 5px; margin-bottom: 5px;">
-                                <input class="form-check-input" type="checkbox" id="example-checkboxs-inline2"
+                                <input class="form-check-input compCheckbox" type="checkbox" id="example-checkboxs-inline2"
                                     name="example-checkboxs-inline" value="option2" {{ $pullout_tools->comp_id == 3 ? "checked" : "disabled" }}>
                                 <label class="form-check-label" style="font-size: 13px;"
                                     for="example-checkboxs-inline2">MBI</label>
                             </div>
                             <div style="padding-left: 15px; margin-top: 5px; margin-bottom: 5px;">
-                                <input class="form-check-input" type="checkbox" id="example-checkboxs-inline3"
+                                <input class="form-check-input compCheckbox" type="checkbox" id="example-checkboxs-inline3"
                                     name="example-checkboxs-inline" value="option2" {{ $pullout_tools->comp_id == 2 ? "checked" : "disabled" }}>
                                 <label class="form-check-label" style="font-size: 13px;"
                                     for="example-checkboxs-inline3">MSC</label>
                             </div>
                             <div style="padding-left: 15px; margin-top: 5px; margin-bottom: 5px;">
-                                <input class="form-check-input" type="checkbox" id="example-checkboxs-inline3"
+                                <input class="form-check-input compCheckbox" type="checkbox" id="example-checkboxs-inline3"
                                     name="example-checkboxs-inline" value="option2" {{ $pullout_tools->comp_id == 4 ? "checked" : "disabled" }}>
                                 <label class="form-check-label" style="font-size: 13px;"
                                     for="example-checkboxs-inline3">CDO</label>
@@ -487,8 +492,7 @@
                 });
 
 
-
-                $('#printBtn').click(function() {
+                $('#pulloutPrintBtn').click(function() {
                     $('.containerPrint').printThis({
                         importCSS: true, // import parent page css
                         importStyle: true, // import style tags
@@ -496,8 +500,15 @@
                         // footer: $("#printFooter")
                         header: null,
                         footer: null,
+                        beforePrint: function() {
+                            $(".actionButtons").hide()
+                            $("#modalTable").DataTable().column(-1).visible(false)
 
-
+                        },
+                        afterPrint: function() {
+                            $(".actionButtons").show()
+                            $("#modalTable").DataTable().column(-1).visible(true)
+                        },
                     });
 
                 })
