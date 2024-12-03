@@ -107,6 +107,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 // "aoColumnDefs": [
                 //     {
                 //         // visible ang approver_name kapag 3 or 5 ang userType.

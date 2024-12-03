@@ -1,3 +1,10 @@
+<style>
+    #requestFormLayout{
+        height: 80vh;
+        overflow-y: scroll;
+    }
+</style>
+
 <div class="modal fade" id="ongoingPulloutRequestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-popin"
     aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-popin" role="document">

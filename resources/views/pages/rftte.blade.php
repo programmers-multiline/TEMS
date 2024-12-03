@@ -104,6 +104,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 destroy: true,
                 ajax: {
                     type: 'get',

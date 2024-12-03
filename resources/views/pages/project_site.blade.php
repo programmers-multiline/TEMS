@@ -11,6 +11,12 @@
         #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
+
+        @media (min-width: 768px) {
+            .form-select{
+                width: unset !important;
+            }
+        }
     </style>
 @endsection
 
@@ -24,7 +30,7 @@
             <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
                 data-bs-target="#rttteModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
         @endif
-        <select class="form-select w-25 mb-3" id="selectProjectSite" name="example-select">
+        <select class="form-select col-12 col-sm-12 col-md-6 col-lg-4 mb-3" id="selectProjectSite" name="example-select">
             <option value="" disabled selected>Select Project Site</option>
             @foreach ($all_pg as $site)
                 <option value="{{ $site->id }}">{{ $site->project_name }}</option>
@@ -95,6 +101,7 @@
                 serverSide: false,
                 searchable: true,
                 pagination: true,
+                scrollX: true,
                 "aoColumnDefs": [{
                         "bSortable": false,
                         "aTargets": [0]

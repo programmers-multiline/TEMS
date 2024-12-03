@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RttteLogs;
 use Mail;
 use Carbon\Carbon;
 use App\Models\Daf;
@@ -10,6 +9,8 @@ use App\Models\User;
 use App\Models\PeLogs;
 use App\Models\Uploads;
 use App\Models\DafItems;
+use App\Models\RttteLogs;
+use App\Models\Warehouse;
 use App\Models\RfteisLogs;
 use App\Mail\ApproverEmail;
 use App\Models\TeisUploads;
@@ -1385,25 +1386,12 @@ class TransferRequestController extends Controller
     {
 
         $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
-            ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number')
+            ->select('tools_and_equipment.*', 'transfer_request_items.tool_id', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number', 'transfer_request_items.item_status')
             ->where('transfer_request_items.status', 1)
-            ->where('transfer_request_items.teis_number', $request->barcode)
+            ->where('transfer_request_items.teis_number', $request->request_number)
             ->get();
 
         return DataTables::of($tools)
-
-            ->setRowClass(function ($row) {
-                $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
-                    ->select('transfer_request_items.*')
-                    // ->where('transfer_requests.progress', 'ongoing')
-                    ->where('transfer_requests.status', 1)
-                    ->where('transfer_request_items.item_status', 1)
-                    ->get();
-
-                $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
-
-                return in_array($row->id, $toolIds) ? 'bg-gray' : '';
-            })
 
             ->addColumn('tools_status', function ($row) {
                 $status = $row->tools_status;
@@ -1416,26 +1404,56 @@ class TransferRequestController extends Controller
                 }
                 return $status;
             })
+
+            ->addColumn('location', function ($row) {
+                $site = $row->current_site_id;
+                if ($site) {
+                    $address = ProjectSites::find($site)->value('project_address');
+                }else{
+                    $address = Warehouse::find($row->location)->value('warehouse_name');
+                }
+                return $address;
+            })
+
             ->addColumn('action', function ($row) {
 
-                $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
-                    ->select('transfer_request_items.*')
-                    // ->where('transfer_requests.progress', 'ongoing')
-                    ->where('transfer_requests.status', 1)
-                    ->where('transfer_request_items.item_status', 1)
-                    ->get();
+                $user_type = Auth::user()->user_type_id;
 
-                $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
+                if($row->item_status == 1){
+                    $action = '<div class="text-center"><span class="badge bg-success text-center">Served</span></div>';
+                }elseif($row->item_status == 2){
+                    $action = '<div class="text-center"><span class="badge bg-danger">Not Served</span></div>';
+                }else{
+                    if ($user_type == 4) {
+                        $action = '<div class="d-flex gap-2 justify-content-center align-items-center">
+                    <button data-trtype="rfteis" data-triid="' . $row->tri_id . '" data-number="' . $row->teis_number . '" type="button" class="receivedBtn btn btn-sm btn-alt-success" data-bs-toggle="tooltip" aria-label="Receive Tool" data-bs-original-title="Receive Tool"><i class="fa fa-circle-check"></i></button>
+                    <button data-trtype="rfteis" data-triid="' . $row->tri_id . '" data-number="' . $row->teis_number . '" type="button" class="notReceivedBtn btn btn-sm btn-alt-danger" data-bs-toggle="tooltip" aria-label="Not Serve" data-bs-original-title="Not Serve"><i class="fa fa-circle-xmark"></i></button>
+                    </div>';
+                    } else {
+                        $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                    }
+                }
 
-                $isApproved = in_array($row->id, $toolIds) ? 'disabled' : '';
+                return $action;
 
-                return $action = '
-              <button type="button" id="ReceivedToolsBtn" data-id="' . $row->tri_id . '" data-teis="' . $row->teis_number . '" class="receiveBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Received" data-bs-original-title="Received" ' . $isApproved . '>
-                <i class="fa fa-clipboard-check"></i>
-              </button>';
+            //     $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
+            //         ->select('transfer_request_items.*')
+            //         // ->where('transfer_requests.progress', 'ongoing')
+            //         ->where('transfer_requests.status', 1)
+            //         ->where('transfer_request_items.item_status', 1)
+            //         ->get();
+
+            //     $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
+
+            //     $isApproved = in_array($row->id, $toolIds) ? 'disabled' : '';
+
+            //     return $action = '
+            //   <button type="button" data-id="' . $row->tri_id . '" data-teis="' . $row->teis_number . '" class="receiveBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Received" data-bs-original-title="Received" ' . $isApproved . '>
+            //     <i class="fa fa-clipboard-check"></i>
+            //   </button>';
 
             })
-            ->rawColumns(['tools_status', 'action'])
+            ->rawColumns(['tools_status', 'action', 'location'])
             ->toJson();
     }
 
@@ -3049,60 +3067,5 @@ class TransferRequestController extends Controller
     }
 
 
-    // para sa report log ng pe
-    public function report_pe_logs(Request $request)
-    {
-        $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
-            ->select('tools_and_equipment.po_number', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number')
-            ->where('tools_and_equipment.status', 1)
-            ->where('pe_logs.status', 1)
-            ->where('pe_logs.pe', Auth::user()->id)
-            ->get();
-
-
-        return DataTables::of($pe_logs)
-
-
-            ->addColumn('teis', function ($row) {
-                if($row->teis_upload_id){
-                    $teis_uploads = Uploads::where('status', 1)->where('id', $row->teis_upload_id)->first()->toArray();
-    
-                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                        <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $teis_uploads['name'] . '">
-                        <span>TEIS.pdf</span>
-                        </a>
-                    </div></div>';
-                }else{
-                    return '';
-                }
-
-    
-            })
-
-            ->addColumn('ters', function ($row) {
-                
-                if($row->ters_upload_id){
-                    $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
-                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
-                    <span>TEIS.pdf</span>
-                    </a>
-                </div></div>';
-                }else{
-                    return '';
-                }
-
-                
-            })
-
-            ->addColumn('action', function(){
-
-                return'<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
-            })
-
-            ->rawColumns(['teis', 'ters', 'action'])
-            ->toJson();
-
-    }
 
 }

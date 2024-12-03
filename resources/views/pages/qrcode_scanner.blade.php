@@ -151,25 +151,24 @@
             <div style="display: none;" >Driver name: <span class="fw-bold" id="driverName"></span></div>
             <div style="display: none;" >Request Number: <span class="fw-bold" id="requestNumber"></span></div>
         </div>
-    </div>
-
-    <div id="tableHead" class="block-content block-content-full overflow-x-auto bg-body-extra-light d-none">
-        <table id="scannedTools" class="table fs-sm table-bordered table-hover table-vcenter w-100">
-            <thead>
-                <tr>
-                    <th>PO Number</th>
-                    <th>Asset Code</th>
-                    <th>Serial#</th>
-                    <th>Item Code</th>
-                    <th>Item Desc</th>
-                    <th>Brand</th>
-                    <th>Location</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div id="tableHead" class="block-content block-content-full overflow-x-auto bg-body-extra-light d-none">
+            <table id="scannedTools" class="table fs-sm table-bordered table-hover table-vcenter w-100">
+                <thead>
+                    <tr>
+                        <th>PO Number</th>
+                        <th>Asset Code</th>
+                        <th>Serial#</th>
+                        <th>Item Code</th>
+                        <th>Item Desc</th>
+                        <th>Brand</th>
+                        <th>Location</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 
@@ -204,7 +203,7 @@
             const canvasElement = document.getElementById('canvas');
             const photoElement = document.getElementById('photo');
             let pictureDataURL = null; // Store the captured photo
-            const webcam = new Webcam(webcamElement, 'user', canvasElement);
+            const webcam = new Webcam(webcamElement, 'environment', canvasElement);
 
             function showCameraModal() {
                 pictureDataURL = null;

@@ -82,6 +82,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('ongoing_teis_request') }}'

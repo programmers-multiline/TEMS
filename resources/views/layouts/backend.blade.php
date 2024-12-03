@@ -911,8 +911,8 @@
                             @if (Auth::user()->user_type_id == 4)
                                 <li class="nav-main-heading">Receive Tools</li>
                                 <li class="nav-main-item">
-                                    <a class="nav-main-link{{ request()->is('pages/barcode_scanner') ? ' active' : '' }}"
-                                        href="/pages/barcode_scanner">
+                                    <a class="nav-main-link{{ request()->is('pages/qrcode_scanner') ? ' active' : '' }}"
+                                        href="/pages/qrcode_scanner">
                                         <i class="nav-main-link-icon fa fa-qrcode"></i>
                                         <span class="nav-main-link-name">Qr Code Scannner</span>
                                     </a>
@@ -1016,6 +1016,18 @@
                                         href="/pages/report_pe_logs">
                                         <i class="nav-main-link-icon fa fa-book-bookmark"></i>
                                         <span class="nav-main-link-name">Item Logs</span>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 5)
+                            @if (Auth::user()->user_type_id == 7)
+                                <li class="nav-main-heading">Reports</li>
+                            @endif
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/report_te_logs') ? ' active' : '' }}"
+                                        href="/pages/report_te_logs">
+                                        <i class="nav-main-link-icon fa fa-address-book"></i>
+                                        <span class="nav-main-link-name">Tools & Equipment Logs</span>
                                     </a>
                                 </li>
                             @endif

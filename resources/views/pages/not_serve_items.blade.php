@@ -101,6 +101,7 @@
                 processing: true,
                 serverSide: false,
                 destroy: true,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('fetch_teis_request') }}',

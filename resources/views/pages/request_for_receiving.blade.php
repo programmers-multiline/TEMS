@@ -197,9 +197,10 @@
             const canvasElement = document.getElementById('canvas');
             const photoElement = document.getElementById('photo');
             let pictureDataURL = null; // Store the captured photo
-            const webcam = new Webcam(webcamElement, 'user', canvasElement);
+            const webcam = new Webcam(webcamElement, 'environment', canvasElement);
 
             function showCameraModal() {
+
                 pictureDataURL = null;
                 photoElement.style.display = 'none'; // Hide previous photo
                 webcamElement.style.display = 'block'; // Show camera
@@ -271,6 +272,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('ongoing_teis_request') }}',

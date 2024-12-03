@@ -379,6 +379,7 @@
                     },
                 ],
                 select: true,
+                scrollX: true,
                 select: {
                     style: 'multi+shift',
                     selector: 'td'

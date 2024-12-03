@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ViewFormsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -75,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/rftte_signed_form_proof', 'pages.rftte_signed_form_proof');
     Route::view('/pages/not_serve_items', 'pages.not_serve_items');
     Route::view('/pages/report_pe_logs', 'pages.report_pe_logs');
+    Route::view('/pages/report_te_logs', 'pages.report_te_logs');
 
 
 
@@ -140,9 +142,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('delete_personnel', 'delete_personnel')->name('delete_personnel');
 
 
-
-        // reports
-        Route::get('report_pe_logs', 'report_pe_logs')->name('report_pe_logs');
     });
     
     Route::controller(MyToolsAndEquipmentController::class)->group(function () {
@@ -187,6 +186,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('view_pullout_request','view_pullout_request')->name('view_pullout_request');
         Route::get('rfteis_approvers_view','rfteis_approvers_view')->name('rfteis_approvers_view');
         Route::get('rttte_approvers_view','rttte_approvers_view')->name('rttte_approvers_view');
+    });
+
+
+    Route::controller(ReportsController::class)->group(function(){
+        Route::get('report_pe_logs', 'report_pe_logs')->name('report_pe_logs');
+        Route::get('report_te_logs', 'report_te_logs')->name('report_te_logs');
     });
     
     // Route::controller(FileUploadController::class)->group(function(){

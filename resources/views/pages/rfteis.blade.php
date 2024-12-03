@@ -107,6 +107,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 ajax: {
                     type: 'post',
                     url: '{{ route('fetch_rfteis_approver') }}',

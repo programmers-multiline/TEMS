@@ -71,6 +71,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('completed_sts_request') }}'

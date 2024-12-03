@@ -128,6 +128,94 @@
         transform: translate(-50%, -50%);
         transform-origin: center center;
     }
+
+
+    /* Approver table */
+    .timeline-float {
+        max-width: 900px;
+        padding: 15px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        background-color: white;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%; 
+    }
+
+    #approverTable {
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+
+    #approverTable th, #approverTable td {
+        padding: 8px;
+        text-align: left;
+        font-size: 14px; 
+        word-wrap: break-word; 
+    }
+
+    #approverTable thead th {
+        background-color: #f9f9f9; 
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        /* Adjust layout for tablets and small screens */
+        .timeline-float {
+            max-width: 100%; /* Full width on small screens */
+            top: auto;
+            left: auto;
+            transform: none;
+            position: relative;
+            margin: 20px auto;
+        }
+
+        #approverTable th, #approverTable td {
+            font-size: 12px; 
+            padding: 6px; 
+        }
+
+        #approverTable thead {
+            display: none; 
+        }
+
+        #approverTable tbody tr {
+            display: block; 
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        #approverTable tbody td {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px; 
+        }
+
+        #approverTable tbody td::before {
+            content: attr(data-label); 
+            font-weight: bold;
+            margin-right: 10px;
+            flex-basis: 30%;
+        }
+
+        #approverTable tbody td:last-child {
+            text-align: right; 
+        }
+    }
+
+    @media (max-width: 480px) {
+        .timeline-float {
+            padding: 10px;
+        }
+
+        #approverTable tbody td {
+            font-size: 12px;
+        }
+    }
+
 </style>
 <div class="page-wrapper">
 
@@ -350,21 +438,21 @@
                         <tbody>
                             @foreach ($approvers as $approver)
                                 <tr>
-                                    <td>{{ $approver->sequence }}</td>
-                                    <td>{{ $approver->fullname }}</td>
-                                    <td>{{ $approver->position }}</td>
-                                    <td>{{ $approver->date_approved }}</td>
-                                    <td>
+                                    <td data-label="Sequence">{{ $approver->sequence }}</td>
+                                    <td data-label="Fullname">{{ $approver->fullname }}</td>
+                                    <td data-label="Position">{{ $approver->position }}</td>
+                                    <td data-label="Date Approved">{{ $approver->date_approved }}</td>
+                                    <td data-label="Status">
                                         @if ($approver->approver_status == 1)
                                             <span class="badge bg-success">Approved</span>
                                         @else
                                             <span class="badge bg-warning">Pending</span>
                                         @endif
-
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
+                        
                     </table>
                 </div>
 

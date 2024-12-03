@@ -97,6 +97,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('fetch_teis_request_acc') }}'

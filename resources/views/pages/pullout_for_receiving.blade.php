@@ -206,7 +206,7 @@
             const canvasElement = $('#canvas')[0];
             const photoElement = $('#photo')[0];
             let pictureDataURL = null; // Store the captured photo
-            const webcam = new Webcam(webcamElement, 'user', canvasElement);
+            const webcam = new Webcam(webcamElement, 'environment', canvasElement);
 
             function showCameraModal() {
                 pictureDataURL = null;
@@ -302,6 +302,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('fetch_pullout_request') }}',
