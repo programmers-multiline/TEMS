@@ -26,15 +26,15 @@
                     class="table js-table-checkable fs-sm table-bordered hover">
                     <thead>
                         <tr>
-                            <th>Request#</th>
-                            <th>PO Number</th>
-                            <th>Asset Code</th>
-                            <th>Item Code</th>
-                            <th>Item Desc</th>
-                            <th>TEIS</th>
-                            <th>TERS</th>
-                            <th>Remarks</th>
-                            <th>Action</th>
+                            <th class="w-100">Request#</th>
+                            <th class="w-100">PO Number</th>
+                            <th class="w-100">Asset Code</th>
+                            <th class="w-100">Item Code</th>
+                            <th class="w-100">Item Desc</th>
+                            <th class="w-100">TEIS</th>
+                            <th class="w-100">TERS</th>
+                            <th class="w-100">Remarks</th>
+                            <th class="w-100">Action</th>
                         </tr>
                     </thead>
                     <tbody>
