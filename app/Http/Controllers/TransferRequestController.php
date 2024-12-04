@@ -1694,6 +1694,7 @@ class TransferRequestController extends Controller
                 $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
 
                 $tools->prev_request_num = $scannedTools->teis_number;
+                $tools->usage_end_date = $scannedTools->duration_date;
                 $tools->wh_ps = 'ps';
                 $tools->current_pe = $scannedTools->pe;
                 $tools->current_site_id = $project_site->id;

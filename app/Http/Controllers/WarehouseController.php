@@ -306,6 +306,7 @@ class WarehouseController extends Controller
                 'teis_number' => $new_teis_number,
                 'transfer_request_id' => $req->id,
                 'pe' => Auth::user()->id,
+                'duration_date' => $request->durationDate,
                 'status' => 1,
             ]);
         }
