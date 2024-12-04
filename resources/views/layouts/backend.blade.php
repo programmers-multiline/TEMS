@@ -461,7 +461,12 @@
 
     <!-- Alternatively, you can also include a specific color theme after the main stylesheet to alter the default color theme of the template -->
     {{-- @vite(['resources/sass/main.scss', 'resources/sass/codebase/themes/corporate.scss', 'resources/js/codebase/app.js']) --}}
-
+    <style>
+        table th, 
+        table td { 
+            font-size: .75rem; 
+        }
+    </style>
 </head>
 
 <body>
