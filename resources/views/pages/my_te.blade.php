@@ -63,6 +63,7 @@
                             <th style="text-align: left; font-size: 14px;">Brand</th>
                             <th style="text-align: left; font-size: 14px;">Location</th>
                             <th style="text-align: left; font-size: 14px;">Status</th>
+                            <th style="text-align: left; font-size: 14px;">Usage End Date</th>
                             {{-- <th style="text-align: left; font-size: 14px;"> Transfer State</th> --}}
                             {{-- <th style="text-align: left; font-size: 14px;">Action</th> --}}
                             {{-- <th style="width: 15%;">Access</th>
@@ -153,9 +154,9 @@
                     {
                         data: 'tools_status'
                     },
-                    // {
-                    //     data: 'transfer_state'
-                    // },
+                    {
+                        data: 'usage_end_date'
+                    },
                     // {
                     //     data: 'action'
                     // },

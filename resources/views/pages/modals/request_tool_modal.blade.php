@@ -72,11 +72,17 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-12">
+                                <div class="col-8">
                                     <label class="form-label" for="projectAddress">Project Address <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="projectAddress" name="projectAddress"
                                         placeholder="Enter Project Address" disabled>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label" for="durationDate">Usage End Date <span
+                                            class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="durationDate" name="durationDate"
+                                        placeholder="Enter How Long you will use this tool" >
                                 </div>
                             </div>
                         </div>

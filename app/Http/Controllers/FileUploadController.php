@@ -295,7 +295,7 @@ class FileUploadController extends Controller
                     'page' => 'site_to_site_transfer',
                     'request_number' => $request->reqNum,
                     'title' => 'Tool Picture Uploaded (Owner)',
-                    'message' => Auth::user()->fullname .' '. 'uploaded a picture of '. $tools_desc .'.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_picture') . '/' .
+                    'message' => Auth::user()->fullname .' '. 'uploaded a picture of '. $tools_desc .'.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_pictures') . '/' .
                     $pic_name . '">
                         <span>View</span>
                         </a>',

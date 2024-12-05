@@ -603,9 +603,15 @@
                 const projectName = $("#projectName").val();
                 const projectCode = $("#projectCode").val();
                 const projectAddress = $("#projectAddress").val();
+                const durationDate = $("#durationDate").val();
 
                 if (!projectCode) {
                     showToast('info', 'Select Project Code first!')
+                    return
+                }
+
+                if (!durationDate) {
+                    showToast('info', 'Please fill up all fields!')
                     return
                 }
 
@@ -635,6 +641,7 @@
                         projectName,
                         projectCode,
                         projectAddress,
+                        durationDate,
                         idArray: arrayToString,
                         _token: "{{ csrf_token() }}"
                     },
