@@ -216,12 +216,24 @@
                             <button id="dafPrintBtn" class="btn btn-success mb-2">Print DAF</button>
                         @endif
                     </div>
-
-                    <div class="flex">
-                        <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
-                        <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE SLIP
-                        </h3>
-                    </div>
+                    @if (Auth::user()->user_type_id == 2)
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
+                                <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE SLIP</h3>
+                            </div>
+                            <div id="qrCode">
+                                
+                            </div>
+                        </div>
+                    @else
+                        <div class="flex">
+                            <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
+                            <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE SLIP
+                            </h3>
+                        </div>
+                    @endif
+                    
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">project engineer</h6>
@@ -489,9 +501,9 @@
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
                                 {{ $user_info->fullname }}</p>
                         </div>
-                        <div style="border-right: 1px solid black; padding-left: 3px; width: 100%">
+                        <div style="border-right: 1px solid black; padding-left: 3px; width: 100%;">
                             <h6 style="">Signature</h6>
-                            <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"></p>
+                            <p style="text-align: center; padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"><span class="fw-bold text-secondary" style="font-size: 14px;">No Signature Required</span></p>
                         </div>
                         <div style=" padding-left: 3px; width: 50%">
                             <h6 style="">Date</h6>
@@ -615,6 +627,7 @@
         </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
         <script>
             $(document).ready(function() {
 
@@ -639,6 +652,24 @@
                         $timelineFloat.addClass("d-none");
                     }
                 });
+
+
+
+                const request_number = {{ $request_tools->request_number }};
+
+                    const jsonData = JSON.stringify({
+                        request_number
+                    });
+
+                    var qrcodeContainer = document.getElementById("qrCode");
+                    var qrCode = new QRCode(qrcodeContainer, {
+                        text: jsonData,
+                        width: 128,
+                        height: 128,
+                    });
+
+
+
 
                 $('#rfteisPrintBtn').click(function() {
                     $('.containerPrintRfteis').printThis({

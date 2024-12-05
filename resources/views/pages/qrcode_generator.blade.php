@@ -12,7 +12,7 @@
     <div class="col-xl-4 col-10 mx-auto mt-5">
         <input class="form-control" type="text" id="driverName" placeholder="Driver Name">
         <input class="form-control my-3" type="text" id="requestNumber" placeholder="Request Number">
-        <button class="btn btn-primary d-block mx-auto" id="generateQRCode">Generate QR Code</button>
+        <button class="btn btn-primary d-block mx-auto" id="generateQRCode">Generate QR Code</button>  
         <div id="qrcode-container">
             <div class="my-4" id="qrcode"></div>
             <button class="btn bg-elegance text-white" id="downloadButton" style="display: none;">Download QR Code</button>
@@ -25,7 +25,7 @@
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
         <script>
             $(function() {
-                // let qrCodeInstance = null;
+                let qrCodeInstance = null;
 
                 // Generate QR Code
                 $("#generateQRCode").click(function() {

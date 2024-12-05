@@ -148,7 +148,7 @@
         <button id="stopScanner" style="display: none;">Stop Scanning</button>
         <div id="reader" style=" display: none;"></div>
         <div class="d-flex gap-3 fs-5 mb-2">
-            <div style="display: none;" >Driver name: <span class="fw-bold" id="driverName"></span></div>
+            {{-- <div style="display: none;" >Driver name: <span class="fw-bold" id="driverName"></span></div> --}}
             <div style="display: none;" >Request Number: <span class="fw-bold" id="requestNumber"></span></div>
         </div>
         <div id="tableHead" class="block-content block-content-full overflow-x-auto bg-body-extra-light d-none">
@@ -295,7 +295,7 @@
                         if (!scanningPaused) {
                             scanningPaused = true;
 
-                            $("#driverName").parent().show();
+                            // $("#driverName").parent().show();
                             $("#requestNumber").parent().show();
 
                             showToast("success", "Qr Code Scanned Successfully");
@@ -303,11 +303,11 @@
 
                             const data = JSON.parse(decodedText);
                             // Display scanned data
-                            $("#driverName").text(data.name);
+                            // $("#driverName").text(data.name);
                             $("#requestNumber").text(data.request_number);
 
                             const request_number = data.request_number;
-                            const driver_name = data.name;
+                            // const driver_name = data.name;
                             const scannedToolsTable = $("#scannedTools").DataTable({
                                 processing: true,
                                 serverSide: false,
@@ -317,7 +317,7 @@
                                     url: '{{ route('scanned_teis') }}',
                                     data: {
                                         request_number,
-                                        driver_name,
+                                        // driver_name,
                                         _token: '{{ csrf_token() }}'
                                     }
 

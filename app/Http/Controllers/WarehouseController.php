@@ -268,12 +268,14 @@ class WarehouseController extends Controller
 
         $approvers = [];
 
-        $approvers[] = $assigned->user_id;
-        $approvers[] = $assigned->assigned_by;
+        $approvers[] = $setup_approvers[1]->user_id; /// warehouse first
+        $approvers[] = $assigned->user_id; /// PM
+        $approvers[] = $assigned->assigned_by; /// OM
+        $approvers[] = $setup_approvers[0]->user_id; // cnc
         
-        foreach($setup_approvers as $approver){
-            $approvers[] = $approver->user_id;
-        }
+        // foreach($setup_approvers as $approver){
+        //     $approvers[] = $approver->user_id;
+        // }
 
         foreach ($approvers as $key => $approver) {
             RequestApprover::create([

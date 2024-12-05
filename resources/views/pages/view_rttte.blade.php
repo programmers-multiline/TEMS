@@ -499,7 +499,7 @@
                         </div>
                         <div style="border-right: 1px solid black; padding-left: 3px; width: 100%">
                             <h6 style="">Signature</h6>
-                            <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"></p>
+                            <p style="text-align: center; padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"><span class="fw-bold text-secondary" style="font-size: 14px;">No Signature Required</span></p>
                         </div>
                         <div style=" padding-left: 3px; width: 50%">
                             <h6 style="">Date</h6>
