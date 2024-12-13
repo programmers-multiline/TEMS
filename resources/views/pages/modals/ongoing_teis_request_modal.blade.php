@@ -65,11 +65,11 @@
                         <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalBtn" data-bs-dismiss="modal">
                             Close
                         </button>
-                        @if (Auth::user()->user_type_id == 7)
+                        {{-- @if (Auth::user()->user_type_id == 7)
                             <button id="addPriceBtn" type="button" class="btn btn-alt-primary">
                                 Add Price
                             </button>
-                        @endif
+                        @endif --}}
                     </div>
                 </div>
             </div>

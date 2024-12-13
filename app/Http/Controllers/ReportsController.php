@@ -48,7 +48,7 @@ class ReportsController extends Controller
                     $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
                     return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
-                    <span>TEIS.pdf</span>
+                    <span>TERS.pdf</span>
                     </a>
                 </div></div>';
                 }else{

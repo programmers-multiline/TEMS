@@ -228,6 +228,13 @@
                         <button id="dafPrintBtn" class="btn btn-success mb-2">Print DAF</button>
                     @endif
                 </div> 
+                @if (Auth::user()->user_type_id == 2)
+                    <div class="d-flex justify-content-end mb-2">
+                        <div id="qrCode">
+                            
+                        </div>
+                    </div>
+                @endif
                 <div class="d-flex justify-content-between align-items-center borders" style="border-top: 1px solid black">
                     <img style="padding-left: 10px" src="{{ asset('media/logo.png') }}" width="auto" height="37px"
                         alt="logo">
@@ -651,6 +658,7 @@
         </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
         <script>
             $(document).ready(function() {
 
@@ -676,6 +684,23 @@
                         $timelineFloat.addClass("d-none");
                     }
                 });
+
+                const request_number = {{ $request_tools->request_number }};
+                const user_type = {{ Auth::user()->user_type_id }};
+
+                if(user_type == 2){
+                  const jsonData = JSON.stringify({
+                        request_number
+                    });
+
+                    var qrcodeContainer = document.getElementById("qrCode");
+                    var qrCode = new QRCode(qrcodeContainer, {
+                        text: jsonData,
+                        width: 128,
+                        height: 128,
+                    });
+  
+                }
 
 
                 $('#rtttePrintBtn').click(function() {

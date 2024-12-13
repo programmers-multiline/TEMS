@@ -656,8 +656,10 @@
 
 
                 const request_number = {{ $request_tools->request_number }};
+                const user_type = {{ Auth::user()->user_type_id }};
 
-                    const jsonData = JSON.stringify({
+                if(user_type == 2){
+                  const jsonData = JSON.stringify({
                         request_number
                     });
 
@@ -667,7 +669,10 @@
                         width: 128,
                         height: 128,
                     });
+  
+                }
 
+                    
 
 
 

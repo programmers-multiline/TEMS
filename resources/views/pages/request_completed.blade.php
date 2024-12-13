@@ -12,6 +12,13 @@
         #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
+        .pictureContainer{
+        display: block;
+        white-space: nowrap; 
+        width: 110px !important; 
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+    }
     </style>
 @endsection
 
@@ -219,7 +226,7 @@
                                 processing: true,
                                 serverSide: false,
                                 destroy: true,
-                                scrollX: true,
+                                // scrollX: true,
                                 ajax: {
                                     type: 'get',
                                     url: '{{ route('ps_ongoing_teis_request_modal') }}',

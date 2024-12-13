@@ -11,7 +11,7 @@
                     </div>
                 </div>
                 <div class="block-content fs-sm">
-                    <table id="modalTable"
+                    {{-- <table id="modalTable"
                     class="table fs-sm table-bordered table-responsive table-vcenter w-100">
                     <thead>
                         <tr>
@@ -31,15 +31,18 @@
                     <tbody>
 
                     </tbody>
-                </table>
+                </table> --}}
+                <div id="requestFormLayout">
+
+                </div>
                 </div>
                 <div class="block-content block-content-full block-content-sm text-end border-top">
                     <button type="button" id="closeModal" class="btn btn-alt-secondary" data-bs-dismiss="modal">
                         Close
                     </button>
-                    <button id="AddPriceBtn" type="button" class="btn btn-alt-primary">
+                    {{-- <button id="AddPriceBtn" type="button" class="btn btn-alt-primary">
                         Add Price
-                    </button>
+                    </button> --}}
                 </div>
             </div>
         </div>

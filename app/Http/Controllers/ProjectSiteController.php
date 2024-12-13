@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RttteLogs;
 use Carbon\Carbon;
 use App\Models\Daf;
 use App\Models\Uploads;
 use App\Models\DafItems;
+use App\Models\RttteLogs;
+use App\Models\RfteisLogs;
 use App\Models\PmGroupings;
 use App\Models\TeisUploads;
 use App\Models\ProjectSites;
@@ -343,7 +344,7 @@ class ProjectSiteController extends Controller
     public function fetch_teis_request_ps()
     {
 
-        $request_tools = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('request_status', 'approved')->whereNull('acc')->get();
+        $request_tools = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->get();
         // if(Auth::user()->user_type_id == 7){
         // }
         // else{
@@ -355,33 +356,33 @@ class ProjectSiteController extends Controller
 
             ->addColumn('view_tools', function ($row) {
 
-                return $view_tools = '<button data-id="' . $row->request_number . '" data-bs-toggle="modal" data-bs-target="#psOngoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
+                return $view_tools = '<button data-pe="'.$row->user_id.'" data-trtype="rttte" data-pstrid="'.$row->id.'" data-id="' . $row->request_number . '" data-bs-toggle="modal" data-bs-target="#psOngoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
                 ;
             })
             ->addColumn('action', function ($row) {
                 $user_type = Auth::user()->user_type_id;
 
-                $price = [];
+                // $price = [];
 
-                $ps_tools = PsTransferRequestItems::where('status', 1)->where('ps_transfer_request_id', $row->id)->get();
-                foreach ($ps_tools as $tools) {
+                // $ps_tools = PsTransferRequestItems::where('status', 1)->where('ps_transfer_request_id', $row->id)->get();
+                // foreach ($ps_tools as $tools) {
 
-                    array_push($price, $tools->price);
-                }
-
-                // if (Auth::user()->dept_id !== 1) {
-                //     $price = [''];
+                //     array_push($price, $tools->price);
                 // }
 
-                $has_null = in_array(null, $price, true);
+                // // if (Auth::user()->dept_id !== 1) {
+                // //     $price = [''];
+                // // }
 
-                $has_price = $has_null ? 'disabled' : '';
+                // $has_null = in_array(null, $price, true);
+
+                // $has_price = $has_null ? 'disabled' : '';
 
 
                 if ($user_type == 2) {
                     $action = '<button data-requestnum="' . $row->request_number . '" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload me-1"></i>TEIS</button>';
                 } else if ($user_type == 7) {
-                    $action = '<button data-requestnum="' . $row->request_number . '" ' . $has_price . ' type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
+                    $action = '<button data-requestnum="' . $row->request_number . '" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
                 } else {
                     $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 }
@@ -416,7 +417,7 @@ class ProjectSiteController extends Controller
         $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
             ->leftjoin('warehouses', 'warehouses.id', 'tools_and_equipment.location')
             ->leftjoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.ps_transfer_request_id')
-            ->select('tools_and_equipment.*', 'ps_transfer_request_items.id as pstri_id', 'ps_transfer_request_items.price','ps_transfer_request_items.tool_id', 'ps_transfer_request_items.request_number', 'warehouses.warehouse_name', 'ps_transfer_request_items.teis_no', 'ps_transfer_requests.reason_for_transfer', 'ps_transfer_request_items.item_status', 'ps_transfer_request_items.user_id')
+            ->select('tools_and_equipment.*', 'ps_transfer_request_items.id as pstri_id', 'tools_and_equipment.price','ps_transfer_request_items.tool_id', 'ps_transfer_request_items.request_number', 'warehouses.warehouse_name', 'ps_transfer_request_items.teis_no', 'ps_transfer_requests.reason_for_transfer', 'ps_transfer_request_items.item_status', 'ps_transfer_request_items.user_id')
             ->where('ps_transfer_request_items.status', 1)
             ->where('ps_transfer_request_items.request_number', $request->id)
             ->get();
@@ -481,13 +482,13 @@ class ProjectSiteController extends Controller
                 return $status;
             })
 
-            ->addColumn('add_price', function ($row) {
+            // ->addColumn('add_price', function ($row) {
 
-                $is_have_value = $row->price ? 'disabled' : '';
+            //     $is_have_value = $row->price ? 'disabled' : '';
 
-                $add_price = '<input class="form-control price" value="' . $row->price . '" data-id="' . $row->pstri_id . '" style="width: 100px;" type="number" name="price" min="1">';
-                return $add_price;
-            })
+            //     $add_price = '<input class="form-control price" value="' . $row->price . '" data-id="' . $row->pstri_id . '" style="width: 100px;" type="number" name="price" min="1">';
+            //     return $add_price;
+            // })
 
             ->addColumn('warehouse_name', function ($row) {
                 if ($row->current_site_id) {
@@ -505,25 +506,56 @@ class ProjectSiteController extends Controller
 
     public function add_price_acc(Request $request)
     {
+        
 
-        $price_datas = json_decode($request->priceDatas);
+        $tool = ToolsAndEquipment::where('status', 1)->where('id', $request->id)->first();
 
-        // return $price_datas;
+        $tool->price = $request->price;
+        $tool->update();
+
 
         if($request->type == 'rfteis'){
-            foreach ($price_datas as $data) {
-               TransferRequestItems::where('status', 1)->where('id', $data->id)->update([
-                    'price' => $data->price,
-                ]);
-            }
+            RfteisLogs::create([
+                'approver_name' => Auth::user()->fullname,
+                'page' => 'rfteis_acc',
+                'request_number' => $request->reqnum,
+                'title' => 'Change Price',
+                'message' => Auth::user()->fullname .' '. 'changed the price of ' . $tool->item_description,
+                'action' => 99,
+            ]);
         }else{
-            foreach ($price_datas as $data) {
-                PsTransferRequestItems::where('status', 1)->where('id', $data->id)->update([
-                    'price' => $data->price
-                ]);
-
-            }
+            RttteLogs::create([
+                'approver_name' => Auth::user()->fullname,
+                'page' => 'rttte_acc',
+                'request_number' => $request->reqnum,
+                'title' => 'Change Price',
+                'message' => Auth::user()->fullname .' '. 'changed the price of ' . $tool->item_description,
+                'action' => 99,
+            ]);
         }
+
+
+      
+    
+        /// kapag maramihian
+        // $price_datas = json_decode($request->priceDatas);
+
+        // // return $price_datas;
+
+        // if($request->type == 'rfteis'){
+        //     foreach ($price_datas as $data) {
+        //        TransferRequestItems::where('status', 1)->where('id', $data->id)->update([
+        //             'price' => $data->price,
+        //         ]);
+        //     }
+        // }else{
+        //     foreach ($price_datas as $data) {
+        //         PsTransferRequestItems::where('status', 1)->where('id', $data->id)->update([
+        //             'price' => $data->price
+        //         ]);
+
+        //     }
+        // }
         
 
     }

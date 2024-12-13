@@ -77,6 +77,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/not_serve_items', 'pages.not_serve_items');
     Route::view('/pages/report_pe_logs', 'pages.report_pe_logs');
     Route::view('/pages/report_te_logs', 'pages.report_te_logs');
+    Route::view('/pages/rfteis_disapproved', 'pages.rfteis_disapproved');
 
 
 
@@ -141,6 +142,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('assign_personnel', 'assign_personnel')->name('assign_personnel');
         Route::post('delete_personnel', 'delete_personnel')->name('delete_personnel');
 
+
+        Route::post('disapprove_request', 'disapprove_request')->name('disapprove_request');
 
     });
     

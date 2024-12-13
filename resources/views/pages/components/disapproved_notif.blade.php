@@ -48,7 +48,8 @@
                                 <!-- Details Table -->
                                 <tr>
                                     <td>
-                                        <h4 style="margin-top: 15px;">You have items to approve, Please review the details and provide your approval at your earliest convenience.</h4>
+                                        <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi, <span style='font-weight: bold'>{{$mail_data['requestor']}}</span></p>
+                                        <h4 style="margin-top: 15px;">Your request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span> has been disapproved. Please check the details below.</h4>
                                         <table cellpadding="0" cellspacing="0"
                                             style="width: 100%; border: 1px solid #ededed">
                                             <tbody>
@@ -56,29 +57,29 @@
                                                 <tr>
                                                     <td
                                                         style="padding: 10px; border-bottom: 1px solid #ededed; border-right: 1px solid #ededed; width: 35%; font-weight:500; color:rgba(0,0,0,.64)">
-                                                        Requestor Name:</td>
-                                                    <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">{{$mail_data['requestor_name']}}</td>
+                                                        Disapproved by:</td>
+                                                    <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">{{$mail_data['fullname']}}</td>
                                                 </tr>
 
 
                                                 <tr>
                                                     <td
                                                         style="padding: 10px; border-bottom: 1px solid #ededed; border-right: 1px solid #ededed; width: 35%; font-weight:500; color:rgba(0,0,0,.64)">
-                                                        Approver Name:</td>
-                                                    <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">{{$mail_data['approver']}}</td>
+                                                        Disapproved Date:</td>
+                                                    <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">{{$mail_data['date']}}</td>
                                                 </tr>
                                             
                                                 <tr>
                                                     <td
                                                         style="padding: 10px; border-bottom: 1px solid #ededed; border-right: 1px solid #ededed; width: 35%; font-weight:500; color:rgba(0,0,0,.64)">
-                                                         Date Requested:</td>
-                                                    <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">{{$mail_data['date_requested']}}</td>
+                                                         Remarks:</td>
+                                                    <td style="padding: 10px; border-bottom: 1px solid #ededed; color: #455056;">{{$mail_data['remarks']}}</td>
                                                 </tr>
 
                                             </tbody>
                                         </table>
 
-                                        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; ">
+                                        {{-- <table style="width: 100%; border-collapse: collapse; margin-top: 20px; ">
                                             <thead>
                                                 <tr>
                                                 <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Code</th>
@@ -95,7 +96,7 @@
                                                 </tr>
                                                 @endforeach
                                             </tbody>
-                                        </table>
+                                        </table> --}}
                                     </td>
                                 </tr>
                                 <tr>

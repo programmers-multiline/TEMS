@@ -684,13 +684,13 @@ class ViewFormsController extends Controller
     public function rfteis_approvers_view(Request $request)
     {
 
-        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by')
             ->where('status', 1)
             // ->where('progress', 'ongoing')
             ->where('teis_number', $request->id)
             ->first();
 
-            // return $request->id;
+            // return $request_tools;
 
         /// kunin ang approvers ng specific na request 
         $approvers = RequestApprover::leftJoin('users', 'users.id', 'request_approvers.approver_id')
@@ -721,8 +721,28 @@ class ViewFormsController extends Controller
         $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $request->trid)->pluck('tool_id')->toArray();
         $items = json_encode($tools);
 
-        $action = '<button type="button" data-requestumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->trid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn ' . $mx_auto . ' btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check me-1"></i>Approve</button>';
+        // para to sa pe (para sa disapproved rfteis)
+        $atr = '';
+        if(Auth::user()->user_type_id !== 4){
+            $atr = 'data-approverid="' . $loggedInApprover->id . '"';
+        }
 
+        $action = '<button type="button" data-requestumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->trid . '"  '.$atr.'  class="approveBtn ' . $mx_auto . ' btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check me-1"></i>Approve</button>';
+        
+        if(Auth::user()->user_type_id == 6 && $request->path == 'pages/rfteis'){
+            $action = '
+            <div class="d-flex gap-2 justify-content-center">
+            <button type="button" data-requestumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->trid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check me-1"></i>Approve</button>
+            <button type="button" data-requestumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->trid . '"  data-approverid="' . $loggedInApprover->id . '" class="disapproveBtn btn btn-sm btn-danger d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Disapprove" data-bs-original-title="Disapprove"><i class="fa fa-xmark me-1"></i>Disapprove</button>
+            </div>
+            ';
+        }
+
+        if($request->path == 'pages/rfteis_disapproved'){
+            // $disapproved_by = User::where('status', 1)->where('id', $request_tools->disapproved_by)->value('fullname')
+
+            $action = '<span class="mx-auto fw-bold text-pulse" style="font-size: 14px;">Disapproved</span>';
+        }
 
         //WAREHOUSE MANAGER    
         $firstApprover = $approvers[0]->approver_status;

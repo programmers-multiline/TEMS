@@ -323,19 +323,44 @@ class WarehouseController extends Controller
         }
 
 
+        /// lumang pag email
+        // $approvers = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+        //     ->select('request_approvers.*', 'users.fullname', 'users.email')
+        //     ->where('request_approvers.status', 1)
+        //     ->where('request_type', 1)
+        //     ->where('request_approvers.request_id', $req->id)
+        //     ->where('request_approvers.sequence', 0)
+        //     ->orderBy('request_approvers.sequence', 'asc')
+        //     ->get();
 
-        $approvers = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
-            ->select('request_approvers.*', 'users.fullname', 'users.email')
-            ->where('request_approvers.status', 1)
-            ->where('request_type', 1)
-            ->where('request_approvers.request_id', $req->id)
-            ->where('request_approvers.sequence', 0)
-            ->orderBy('request_approvers.sequence', 'asc')
-            ->get();
+        // foreach ($approvers as $approver) {
+        //     array_push($mail_approvers, ['fullname' => $approver->fullname]);
+        // }
 
-        foreach ($approvers as $approver) {
-            array_push($mail_approvers, ['fullname' => $approver->fullname]);
-        }
+        // $tools = ToolsAndEquipment::where('status', 1)->whereIn('id', $array_id)->get();
+
+        // foreach ($tools as $tool) {
+        //     array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+        // }
+
+
+
+
+
+        // foreach ($approvers as $approver) {  
+        //     $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+
+        //     Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+        // }
+
+
+        $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+        ->select('request_approvers.*', 'users.fullname', 'users.email')
+        ->where('request_approvers.status', 1)
+        ->where('request_type', 1)
+        ->where('request_approvers.request_id', $req->id)
+        ->orderBy('request_approvers.sequence', 'asc')
+        ->first();
 
         $tools = ToolsAndEquipment::where('status', 1)->whereIn('id', $array_id)->get();
 
@@ -343,15 +368,9 @@ class WarehouseController extends Controller
             array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
         }
 
+        $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
 
-
-
-
-        foreach ($approvers as $approver) {  
-            $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
-
-            // Mail::to($approver->email)->send(new ApproverEmail($mail_data));
-        }
+        Mail::to($approver->email)->send(new ApproverEmail($mail_data));
 
 
     }

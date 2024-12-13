@@ -166,6 +166,7 @@ $(document).on("click", ".uploadTersBtn", function () {
 $("#uploadTersForm").on("submit", function (e) {
     e.preventDefault();
 
+    const prevCount = parseInt($("#notServeCount").text());
     var routeUrl = $("#uploadTersForm #routeUrl").val();
 
     var frm = document.getElementById("uploadTersForm");
@@ -195,6 +196,13 @@ $("#uploadTersForm").on("submit", function (e) {
             $("#uploadTers").modal("hide");
             table.ajax.reload();
             showToast("success", "TERS Uploaded");
+            if(path == 'pages/not_serve_items'){
+                if (prevCount == 1) {
+                    $(".countContainer").addClass("d-none")
+                } else {
+                    $("#notServeCount").text(prevCount - 1);
+                }
+            }
         },
     });
 });
@@ -294,6 +302,8 @@ $(document).on("click", ".uploadReceivingProofBtn", function () {
 // SUBMIT FORM
 $("#receivingProofForm").on("submit", function (e) {
     e.preventDefault();
+
+    const prevCount = parseInt($("#rftteSignedFormProofCount").text());
     
     var routeUrl = $("#receivingProofForm #routeUrl").val();
     
@@ -322,6 +332,12 @@ $("#receivingProofForm").on("submit", function (e) {
             $("#uploadReceivingProof").modal('hide')
             table.ajax.reload();
             showToast("success", "Tool Picture Uploaded");
+
+            if (prevCount == 1) {
+                $(".countContainer").addClass("d-none")
+            } else {
+                $("#rftteSignedFormProofCount").text(prevCount - 1);
+            }
 
             // clear the selection in filepond
             uploadProofPond.removeFiles();

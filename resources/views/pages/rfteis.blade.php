@@ -26,7 +26,7 @@
 
 @section('content')
     <div class="loader-container" id="loader"
-        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1056;">
         <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
             style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
             loop autoplay>Loading</dotlottie-player>
@@ -108,6 +108,7 @@
                 processing: true,
                 serverSide: false,
                 scrollX: true,
+                autoWidth: false,
                 ajax: {
                     type: 'post',
                     url: '{{ route('fetch_rfteis_approver') }}',
@@ -351,6 +352,82 @@
 
 
             })
+
+
+            $(document).on('click', '.disapproveBtn', function () {
+                const requestNumber = $(this).data('requestumber');
+                const prevCount = parseInt($("#rfteisCount").text());
+
+                $('#ongoingTeisRequestModal').modal('hide');
+
+                const confirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success ms-2",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+
+                confirm.fire({
+                    title: "Disapprove?",
+                    text: "Please provide a reason for disapproval.",
+                    icon: "warning",
+                    input: 'textarea',
+                    inputPlaceholder: 'Enter your remarks here...',
+                    inputValidator: (value) => {
+                        if (!value.trim()) {
+                            return 'Remarks are required!';
+                        }
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: "Submit",
+                    cancelButtonText: "Back",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const remarks = result.value;
+
+                        $.ajax({
+                            url: '{{ route('disapprove_request') }}',
+                            method: 'post',
+                            data: {
+                                requestNumber,
+                                remarks, 
+                                _token: '{{ csrf_token() }}'
+                            },
+                            beforeSend() {
+                                $("#loader").show();
+                            },
+                            success() {
+                                table.ajax.reload();
+                                confirm.fire({
+                                    title: "Disapproved!",
+                                    text: "Request disapproved successfully.",
+                                    icon: "success"
+                                });
+                                $("#loader").hide();
+                                $("#ongoingTeisRequestModal").modal('hide');
+                                if (prevCount === 1) {
+                                    $(".countContainer").addClass("d-none");
+                                } else {
+                                    $("#rfteisCount").text(prevCount - 1);
+                                }
+                            },
+                            error() {
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "An error occurred while processing your request.",
+                                    icon: "error"
+                                });
+                                $("#loader").hide();
+                            }
+                        });
+                    }
+                }).finally(() => {
+                    $('#ongoingTeisRequestModal').modal('show'); // Reopen modal
+                });
+            });
+
 
 
             $(document).on('click', '.removeToolRequestBtn', function() {

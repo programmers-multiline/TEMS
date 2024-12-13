@@ -528,7 +528,7 @@ class PullOutController extends Controller
 
         PulloutLogs::create([
             'page' => 'pullout_ongoing',
-            'request_number' => $request->requestNumber,
+            'request_number' => $pullout_request->pullout_number,
             'title' => 'Approve Request',
             'message' => $sequence . Auth::user()->fullname . ' ' . 'approved the request.',
             'approver_name' => Auth::user()->fullname,

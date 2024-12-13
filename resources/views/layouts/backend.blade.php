@@ -1,104 +1,93 @@
 @php
-
+    /// para sa RFTEIS count - for approval
     if (
         (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3) ||
         (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
     ) {
-        $series = 1;
 
-        $approver = App\Models\RequestApprover::where('status', 1)
+        $approvers = App\Models\RequestApprover::where('status', 1)
             ->where('approver_id', Auth::user()->id)
-            ->where('series', $series)
+            ->where('approver_status', 0)
             ->where('request_type', 1)
-            ->first();
+            ->get();
 
-        if (!$approver) {
+        if ($approvers->isEmpty()) {
             $tool_approvers = 0;
-        } elseif ($approver->sequence == 0) {
-            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
-            $tool_approvers = App\Models\RequestApprover::leftjoin(
-                'transfer_requests',
-                'transfer_requests.id',
-                'request_approvers.request_id',
-            )
-                ->select(
-                    'transfer_requests.*',
-                    'request_approvers.id as approver_id',
-                    'request_approvers.request_id',
-                    'request_approvers.series',
-                )
-                ->where('transfer_requests.status', 1)
-                ->where('request_approvers.status', 1)
-                ->where('request_approvers.approver_id', Auth::user()->id)
-                ->where('series', $series)
-                ->where('approver_status', 0)
-                ->where('request_type', 1)
-                ->count();
-        } elseif ($approver->sequence == 1) {
-            // $prev_approver = App\Models\RequestApprover::where('status', 1)
-            //     ->where('request_id', $approver->request_id)
-            //     ->where('sequence', 0)
-            //     ->where('series', $series)
-            //     ->where('request_type', 1)
-            //     ->orderBy('approver_status', 'desc')
-            //     ->first();
+        }else{
+            $tool_approvers = collect();
 
-            // if ($prev_approver->approver_status == 1) {
-                $tool_approvers = App\Models\RequestApprover::leftjoin(
-                    'transfer_requests',
-                    'transfer_requests.id',
-                    'request_approvers.request_id',
-                )
-                    ->select(
-                        'transfer_requests.*',
-                        'request_approvers.id as approver_id',
-                        'request_approvers.request_id',
-                        'request_approvers.series',
-                    )
+            foreach ($approvers as $approver) {
+                $current_approvers = collect();
+
+                if ($approver->sequence == 0) {
+                    $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                        ->where('transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('request_approvers.approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 1)
+                        ->whereNot('transfer_requests.request_status', 'disapproved')
+                        ->get();
+                } elseif ($approver->sequence == 1) {
+                        $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                            ->where('transfer_requests.status', 1)
+                            ->whereNot('transfer_requests.request_status', 'disapproved')
+                            ->where('request_approvers.status', 1)
+                            ->where('approver_id', Auth::user()->id)
+                            ->where('approver_status', 0)
+                            ->where('request_type', 1)
+                            ->where('request_approvers.id', $approver->id)
+                            ->whereNot('transfer_requests.request_status', 'disapproved')
+                            // ->where('for_pricing', '2')
+                            ->get();
+                    // }
+                    // return $current_approvers;
+                } elseif($approver->sequence == 4){
+                    $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                    ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
                     ->where('transfer_requests.status', 1)
                     ->where('request_approvers.status', 1)
                     ->where('approver_id', Auth::user()->id)
-                    ->where('series', $series)
                     ->where('approver_status', 0)
                     ->where('request_type', 1)
-                    ->where('for_pricing', 2)
-                    ->count();
-            // } else {
-            //     $tool_approvers = 0;
-            // }
-        } else {
-            $prev_sequence = $approver->sequence - 1;
+                    ->where('request_approvers.id', $approver->id)
+                    ->where('for_pricing', '2')
+                    ->whereNot('transfer_requests.request_status', 'disapproved')
+                    ->get();
+                } else {
+                    $prev_sequence = $approver->sequence - 1;
 
-            $prev_approver = App\Models\RequestApprover::where('status', 1)
-                ->where('request_id', $approver->request_id)
-                ->where('sequence', $prev_sequence)
-                ->where('series', $series)
-                ->where('request_type', 1)
-                ->first();
+                    $prev_approver = App\Models\RequestApprover::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
+                        ->where('request_type', 1)
+                        ->first();
 
-            if ($prev_approver->approver_status == 1) {
-                $tool_approvers = App\Models\RequestApprover::leftjoin(
-                    'transfer_requests',
-                    'transfer_requests.id',
-                    'request_approvers.request_id',
-                )
-                    ->select(
-                        'transfer_requests.*',
-                        'request_approvers.id as approver_id',
-                        'request_approvers.request_id',
-                        'request_approvers.series',
-                    )
-                    ->where('transfer_requests.status', 1)
-                    ->where('request_approvers.status', 1)
-                    ->where('approver_id', Auth::user()->id)
-                    ->where('series', $series)
-                    ->where('approver_status', 0)
-                    ->where('request_type', 1)
-                    ->count();
-            } else {
-                $tool_approvers = 0;
+                        // return $prev_approver;
+
+                    if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                            ->where('transfer_requests.status', 1)
+                            ->where('request_approvers.status', 1)
+                            ->where('approver_id', Auth::user()->id)
+                            ->where('approver_status', 0)
+                            ->where('request_type', 1)
+                            ->where('request_approvers.id', $approver->id)
+                            ->whereNot('transfer_requests.request_status', 'disapproved')
+                            ->get();
+                    }
+                }
+
+                // Merge the current approvers to the tool_approvers array
+                $tool_approvers = $tool_approvers->merge($current_approvers)->unique('request_id');
             }
+
+            $tool_approvers = $tool_approvers->count();
         }
+
     } else {
         $tool_approvers = 0;
     }
@@ -186,118 +175,70 @@
     }
 
     if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5) {
-        $series = 1;
 
-        if (Auth::user()->user_type_id == 4) {
-            $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
-                'users',
-                'users.id',
-                'ps_transfer_requests.user_id',
-            )
-                ->select(
-                    'users.fullname',
-                    'request_number',
-                    'daf_status',
-                    'request_status',
-                    'subcon',
-                    'customer_name',
-                    'project_name',
-                    'project_code',
-                    'project_address',
-                    'date_requested',
-                    'tr_type',
-                )
-                ->where('ps_transfer_requests.status', 1)
-                ->where('users.status', 1)
-                ->where('progress', 'ongoing')
-                ->where('current_pe', Auth::user()->id)
-                ->count();
-        } else {
-            // $approver = App\Models\RequestApprover::where('status', 1)
-            //     ->where('approver_id', Auth::user()->id)
-            //     ->where('series', $series)
-            //     ->where('request_type', 2)
-            //     ->first();
-            //! alisin mo to boss palitan mo
-            // if ($approver->sequence == 1) {
-            //     $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
-            //         'request_approvers',
-            //         'request_approvers.request_id',
-            //         'ps_transfer_requests.id',
-            //     )
-            //         ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-            //         ->select(
-            //             'users.fullname',
-            //             'request_number',
-            //             'daf_status',
-            //             'request_status',
-            //             'subcon',
-            //             'customer_name',
-            //             'project_name',
-            //             'project_code',
-            //             'project_address',
-            //             'date_requested',
-            //             'tr_type',
-            //             'request_approvers.id as request_approver_id',
-            //             'request_approvers.request_id',
-            //             'request_approvers.series',
-            //         )
-            //         ->where('ps_transfer_requests.status', 1)
-            //         ->where('request_approvers.status', 1)
-            //         // ->where('current_pe', Auth::user()->id)
-            //         ->where('request_approvers.approver_id', Auth::user()->id)
-            //         ->where('progress', 'ongoing')
-            //         // ->where('series', $series)
-            //         ->where('approver_status', 0)
-            //         ->where('request_type', 2)
-            //         ->count();
-            // } else {
-            //     $prev_sequence = $approver->sequence - 1;
+        $approvers = App\Models\RequestApprover::where('status', 1)
+                ->where('approver_id', Auth::user()->id)
+                ->where('approver_status', 0)
+                ->where('request_type', 2)
+                ->get();
 
-            //     $prev_approver = App\Models\RequestApprover::where('status', 1)
-            //         ->where('request_id', $approver->request_id)
-            //         ->where('sequence', $prev_sequence)
-            //         ->where('series', $series)
-            //         ->where('request_type', 2)
-            //         ->first();
+        if ($approvers->isEmpty()) {
+            $ps_request_tools_count = 0;
+        }else{
 
-            //     if ($prev_approver->approver_status == 1) {
-            //         $ps_request_tools = App\Models\PsTransferRequests::leftjoin(
-            //             'request_approvers',
-            //             'request_approvers.request_id',
-            //             'ps_transfer_requests.id',
-            //         )
-            //             ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-            //             ->select(
-            //                 'users.fullname',
-            //                 'request_number',
-            //                 'daf_status',
-            //                 'request_status',
-            //                 'subcon',
-            //                 'customer_name',
-            //                 'project_name',
-            //                 'project_code',
-            //                 'project_address',
-            //                 'date_requested',
-            //                 'tr_type',
-            //                 'request_approvers.id as request_approver_id',
-            //                 'request_approvers.request_id',
-            //                 'request_approvers.series',
-            //             )
-            //             ->where('ps_transfer_requests.status', 1)
-            //             ->where('request_approvers.status', 1)
-            //             // ->where('current_pe', Auth::user()->id)
-            //             ->where('request_approvers.approver_id', Auth::user()->id)
-            //             ->where('progress', 'ongoing')
-            //             // ->where('series', $series)
-            //             ->where('approver_status', 0)
-            //             ->where('request_type', 2)
-            //             ->count();
-            //     } else {
-            //         $ps_request_tools = 0;
-            //     }
-            // }
-            $ps_request_tools = 0;
+            $tool_approvers_ps = collect();
+
+            foreach ($approvers as $approver) {
+                $ps_request_tools = collect();
+
+                if ($approver->sequence == 1) {
+                    $ps_request_tools = App\Models\PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
+                        ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+                        ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id', 'users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                        ->where('ps_transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('request_approvers.approver_id', Auth::user()->id)
+                        ->where('progress', 'ongoing')
+                        ->where('approver_status', 0)
+                        ->where('request_type', 2)
+                        ->where('sequence', 1)
+                        ->where('request_approvers.id', $approver->id)
+                        ->get();
+                } else {
+                    $prev_sequence = $approver->sequence - 1;
+
+                    $prev_approver = App\Models\RequestApprover::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
+                        ->where('request_type', 2)
+                        ->first();
+
+                        // return $prev_approver->approver_status;
+
+
+                    if ($prev_approver->approver_status == 1) {
+                        $ps_request_tools = App\Models\PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
+                            ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+                            ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id','users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                            ->where('ps_transfer_requests.status', 1)
+                            ->where('request_approvers.status', 1)
+                            ->where('request_approvers.approver_id', Auth::user()->id)
+                            ->where('progress', 'ongoing')
+                            ->where('approver_status', 0)
+                            ->where('request_type', 2)
+                            ->where('sequence', $approver->sequence)
+                            ->where('request_approvers.id', $approver->id)
+                            ->get();
+                    } else {
+                        $ps_request_tools = [];
+                    }
+                }
+
+                // Merge the current approvers to the tool_approvers array
+                $tool_approvers_ps = $tool_approvers_ps->merge($ps_request_tools)->unique('request_id');
+            }
+
+            $ps_request_tools_count = $tool_approvers_ps->count();
         }
         // tignan sa upload kung andun ang number niya, pag andun wag isama sa bilang
         // if(request()->path() == 'pages/rftte'){
@@ -361,7 +302,7 @@
         ->where('progress', 'ongoing')
         ->where('request_status', 'approved')
         ///dahil inalis ko yung inputing of price sa acc
-        // ->whereNotNull('acc')
+        ->where('for_pricing', 2)
         ->whereNull('is_deliver');
 
     $unioned_tables = $request_tools->union($ps_request_tools_wh)->count();
@@ -413,6 +354,49 @@
             ->count();
     }else{
         $pullout_for_receiving = 0;
+    }
+
+    /// rftte_signed_form_proof
+    if(Auth::user()->user_type_id == 2){
+        $request_tools = App\Models\TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'completed')
+            ->whereNull('is_proof_upload');
+
+
+        $ps_request_tools = App\Models\PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'completed')
+            ->whereNull('is_proof_upload');
+
+        $transfer_requests = $request_tools->union($ps_request_tools)->get();
+
+        $rftte_signed_form_proof_count = $transfer_requests->count();
+    }else{
+        $rftte_signed_form_proof_count = 0;
+    }
+
+    /// Not Serve Count
+    if(Auth::user()->user_type_id == 2){
+        $request_tools = App\Models\TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('transfer_request_items.status', 1)
+                ->where('progress', 'partial')
+                ->where('transfer_requests.status', 1);
+
+
+        $ps_request_tools = App\Models\PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
+            ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('ps_transfer_request_items.item_status', 2)
+            ->where('ps_transfer_request_items.status', 1)
+            ->where('progress', 'completed')
+            ->where('ps_transfer_requests.status', 1);
+
+        $transfer_requests = $request_tools->union($ps_request_tools)->get();
+
+        $not_serve_count = $transfer_requests->count();
+    }else{
+        $not_serve_count = 0;
     }
 @endphp
 
@@ -612,7 +596,7 @@
                                             </a>
                                             <span class="countContainer nav-main-link text-light {{ $unioned_tables == 0 ? 'd-none' : '' }}"><span
                                                 id="rftteCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables }}</span>
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $unioned_tables }}</span>
                                             </span>
                                         </li>
                                         <li class="nav-main-item d-flex align-items-center justify-content-between">
@@ -622,9 +606,9 @@
                                                     Proof of Receiving
                                                 </span>
                                             </a>
-                                            <span class="countContainer nav-main-link text-light "><span
-                                                id="rftteCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;"></span>
+                                            <span class="countContainer nav-main-link text-light {{ $rftte_signed_form_proof_count == 0 ? 'd-none' : '' }}"><span
+                                                id="rftteSignedFormProofCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $rftte_signed_form_proof_count }}</span>
                                             </span>
                                         </li>
                                         <li class="nav-main-item d-flex align-items-center justify-content-between">
@@ -634,9 +618,9 @@
                                                     Not Serve Items
                                                 </span>
                                             </a>
-                                            <span class="countContainer nav-main-link text-light"><span
-                                                id="rftteCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;"></span>
+                                            <span class="countContainer nav-main-link text-light {{$not_serve_count == 0 ? 'd-none' : '' }} "><span
+                                                id="notServeCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $not_serve_count }}</span>
                                             </span>
                                         </li>
                                         <li class="nav-main-item">
@@ -663,7 +647,7 @@
                                             </a>
                                             <span class="countContainer nav-main-link text-light {{$pullout_for_schedule == 0 ? 'd-none' : '' }}"><span
                                                 id="pulloutForSchedCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $pullout_for_schedule }}</span>
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $pullout_for_schedule }}</span>
                                             </span>
                                         </li>
                                         <li class="nav-main-item d-flex align-items-center justify-content-between">
@@ -673,7 +657,7 @@
                                             </a>
                                             <span class="countContainer nav-main-link text-light {{$pullout_for_receiving == 0 ? 'd-none' : '' }}"><span
                                                 id="pulloutForReceivingCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $pullout_for_receiving }}</span>
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $pullout_for_receiving }}</span>
                                             </span>
                                         </li>
                                         <li class="nav-main-item">
@@ -733,7 +717,7 @@
                                             </a>
                                             <span class="countContainer nav-main-link text-light {{ $pullout_tools == 0 ? 'd-none' : '' }}"><span
                                                 id="pulloutCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $pullout_tools }}</span>
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $pullout_tools }}</span>
                                             </span>
                                         </li>
                                         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
@@ -778,8 +762,14 @@
                                                 </a>
                                                 <span class="countContainer nav-main-link text-light {{$unioned_tables_for_receiving == 0 ? 'd-none' : '' }}"><span
                                                     id="forReceivingCount" class="bg-info"
-                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables_for_receiving }}</span>
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $unioned_tables_for_receiving }}</span>
                                                 </span>
+                                            </li>
+                                            <li class="nav-main-item">
+                                                <a class="nav-main-link{{ request()->is('pages/rfteis_disapproved') ? ' active' : '' }}"
+                                                    href="/pages/rfteis_disapproved">
+                                                    <span class="nav-main-link-name">Disapproved RFTEIS</span>
+                                                </a>
                                             </li>
                                             <li class="nav-main-item">
                                                 <a class="nav-main-link{{ request()->is('pages/request_completed') ? ' active' : '' }}"
@@ -800,7 +790,7 @@
                                     if(Auth::user()->user_type_id == 4){$ps_request_tools = 0;} @endphp
                                         class="countContainer nav-main-link text-light {{ $ps_request_tools == 0 ? 'd-none' : '' }}"><span
                                             id="siteToSiteCount" class="bg-info"
-                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>
+                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $ps_request_tools }}</span>
                                     </span>
                                 </li> --}}
 
@@ -825,10 +815,10 @@
                                                 </span>
                                             </a>
                                             <span @php
-                                            if(Auth::user()->user_type_id == 4){$ps_request_tools = 0;} @endphp
-                                                class="countContainer nav-main-link text-light {{ $ps_request_tools == 0 ? 'd-none' : '' }}"><span
+                                            if(Auth::user()->user_type_id == 4){$ps_request_tools_count = 0;} @endphp
+                                                class="countContainer nav-main-link text-light {{ $ps_request_tools_count == 0 ? 'd-none' : '' }}"><span
                                                     id="siteToSiteCount" class="bg-info"
-                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $ps_request_tools }}</span>
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $ps_request_tools_count }}</span>
                                             </span>
                                         </li>
                                         {{-- @if (Auth::user()->user_type_id == 4)
@@ -839,7 +829,7 @@
                                                 </a>
                                                 <span class="countContainer nav-main-link text-light {{$unioned_tables_for_receiving == 0 ? 'd-none' : '' }}"><span
                                                     id="forReceivingCount" class="bg-info"
-                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $unioned_tables_for_receiving }}</span>
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $unioned_tables_for_receiving }}</span>
                                                 </span>
                                             </li> 
                                         @endif --}}
@@ -887,7 +877,7 @@
                                                 <span
                                                     class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
                                                         id="rfteisCount" class="bg-info"
-                                                        style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
+                                                        style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $tool_approvers }}</span>
                                                 </span>
                                             </li>
                                             <li class="nav-main-item">
@@ -943,13 +933,19 @@
                                             <span
                                                 class="countContainer nav-main-link text-light {{ $tool_approvers == 0 ? 'd-none' : '' }}"><span
                                                     id="rfteisCount" class="bg-info"
-                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tool_approvers }}</span>
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $tool_approvers }}</span>
                                             </span>
                                         </li>
                                         <li class="nav-main-item">
                                             <a class="nav-main-link{{ request()->is('pages/rfteis_approved') ? ' active' : '' }}"
                                                 href="/pages/rfteis_approved">
                                                 <span class="nav-main-link-name">Approved</span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/rfteis_disapproved') ? ' active' : '' }}"
+                                                href="/pages/rfteis_disapproved">
+                                                <span class="nav-main-link-name">Disapproved</span>
                                             </a>
                                         </li>
                                     </ul>
@@ -968,7 +964,7 @@
                                     <span
                                         class="countContainer nav-main-link text-light {{ $tools_approver_dafs == 0 ? 'd-none' : '' }}"><span
                                             id="dafCount" class="bg-info"
-                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center;">{{ $tools_approver_dafs }}</span>
+                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $tools_approver_dafs }}</span>
                                     </span>
                                 </li>
                             @endif

@@ -419,7 +419,7 @@
                                 if(prevCount == 1){
                                     $(".countContainer").addClass("d-none")
                                 }else{
-                                    $("#rfteisCount").text(prevCount - 1);
+                                    $("#siteToSiteCount").text(prevCount - 1);
                                 }
                             }
                         })

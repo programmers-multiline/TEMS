@@ -16,6 +16,7 @@ use App\Mail\ApproverEmail;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Support\Str;
+use App\Mail\DisapproveMail;
 use App\Mail\EmailRequestor;
 use App\Models\ProjectSites;
 use App\Models\ToolPictures;
@@ -30,6 +31,7 @@ use App\Models\ToolsAndEquipment;
 use App\Models\PsTransferRequests;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\WarehouseDocsClerkNotif;
 use App\Models\ToolsAndEquipmentLogs;
 use App\Models\PsTransferRequestItems;
 use App\Models\ToolPictureReceivingUploads;
@@ -340,8 +342,8 @@ class TransferRequestController extends Controller
                 $uploads_file = '<div class="row mx-auto">';
                 foreach ($teis_uploads as $item) {
 
-                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
+                    $uploads_file .= '<div class=" animated fadeIn pictureContainer">
+                    <a target="_blank" class="img-link img-link-zoom-in" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
                     <span>TEIS.pdf</span>
                     </a>
                 </div>';
@@ -389,7 +391,7 @@ class TransferRequestController extends Controller
                 if(Auth::user()->user_type_id == 4){
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'transfer_request_items.price','transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price','transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->where('transfer_request_items.teis_number', $request->id)
                     ->get();
@@ -397,7 +399,7 @@ class TransferRequestController extends Controller
                     //!hindiyin mo ano desisyon nila kung ipapakita ba ang item na not serve or hindi
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'transfer_request_items.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->whereNull('transfer_request_items.is_remove')
                     ->where('transfer_request_items.teis_number', $request->id)
@@ -405,7 +407,7 @@ class TransferRequestController extends Controller
                 }else{
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'transfer_request_items.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->whereNull('transfer_request_items.is_remove')
                     ->where('transfer_request_items.teis_number', $request->id)
@@ -428,7 +430,7 @@ class TransferRequestController extends Controller
                 $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
                     ->leftJoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.ps_transfer_request_id')
-                    ->select('tools_and_equipment.*','ps_transfer_request_items.price', 'ps_transfer_requests.tr_type', 'ps_transfer_requests.reason_for_transfer', 'teis_no', 'ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id', 'ps_transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*','tools_and_equipment.price', 'ps_transfer_requests.tr_type', 'ps_transfer_requests.reason_for_transfer', 'teis_no', 'ps_transfer_request_items.id as tri_id', 'tools_and_equipment.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id', 'ps_transfer_request_items.item_status')
                     ->where('ps_transfer_request_items.status', 1)
                     ->where('ps_transfer_request_items.request_number', $request->id)
                     ->get();
@@ -446,7 +448,7 @@ class TransferRequestController extends Controller
                 if ($request->path == "pages/sts_request_completed" || $request->path == "pages/site_to_site_approved") {
                     $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
                         ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                        ->select('tools_and_equipment.*', 'ps_transfer_request_items.price', 'ps_transfer_requests.tr_type', 'ps_transfer_requests.reason_for_transfer', 'teis_no', 'ps_transfer_request_items.id as tri_id', 'ps_transfer_request_items.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id', 'ps_transfer_request_items.item_status')
+                        ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'ps_transfer_requests.tr_type', 'ps_transfer_requests.reason_for_transfer', 'teis_no', 'ps_transfer_request_items.id as tri_id', 'tools_and_equipment.price', 'warehouses.warehouse_name', 'ps_transfer_request_items.request_number as r_number', 'ps_transfer_request_items.tool_id', 'ps_transfer_request_items.item_status')
                         ->where('ps_transfer_request_items.status', 1)
                         ->where('ps_transfer_request_items.request_number', $request->id)
                         ->get();
@@ -455,7 +457,7 @@ class TransferRequestController extends Controller
         } else {
             $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                 ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                ->select('tools_and_equipment.*', 'transfer_request_items.price', 'transfer_request_items.tool_id','transfer_request_items.transfer_state', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                ->select('tools_and_equipment.*', 'transfer_request_items.tool_id','transfer_request_items.transfer_state', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                 ->where('transfer_request_items.status', 1)
                 ->whereNull('transfer_request_items.is_remove')
                 ->where('transfer_request_items.teis_number', $request->id)
@@ -487,8 +489,8 @@ class TransferRequestController extends Controller
 
                     $uploads_file =
                         '<div class="row mx-auto">
-                        <div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
-                            <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/tool_pictures') . '/' . $picture->name . '">
+                        <div class="animated fadeIn pictureContainer">
+                            <a target="_blank" class="img-link-zoom-in" href="' . asset('uploads/tool_pictures') . '/' . $picture->name . '">
                             <span>' . $picture->original_name . '</span>
                             </a>
                         </div>
@@ -682,7 +684,7 @@ class TransferRequestController extends Controller
                 ->where('progress', 'ongoing')
                 ->where('request_status', 'approved')
                 ///dahil inalis ko yung inputing of price sa acc
-                // ->whereNotNull('acc')
+                ->where('for_pricing', 2)
                 ->whereNull('is_deliver');
 
          }
@@ -768,6 +770,7 @@ class TransferRequestController extends Controller
                     $teis_numbers = collect($teis_uploads)->pluck('teis_number')->toArray();
 
                     $have_teis = in_array($row->teis_number, $teis_numbers) ? 'disabled' : '';
+                    $have_teis2 = in_array($row->teis_number, $teis_numbers) ? '' : 'disabled';
 
 
                     $ters_uploads = TersUploads::where('status', 1)
@@ -780,8 +783,8 @@ class TransferRequestController extends Controller
 
                     $action = '<div class="d-flex gap-2">
                     <button ' . $have_ters . ' data-prevreqnum="'.$prev_request_number.'" data-prevpe="'.$row->current_pe.'" data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
-                    <button ' . $have_teis . ' data-pe="'.$row->pe.'" data-type="' . $row->tr_type . '" data-num="' . $row->teis_number . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
-                    <button ' . $have_ters2 . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
+                    <button ' . $have_teis . ' '.$have_ters2.' data-pe="'.$row->pe.'" data-type="' . $row->tr_type . '" data-num="' . $row->teis_number . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
+                    <button ' . $have_ters2 . ' '.$have_teis2.' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                     </div>';
                     }
                     /// for proof of receiving in warehouse
@@ -986,167 +989,111 @@ class TransferRequestController extends Controller
         // ->get();
 
 
-        $approvers = RequestApprover::where('status', 1)
+        if ($request->path == 'pages/rfteis_approved') {
+            $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+            ->leftjoin('users', 'users.id', 'request_approvers.approved_by')
+            ->select('transfer_requests.*', 'users.fullname', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+            ->where('transfer_requests.status', 1)
+            ->where('request_approvers.status', 1)
+            ->where('request_approvers.can_be_view_by', Auth::user()->id)
+            ->where('approver_status', 1)
+            ->where('request_type', 1)
+            ->get();
+        }elseif($request->path == 'pages/rfteis_disapproved'){
+            $tool_approvers = TransferRequest::where('transfer_requests.status', 1)
+            ->where('transfer_requests.request_status', 'disapproved');
+
+            if(Auth::user()->user_type_id == 4){
+                $tool_approvers->where('transfer_requests.pe', Auth::id())->get();
+            }else{
+                $tool_approvers->where('transfer_requests.disapproved_by', Auth::id())->get();
+            }
+        }else{
+            ///rfteis
+            $approvers = RequestApprover::where('status', 1)
             ->where('approver_id', Auth::user()->id)
             ->where('approver_status', 0)
             ->where('request_type', 1)
             ->get();
 
-        // return $approvers;
 
+            $tool_approvers = collect();
 
-        // if (!$approvers) {
-        //     return datatables()->of(collect())->make(true);
-        // }
+            foreach ($approvers as $approver) {
+                $current_approvers = collect();
 
-        // $tool_approvers = [];
+                if ($approver->sequence == 0) {
+                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                        ->where('transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('request_approvers.approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->whereNot('transfer_requests.request_status', 'disapproved')
+                        ->where('request_type', 1)
+                        ->get();
+                } elseif ($approver->sequence == 1) {
+                    // $prev_approver = RequestApprover::where('status', 1)
+                    //     ->where('request_id', $approver->request_id)
+                    //     ->where('sequence', 0)
+                    //     ->where('request_type', 1)
+                    //     ->orderBy('approver_status', 'desc')
+                    //     ->first();
 
-        // foreach ($approvers as $approver) {
-        //     if ($approver->sequence == 0) {
-        //         // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
-        //         $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-        //             ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-        //             ->where('transfer_requests.status', 1)
-        //             ->where('request_approvers.status', 1)
-        //             ->where('request_approvers.approver_id', Auth::user()->id)
-        //             ->where('approver_status', 0)
-        //             ->where('request_type', 1)
-        //             ->get();
-
-        //         // return $tool_approvers;
-
-        //     } elseif ($approver->sequence == 1) {
-        //         $prev_approver = RequestApprover::where('status', 1)
-        //             ->where('request_id', $approver->request_id)
-        //             ->where('sequence', 0)
-        //             ->where('request_type', 1)
-        //             ->orderBy('approver_status', 'desc')
-        //             ->first();
-
-        //         if ($prev_approver->approver_status == 1) {
-        //             $tool_approvers = RequestApprover::leftjoin(
-        //                 'transfer_requests',
-        //                 'transfer_requests.id',
-        //                 'request_approvers.request_id',
-        //             )
-        //                 ->select(
-        //                     'transfer_requests.*',
-        //                     'request_approvers.id as approver_id',
-        //                     'request_approvers.request_id',
-        //                     'request_approvers.series',
-        //                     'request_approvers.date_approved'
-        //                 )
-        //                 ->where('transfer_requests.status', 1)
-        //                 ->where('request_approvers.status', 1)
-        //                 ->where('approver_id', Auth::user()->id)
-        //                 ->where('approver_status', 0)
-        //                 ->where('request_type', 1)
-        //                 ->get();
-
-        //         } else {
-        //             $tool_approvers = [];
-        //         }
-        //     } else {
-
-        //         $prev_sequence = $approver->sequence - 1;
-
-        //         $prev_approver = RequestApprover::where('status', 1)
-        //             ->where('request_id', $approver->request_id)
-        //             ->where('sequence', $prev_sequence)
-        //             ->where('request_type', 1)
-        //             ->first();
-
-
-        //         if ($prev_approver->approver_status == 1) {
-        //             $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-        //                 ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-        //                 ->where('transfer_requests.status', 1)
-        //                 ->where('request_approvers.status', 1)
-        //                 ->where('approver_id', Auth::user()->id)
-        //                 ->where('approver_status', 0)
-        //                 ->where('request_type', 1)
-        //                 ->get();
-        //         } else {
-        //             $tool_approvers = [];
-        //         }
-        //     }
-
-        // }
-        $tool_approvers = collect();
-
-        foreach ($approvers as $approver) {
-            $current_approvers = collect();
-
-            if ($approver->sequence == 0) {
-                $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                    // if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                            ->where('transfer_requests.status', 1)
+                            ->whereNot('transfer_requests.request_status', 'disapproved')
+                            ->where('request_approvers.status', 1)
+                            ->where('approver_id', Auth::user()->id)
+                            ->where('approver_status', 0)
+                            ->where('request_type', 1)
+                            ->where('request_approvers.id', $approver->id)
+                            // ->where('for_pricing', '2')
+                            ->get();
+                    // }
+                    // return $current_approvers;
+                } elseif($approver->sequence == 4){
+                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
                     ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
                     ->where('transfer_requests.status', 1)
                     ->where('request_approvers.status', 1)
-                    ->where('request_approvers.approver_id', Auth::user()->id)
+                    ->where('approver_id', Auth::user()->id)
                     ->where('approver_status', 0)
                     ->where('request_type', 1)
+                    ->where('request_approvers.id', $approver->id)
+                    ->where('for_pricing', '2')
+                    ->whereNot('transfer_requests.request_status', 'disapproved')
                     ->get();
-            } elseif ($approver->sequence == 1) {
-                // $prev_approver = RequestApprover::where('status', 1)
-                //     ->where('request_id', $approver->request_id)
-                //     ->where('sequence', 0)
-                //     ->where('request_type', 1)
-                //     ->orderBy('approver_status', 'desc')
-                //     ->first();
+                } else {
+                    $prev_sequence = $approver->sequence - 1;
 
-                // if ($prev_approver && $prev_approver->approver_status == 1) {
-                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-                        ->where('transfer_requests.status', 1)
-                        ->where('request_approvers.status', 1)
-                        ->where('approver_id', Auth::user()->id)
-                        ->where('approver_status', 0)
+                    $prev_approver = RequestApprover::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
                         ->where('request_type', 1)
-                        ->where('request_approvers.id', $approver->id)
-                        // ->where('for_pricing', '2')
-                        ->get();
-                // }
-                // return $current_approvers;
-            } else {
-                $prev_sequence = $approver->sequence - 1;
+                        ->first();
 
-                $prev_approver = RequestApprover::where('status', 1)
-                    ->where('request_id', $approver->request_id)
-                    ->where('sequence', $prev_sequence)
-                    ->where('request_type', 1)
-                    ->first();
+                        // return $prev_approver;
 
-                    // return $prev_approver;
-
-                if ($prev_approver && $prev_approver->approver_status == 1) {
-                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-                        ->where('transfer_requests.status', 1)
-                        ->where('request_approvers.status', 1)
-                        ->where('approver_id', Auth::user()->id)
-                        ->where('approver_status', 0)
-                        ->where('request_type', 1)
-                        ->where('request_approvers.id', $approver->id)
-                        ->get();
+                    if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                            ->where('transfer_requests.status', 1)
+                            ->where('request_approvers.status', 1)
+                            ->where('approver_id', Auth::user()->id)
+                            ->where('approver_status', 0)
+                            ->where('request_type', 1)
+                            ->where('request_approvers.id', $approver->id)
+                            ->whereNot('transfer_requests.request_status', 'disapproved')
+                            ->get();
+                    }
                 }
+
+                // Merge the current approvers to the tool_approvers array
+                $tool_approvers = $tool_approvers->merge($current_approvers)->unique('request_id');
             }
-
-            // Merge the current approvers to the tool_approvers array
-            $tool_approvers = $tool_approvers->merge($current_approvers)->unique('request_id');
-        }
-
-        // return $tool_approvers;
-
-        if ($request->path == 'pages/rfteis_approved') {
-            $tool_approvers = RequestApprover::leftjoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-                ->leftjoin('users', 'users.id', 'request_approvers.approved_by')
-                ->select('transfer_requests.*', 'users.fullname', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-                ->where('transfer_requests.status', 1)
-                ->where('request_approvers.status', 1)
-                ->where('request_approvers.can_be_view_by', Auth::user()->id)
-                ->where('approver_status', 1)
-                ->where('request_type', 1)
-                ->get();
         }
 
         // $tool_approvers = (object) $tool_approvers;
@@ -1187,7 +1134,7 @@ class TransferRequestController extends Controller
             // ';
                 $action = '<button type="button" data-requestumber="'.$row->teis_number.'" data-requestorid="' . $row->pe . '" data-toolid="' . $items . '" data-requestid="' . $row->request_id . '"  data-approverid="' . $row->approver_id . '" class="approveBtn mx_auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
 
-                if ($request->path == 'pages/rfteis_approved') {
+                if ($request->path == 'pages/rfteis_approved' || $request->path == 'pages/rfteis_disapproved') {
                     $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 }
                 // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
@@ -1252,6 +1199,13 @@ class TransferRequestController extends Controller
 
         $tools->update();
 
+        //* palatandaan lang na i didisplay na sa accounting user 
+        if(Auth::user()->user_type_id == 5){
+            TransferRequest::where('status', 1)->where('id', $request->requestId)->update([
+                'for_pricing' => 1
+            ]);
+        }
+
 
         /// for logs
 
@@ -1297,11 +1251,6 @@ class TransferRequestController extends Controller
             $tools->can_be_view_by = $shotgun_approver->approver_id;
             $tools->update();
 
-            //* palatandaan lang na i didisplay na sa accounting user 
-            TransferRequest::where('status', 1)->where('id', $request->requestId)->update([
-                'for_pricing' => 1
-            ]);
-
             //pag in approved ng acc gawing done yung for_pricing para makita ni cnc
 
         } else {
@@ -1325,31 +1274,8 @@ class TransferRequestController extends Controller
         //     $tobeApproveToolsTeis->update();
         // }
 
+
         //*for email
-        $nextSec = $tools->sequence + 1;
-
-        $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
-            ->select('request_approvers.*', 'users.fullname', 'users.email')
-            ->where('request_approvers.status', 1)
-            ->where('request_type', 1)
-            ->where('request_approvers.request_id', $tools->request_id)
-            ->where('request_approvers.sequence', $nextSec)
-            ->first();
-
-        // return $approvers;
-
-        $items = ToolsAndEquipment::where('status', 1)->whereIn('id', $request->toolId)->get();
-
-        foreach ($items as $tool) {
-            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
-        }
-
-
-        //! $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
-
-        // Mail::to($approver->email)->send(new ApproverEmail($mail_data));
-
-
 
         if ($tools->sequence == $tobeApproveTools->sequence) {
             $transfer_request = TransferRequest::find($request->requestId);
@@ -1372,12 +1298,41 @@ class TransferRequestController extends Controller
                 array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
             }
 
-
-            $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
-
-            // Mail::to($user->email)->send(new EmailRequestor($mail_data));
+            $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->first();
 
 
+            $mail_data = ['fullname' => $user->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
+            $mail_data_wh = ['fullname' => $docs_clerk->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
+
+            Mail::to($user->email)->send(new EmailRequestor($mail_data));
+            Mail::to($docs_clerk->email)->send(new WarehouseDocsClerkNotif($mail_data_wh));
+
+
+        }else{
+            $nextSec = $tools->sequence + 1;
+
+            $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+                ->select('request_approvers.*', 'users.fullname', 'users.email')
+                ->where('request_approvers.status', 1)
+                ->where('request_type', 1)
+                ->where('request_approvers.request_id', $tools->request_id)
+                ->where('request_approvers.sequence', $nextSec)
+                ->first();
+    
+            // return $approver;
+    
+            $date_requested = TransferRequest::where('status', 1)->where('id', $approver->request_id)->value('date_requested');
+    
+            $items = ToolsAndEquipment::where('status', 1)->whereIn('id', $request->toolId)->get();
+    
+            foreach ($items as $tool) {
+                array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+            }
+    
+    
+             $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+    
+             Mail::to($approver->email)->send(new ApproverEmail($mail_data));
         }
     }
 
@@ -2320,6 +2275,7 @@ class TransferRequestController extends Controller
         if ($tools->sequence == $tobeApproveTools->sequence) {
             $ps_transfer_request = PsTransferRequests::find($request->requestId);
             $ps_transfer_request->request_status = "approved";
+            $ps_transfer_request->for_pricing = 1;
 
             $ps_transfer_request->update();
 
@@ -2375,11 +2331,17 @@ class TransferRequestController extends Controller
 
     public function ps_approve_rttte(Request $request)
     {
+
         $ps_tools = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNum)->first();
 
-        $ps_tools->acc = Carbon::now();
+        $ps_tools->for_pricing = 2;
 
         $ps_tools->update();
+        // $ps_tools = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNum)->first();
+
+        // $ps_tools->acc = Carbon::now();
+
+        // $ps_tools->update();
 
     }
 
@@ -2827,30 +2789,30 @@ class TransferRequestController extends Controller
 
             ->addColumn('view_tools', function ($row) {
 
-                return '<button data-id="' . $row->teis_number . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
+                return '<button data-pe="'.$row->pe.'" data-trtype="rfteis" data-trid="'.$row->id.'" data-id="' . $row->teis_number . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
             })
             ->addColumn('action', function ($row) {
                 $user_type = Auth::user()->user_type_id;
 
-                $price = [];
+                // $price = [];
 
-                $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $row->id)->get();
-                foreach ($tools as $tool) {
+                // $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $row->id)->get();
+                // foreach ($tools as $tool) {
 
-                    array_push($price, $tool->price);
-                }
-
-                // if (Auth::user()->dept_id !== 1) {
-                //     $price = [''];
+                //     array_push($price, $tool->price);
                 // }
-    
-                $has_null = in_array(null, $price, true);
 
-                $has_price = $has_null ? 'disabled' : '';
+                // // if (Auth::user()->dept_id !== 1) {
+                // //     $price = [''];
+                // // }
+    
+                // $has_null = in_array(null, $price, true);
+
+                // $has_price = $has_null ? 'disabled' : '';
 
 
                 if ($user_type == 7) {
-                    $action = '<button data-requestnum="' . $row->teis_number . '" ' . $has_price . ' type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
+                    $action = '<button data-requestnum="' . $row->teis_number . '" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
                 } else {
                     $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 }
@@ -3066,6 +3028,27 @@ class TransferRequestController extends Controller
             'action' => $action,
         ]);
 
+    }
+
+
+    public function disapprove_request(Request $request){
+
+        $request_tools = TransferRequest::where('status', 1)->where('teis_number', $request->requestNumber)->first();
+
+        $request_tools->request_status = 'disapproved';
+        $request_tools->disapproved_by = Auth::id();
+        $request_tools->disapproved_date = Carbon::now();
+        $request_tools->disapproved_reason = $request->remarks;
+
+        $request_tools->update();
+
+        $disapproved_by = User::where('status', 1)->where('id', Auth::id())->value('fullname');
+
+        $requestor_info = User::select('fullname','email')->where('status', 1)->where('id', $request_tools->pe)->first();
+
+        $mail_data = ['fullname' => $disapproved_by, 'requestor' => $requestor_info->fullname, 'remarks' => $request->remarks, 'request_number' => $request->requestNumber, 'date' => Carbon::today()->format('m/d/Y')];
+
+        Mail::to($requestor_info->email)->send(new DisapproveMail($mail_data));
     }
 
 

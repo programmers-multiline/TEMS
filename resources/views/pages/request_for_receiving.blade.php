@@ -103,7 +103,13 @@
             margin-top: 10px;
         }
 
-        
+        .pictureContainer{
+            display: block;
+            white-space: nowrap; 
+            width: 110px !important; 
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
 
     </style>
 @endsection
