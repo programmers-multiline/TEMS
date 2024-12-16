@@ -98,7 +98,7 @@
                 processing: true,
                 serverSide: false,
                 scrollX: true,
-                autoWidth: false,
+                // autoWidth: false,
                 ajax: {
                     type: 'get',
                     url: '{{ route('fetch_teis_request_acc') }}'
@@ -113,10 +113,10 @@
                         data: 'subcon'
                     },
                     {
-                        data: 'project_name'
+                        data: 'project_code'
                     },
                     {
-                        data: 'project_code'
+                        data: 'project_name'
                     },
                     {
                         data: 'project_address'
@@ -203,9 +203,9 @@
 
 
                                     $("#itemListDaf").append(
-                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
+                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"> 
                                                 ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
-                                                (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}"> ${data[i].price} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}"> No Price </span>`})
+                                                (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}"> ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}"> No Price </span>`})
                                             </p>`
                                     );
 

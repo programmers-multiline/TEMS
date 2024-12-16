@@ -32,29 +32,24 @@
         }
 
         .controls {
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            justify-content: center;
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            gap: 15px;
         }
 
         .controls button {
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 16px;
             background-color: rgba(0, 0, 0, 0.7);
-            color: #fff;
-        }
-
-        .controls button:disabled {
-            background-color: #555;
-            cursor: not-allowed;
+            color: white;
+            border: none;
+            border-radius: 10px;
         }
 
         .controls button:hover:not(:disabled) {

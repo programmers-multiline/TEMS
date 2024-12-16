@@ -518,6 +518,8 @@ class PullOutController extends Controller
 
         /// for logs
 
+        $request_number = PulloutRequest::where('status', 1)->where('id', $request->requestId)->value('pullout_number');
+
         if ($tools->sequence == 1) {
             $sequence = 'First approver ';
         } elseif ($tools->sequence == 2) {
@@ -528,7 +530,7 @@ class PullOutController extends Controller
 
         PulloutLogs::create([
             'page' => 'pullout_ongoing',
-            'request_number' => $pullout_request->pullout_number,
+            'request_number' => $request_number,
             'title' => 'Approve Request',
             'message' => $sequence . Auth::user()->fullname . ' ' . 'approved the request.',
             'approver_name' => Auth::user()->fullname,

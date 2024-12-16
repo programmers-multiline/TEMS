@@ -1310,29 +1310,32 @@ class TransferRequestController extends Controller
 
         }else{
             $nextSec = $tools->sequence + 1;
-
-            $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
-                ->select('request_approvers.*', 'users.fullname', 'users.email')
-                ->where('request_approvers.status', 1)
-                ->where('request_type', 1)
-                ->where('request_approvers.request_id', $tools->request_id)
-                ->where('request_approvers.sequence', $nextSec)
-                ->first();
-    
-            // return $approver;
-    
-            $date_requested = TransferRequest::where('status', 1)->where('id', $approver->request_id)->value('date_requested');
-    
-            $items = ToolsAndEquipment::where('status', 1)->whereIn('id', $request->toolId)->get();
-    
-            foreach ($items as $tool) {
-                array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+            if($nextSec != 4){
+                $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+                    ->select('request_approvers.*', 'users.fullname', 'users.email')
+                    ->where('request_approvers.status', 1)
+                    ->where('request_type', 1)
+                    ->where('request_approvers.request_id', $tools->request_id)
+                    ->where('request_approvers.sequence', $nextSec)
+                    ->first();
+        
+                // return $approver;
+        
+                $date_requested = TransferRequest::where('status', 1)->where('id', $approver->request_id)->value('date_requested');
+        
+                $items = ToolsAndEquipment::where('status', 1)->whereIn('id', $request->toolId)->get();
+        
+                foreach ($items as $tool) {
+                    array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+                }
+        
+        
+                $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+        
+                Mail::to($approver->email)->send(new ApproverEmail($mail_data));
             }
-    
-    
-             $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
-    
-             Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+
+            
         }
     }
 
@@ -2842,9 +2845,41 @@ class TransferRequestController extends Controller
 
     public function rfteis_acc_proceed(Request $request)
     {
-        TransferRequest::where('status', 1)->where('teis_number', $request->requestNum)->update([
-            'for_pricing' => '2'
-        ]);
+        $transfer_request = TransferRequest::where('status', 1)->where('teis_number', $request->requestNum)->first();
+
+        $transfer_request->for_pricing = 2;
+
+        $transfer_request->update();
+
+        $fullname = User::where('status', 1)->where('id', $transfer_request->pe)->value('fullname');
+
+        $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+                    ->select('request_approvers.*', 'users.fullname', 'users.email')
+                    ->where('request_approvers.status', 1)
+                    ->where('request_type', 1)
+                    ->where('request_approvers.request_id', $transfer_request->id)
+                    ->where('request_approvers.sequence', 4)
+                    ->first();
+        
+        $date_requested = TransferRequest::where('status', 1)->where('id', $approver->request_id)->value('date_requested');
+
+        $tools_approved = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+        ->select('tools_and_equipment.*')
+        ->where('tools_and_equipment.status', 1)
+        ->where('transfer_request_items.item_status', 0)
+        ->where('transfer_request_id', $transfer_request->id)
+        ->get();
+
+        $mail_Items = [];
+
+        foreach ($tools_approved as $tool) {
+            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+        }
+
+
+        $mail_data = ['requestor_name' => $fullname, 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+
+        Mail::to($approver->email)->send(new ApproverEmail($mail_data));
     }
 
 

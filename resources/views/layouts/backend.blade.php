@@ -450,6 +450,12 @@
         table td { 
             font-size: .75rem; 
         }
+        table.dataTable {
+            width: 100% !important;
+        }
+        .table thead th {
+            font-size: .85em; 
+        }
     </style>
 </head>
 
@@ -1313,6 +1319,11 @@
     {{-- <script src="{{asset('js/codebase.app.min.js')}}"></script> --}}
 
     <script>
+
+            setTimeout(function() {
+                document.querySelector('.fl-container').classList.remove('fl-show');
+            }, 2000);
+
             function showToast(icon, title) {
                 const Toast = Swal.mixin({
                     toast: true,

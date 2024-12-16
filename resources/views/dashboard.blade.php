@@ -12,7 +12,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <i class="si si-bag fa-2x text-primary-light"></i>
                             </div>
                             <div class="text-end">
@@ -26,7 +26,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <i class="si si-bag fa-2x text-primary-light"></i>
                             </div>
                             <div class="text-end">
@@ -41,7 +41,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <i class="si si-wallet fa-2x text-earth-light"></i>
                             </div>
                             <div class="text-end">
@@ -54,7 +54,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <i class="si si-users fa-2x text-pulse"></i>
                             </div>
                             <div class="text-end">
@@ -73,7 +73,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-earth">{{ $teis }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total TEIS</div>
                             </div>
@@ -86,7 +86,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-primary">{{ $pending_teis }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending RFTEIS</div>
                             </div>
@@ -99,7 +99,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-elegance">{{ $total_pullout }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pull Out Request</div>
                             </div>
@@ -112,7 +112,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-corporate">{{ $request_daf }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Request for DAF</div>
                             </div>
@@ -129,7 +129,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-info">{{ $pending_pullout }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Pull out Request
                                 </div>
@@ -143,7 +143,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-pulse">{{ $approved_pullout }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved Pull out Request
                                 </div>
@@ -157,7 +157,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-warning">{{ $pending_daf }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Pending Request for DAF
                                 </div>
@@ -171,7 +171,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-success">{{ $rttte_approval }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total RTTTE for <br>Approval</div>
                             </div>
@@ -187,7 +187,7 @@
                 <div class="col-12 col-xl-3">
                     <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                         <div class="block-content block-content-full d-flex justify-content-between align-items-center">
-                            <div class="d-none d-sm-block">
+                            <div class=" d-sm-block">
                                 <div class="fs-3 fw-semibold text-primary">{{ $approved_rttte }}</div>
                                 <div class="fs-xs fw-semibold text-uppercase text-muted">Total Approved RTTTE</div>
                             </div>

@@ -101,7 +101,8 @@
                 serverSide: false,
                 searchable: true,
                 pagination: true,
-                scrollX: true,
+                // scrollX: true,
+                autoWidht: false,
                 "aoColumnDefs": [{
                         "bSortable": false,
                         "aTargets": [0]

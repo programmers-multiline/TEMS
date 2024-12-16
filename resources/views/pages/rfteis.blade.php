@@ -108,7 +108,7 @@
                 processing: true,
                 serverSide: false,
                 scrollX: true,
-                autoWidth: false,
+                // autoWidth: false,
                 ajax: {
                     type: 'post',
                     url: '{{ route('fetch_rfteis_approver') }}',
