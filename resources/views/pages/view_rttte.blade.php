@@ -377,7 +377,7 @@
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">deduction purpose</h6>
-                            <div id="itemListDaf">
+                            <div id="itemListDaf" style="font-size: 15px">
                             </div>
                         </div>
                     </div>

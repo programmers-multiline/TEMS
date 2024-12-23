@@ -23,6 +23,7 @@
                     <form id="addToolsForm">
                         @csrf
                         <div>
+                            <input type="hidden" id="warehouseFrom">
                             <div class="row">
                                 <div class="col-lg-5 mb-3">
                                     <label class="form-label" for="pe">Project Enginner <span
@@ -143,8 +144,8 @@
                         <table class="table w-100 table-hover table-bordered table-vcenter overflow-x-scroll">
                             <thead>
                                 <tr>
+                                    <th>Location</th>
                                     <th>Asset Code</th>
-                                    <th>Serial Number</th>
                                     <th>Item Code</th>
                                     <th class="d-lg-table-cell" style="width: 50%;">Item Description</th>
                                     <th>Action</th>

@@ -398,6 +398,11 @@
     }else{
         $not_serve_count = 0;
     }
+    ///RFTEIS ACC
+    $rfteis_acc_count = App\Models\TransferRequest::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->count();
+
+    ///RFTEIS ACC
+    $rttte_acc_count = App\Models\PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->count();
 @endphp
 
 <!doctype html>
@@ -976,12 +981,17 @@
                             @endif
 
                             @if (Auth::user()->user_type_id == 7)
-                                <li class="nav-main-item">
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/rfteis_acc') ? ' active' : '' }}"
                                         href="/pages/rfteis_acc">
                                         <i class="nav-main-link-icon fa fa-box"></i>
                                         <span class="nav-main-link-name">RFTEIS</span>
                                     </a>
+                                    <span
+                                        class="countContainer nav-main-link text-light {{ $rfteis_acc_count == 0 ? 'd-none' : '' }}"><span
+                                            id="rfteisAccCount" class="bg-info"
+                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $rfteis_acc_count }}</span>
+                                    </span>
                                 </li>
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/rttte_acc') ? ' active' : '' }}"
@@ -989,6 +999,11 @@
                                         <i class="nav-main-link-icon fa fa-box-open"></i>
                                         <span class="nav-main-link-name">RTTTE</span>
                                     </a>
+                                    <span
+                                        class="countContainer nav-main-link text-light {{ $rttte_acc_count == 0 ? 'd-none' : '' }}"><span
+                                            id="rttteAccCount" class="bg-info"
+                                            style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $rttte_acc_count }}</span>
+                                    </span>
                                 </li>
                                 {{-- <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
@@ -1016,7 +1031,7 @@
                                 </a>
                             </li>
 
-                            @if (Auth::user()->user_type_id == 4)
+                            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
                                 <li class="nav-main-heading">Reports</li>
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/report_pe_logs') ? ' active' : '' }}"
@@ -1309,6 +1324,7 @@
     <script src="{{ asset('js/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('js/plugins/datatables-responsive-bs5/js/responsive.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('js/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/numberstowords/numberstowords.min.js') }}"></script>
     {{-- <script src="{{asset('js/plugins/datatables-buttons/dataTables.buttons.min.js')}}"></script>
   <script src="{{asset('js/plugins/datatables-buttons-bs5/js/buttons.bootstrap5.min.js')}}"></script>
   <script src="{{asset('js/plugins/datatables-buttons-jszip/jszip.min.js')}}"></script>
@@ -1342,6 +1358,16 @@
                     title: title,
                     width: '27em'
                 });
+            }
+
+            function pesoFormat(amount){
+                let formattedNumber = new Intl.NumberFormat(
+                    'en-PH', {
+                        style: 'currency',
+                        currency: 'PHP'
+                    }).format(amount);
+
+                    return formattedNumber
             }
     
     

@@ -40,7 +40,8 @@ class UserController extends Controller
         // Logged
         Auth::login($user);
 
-        return redirect()->intended('dashboard')->withSuccess('Login Successfully');
+        return redirect()->intended('dashboard');
+        // return redirect()->intended('dashboard')->withSuccess('Login Successfully');
 
         // return redirect route;
 

@@ -542,6 +542,21 @@
                     selected: true
                 }).data();
 
+                const locId = [];
+
+                for (let i = 0; i < data.length; i++) {
+                    locId.push(data[i].location)
+                }
+                
+                const alllocId = locId.every( data => data === locId[0])
+
+                if(!alllocId){
+                    showToast('warning', 'Requesting of tools must be per Warehouse')
+                    return
+                }
+
+
+
                 console.log(data)
 
                 if (data.count() < 1) {
@@ -551,6 +566,8 @@
                     $("#requestToolsModal").modal('show')
                 }
 
+                $("#warehouseFrom").val(data[0].warehouse_name)
+
 
                 // const arrItem = []
 
@@ -559,7 +576,7 @@
                     // arrItem.push({icode: data[i].item_code, idesc: data[i].item_description})
 
                     $("#tbodyModal").append(
-                        `<tr><td>${data[i].asset_code}</td><td>${data[i].serial_number}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-sm-table-cell">${data[i].item_description}</td> <td class="d-sm-table-cell"><button type="button" class="deleteToolRequestBtnModal btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete"><i class="fa fa-times"></i></td></tr>`
+                        `<tr><td>${data[i].warehouse_name}</td><td>${data[i].asset_code}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-sm-table-cell">${data[i].item_description}</td> <td class="d-sm-table-cell"><button type="button" class="deleteToolRequestBtnModal btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete"><i class="fa fa-times"></i></td></tr>`
                     );
                     // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                 }
@@ -604,7 +621,7 @@
                 const projectCode = $("#projectCode").val();
                 const projectAddress = $("#projectAddress").val();
                 const durationDate = $("#durationDate").val();
-
+                const whLocation = $("#warehouseFrom").val();
                 if (!projectCode) {
                     showToast('info', 'Select Project Code first!')
                     return
@@ -642,6 +659,7 @@
                         projectCode,
                         projectAddress,
                         durationDate,
+                        whLocation,
                         idArray: arrayToString,
                         _token: "{{ csrf_token() }}"
                     },

@@ -233,15 +233,38 @@ class WarehouseController extends Controller
         $mail_approvers = [];
         $mail_Items = [];
 
-        $prev_tn = TransferRequest::where('status', 1)->orderBy('teis_number', 'desc')->first();
 
+        $type = 'RF';
 
-        $new_teis_number = '';
-        if (!$prev_tn) {
-            $new_teis_number = 1000;
-        } else {
-            $new_teis_number = $prev_tn->teis_number + 1;
+        // Get the current year and month in 'YYYYMM' format
+        $currentYearMonth = Carbon::now()->format('Ym');
+
+        // Fetch the latest request for the same type, year, and month
+        $lastRequest = TransferRequest::where('teis_number', 'like', "{$type}-{$currentYearMonth}-%")
+            ->orderBy('teis_number', 'desc')
+            ->first();
+
+        // Determine the new sequence number
+        $newSequence = 1; // Default to 1 if no previous request
+        if ($lastRequest) {
+            // Extract the last sequence number and increment it
+            $lastSequence = (int)substr($lastRequest->teis_number, strrpos($lastRequest->teis_number, '-') + 1);
+            $newSequence = $lastSequence + 1;
         }
+
+        // Format the new request number with leading zeroes for the sequence
+        $new_teis_number = sprintf('%s-%s-%02d', $type, $currentYearMonth, $newSequence);
+
+
+        /// old generation of request number
+        // $prev_tn = TransferRequest::where('status', 1)->orderBy('teis_number', 'desc')->first();
+
+        // $new_teis_number = '';
+        // if (!$prev_tn) {
+        //     $new_teis_number = 1000;
+        // } else {
+        //     $new_teis_number = $prev_tn->teis_number + 1;
+        // }
 
         $req = TransferRequest::create([
             'teis_number' => $new_teis_number,
@@ -252,6 +275,7 @@ class WarehouseController extends Controller
             'project_code' => $request->projectCode,
             'project_address' => $request->projectAddress,
             'date_requested' => Carbon::now(),
+            'wh_location' => $request->whLocation,
             'status' => 1,
         ]);
 

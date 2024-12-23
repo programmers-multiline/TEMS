@@ -221,16 +221,47 @@ class ProjectSiteController extends Controller
             return 2;
         }
 
-        $prev_rn = PsTransferRequests::where('status', 1)->orderBy('request_number', 'desc')->first();
 
+        $type = 'RT';
 
+        // Get the current year and month in 'YYYYMM' format
+        $currentYearMonth = Carbon::now()->format('Ym');
 
-        $new_request_number = '';
-        if (!$prev_rn) {
-            $new_request_number = 1000;
-        } else {
-            $new_request_number = $prev_rn->request_number + 1;
+        // Fetch the latest request for the same type, year, and month
+        $lastRequest = PsTransferRequests::where('request_number', 'like', "{$type}-{$currentYearMonth}-%")
+            ->orderBy('request_number', 'desc')
+            ->first();
+
+        // Determine the new sequence number
+        $newSequence = 1; // Default to 1 if no previous request
+        if ($lastRequest) {
+            // Extract the last sequence number and increment it
+            // If request_number = "RF-202412-05":
+            // strrpos($lastRequest->request_number, '-') → 10 yung index ng "-"
+            // strrpos($lastRequest->request_number, '-') + 1 → 11
+            // substr($lastRequest->request_number, 11) → "05"
+            // (int)"05" → 5
+            $lastSequence = (int)substr($lastRequest->request_number, strrpos($lastRequest->request_number, '-') + 1);
+            $newSequence = $lastSequence + 1;
         }
+
+        // Format the new request number with leading zeroes for the sequence
+        $new_request_number = sprintf('%s-%s-%02d', $type, $currentYearMonth, $newSequence);
+
+
+
+
+            /// Old generation of request num
+        // $prev_rn = PsTransferRequests::where('status', 1)->orderBy('request_number', 'desc')->first();
+
+
+
+        // $new_request_number = '';
+        // if (!$prev_rn) {
+        //     $new_request_number = 1000;
+        // } else {
+        //     $new_request_number = $prev_rn->request_number + 1;
+        // }
 
         $req = PsTransferRequests::create([
             'request_number' => $new_request_number,

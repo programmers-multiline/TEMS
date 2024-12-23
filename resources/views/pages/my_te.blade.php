@@ -55,15 +55,15 @@
                     <thead>
                         <tr>
                             <th style="padding-right: 10px;"></th>
-                            <th style="text-align: left; font-size: 14px;">PO Number</th>
-                            <th style="text-align: left; font-size: 14px;">Asset Code</th>
-                            <th style="text-align: left; font-size: 14px;">Serial#</th>
-                            <th style="text-align: left; font-size: 14px;">Item Code</th>
-                            <th style="text-align: left; font-size: 14px;">Item Desc</th>
-                            <th style="text-align: left; font-size: 14px;">Brand</th>
-                            <th style="text-align: left; font-size: 14px;">Location</th>
-                            <th style="text-align: left; font-size: 14px;">Status</th>
-                            <th style="text-align: left; font-size: 14px;">Usage End Date</th>
+                            <th style="text-align: left;">PO Number</th>
+                            <th style="text-align: left;">Asset Code</th>
+                            <th style="text-align: left;">Serial#</th>
+                            <th style="text-align: left;">Item Code</th>
+                            <th style="text-align: left;">Item Desc</th>
+                            <th style="text-align: left;">Brand</th>
+                            <th style="text-align: left;">Location</th>
+                            <th style="text-align: left;">Status</th>
+                            <th style="text-align: left;">Usage End Date</th>
                             {{-- <th style="text-align: left; font-size: 14px;"> Transfer State</th> --}}
                             {{-- <th style="text-align: left; font-size: 14px;">Action</th> --}}
                             {{-- <th style="width: 15%;">Access</th>

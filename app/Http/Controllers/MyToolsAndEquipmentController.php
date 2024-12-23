@@ -218,15 +218,41 @@ class MyToolsAndEquipmentController extends Controller
             return 1;
         }
 
-        $prev_pn = PulloutRequest::where('status', 1)->orderBy('pullout_number', 'desc')->first();
+
+
+        $type = 'P';
+
+        // Get the current year and month in 'YYYYMM' format
+        $currentYearMonth = Carbon::now()->format('Ym');
+
+        // Fetch the latest request for the same type, year, and month
+        $lastRequest = PulloutRequest::where('pullout_number', 'like', "{$type}-{$currentYearMonth}-%")
+            ->orderBy('pullout_number', 'desc')
+            ->first();
+
+        // Determine the new sequence number
+        $newSequence = 1; // Default to 1 if no previous request
+        if ($lastRequest) {
+            // Extract the last sequence number and increment it
+            $lastSequence = (int)substr($lastRequest->pullout_number, strrpos($lastRequest->pullout_number, '-') + 1);
+            $newSequence = $lastSequence + 1;
+        }
+
+        // Format the new request number with leading zeroes for the sequence
+        $new_pullout_number = sprintf('%s-%s-%02d', $type, $currentYearMonth, $newSequence);
+
+
+
+        /// old generation of request number
+        // $prev_pn = PulloutRequest::where('status', 1)->orderBy('pullout_number', 'desc')->first();
         
 
-        $new_pullout_number = '';
-        if(!$prev_pn){
-            $new_pullout_number = 1000;
-        }else{
-            $new_pullout_number = $prev_pn->pullout_number + 1;
-        }
+        // $new_pullout_number = '';
+        // if(!$prev_pn){
+        //     $new_pullout_number = 1000;
+        // }else{
+        //     $new_pullout_number = $prev_pn->pullout_number + 1;
+        // }
 
         $req = PulloutRequest::create([
             'pullout_number' => $new_pullout_number,

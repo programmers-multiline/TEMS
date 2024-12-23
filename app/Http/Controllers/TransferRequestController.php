@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PulloutLogs;
 use Mail;
 use Carbon\Carbon;
 use App\Models\Daf;
@@ -391,7 +392,7 @@ class TransferRequestController extends Controller
                 if(Auth::user()->user_type_id == 4){
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'tools_and_equipment.price','transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price','transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.remove_remarks', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->where('transfer_request_items.teis_number', $request->id)
                     ->get();
@@ -399,7 +400,7 @@ class TransferRequestController extends Controller
                     //!hindiyin mo ano desisyon nila kung ipapakita ba ang item na not serve or hindi
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.remove_remarks', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->whereNull('transfer_request_items.is_remove')
                     ->where('transfer_request_items.teis_number', $request->id)
@@ -407,7 +408,7 @@ class TransferRequestController extends Controller
                 }else{
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.remove_remarks', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->whereNull('transfer_request_items.is_remove')
                     ->where('transfer_request_items.teis_number', $request->id)
@@ -585,11 +586,15 @@ class TransferRequestController extends Controller
                     }
                 }  
                 /// sa approver na pm and om
-                if(($user_type == 3 || $user_type == 5) && $request->path == "pages/rfteis"){
+                if($request->path == "pages/rfteis"){
                     $action = '<button data-trtype="rfteis" data-triid="' . $row->tri_id . '" data-number="' . $row->r_number . '" type="button" class="removeToolRequestBtn btn btn-sm btn-alt-danger d-block mx-auto" data-bs-toggle="tooltip" aria-label="Remove this tool?" data-bs-original-title="Remove this tool?"><i class="fa fa-xmark"></i></button>';
                 }elseif($user_type == 4 && $row->is_remove){
                     $name = User::where('status', 1)->where('id', $row->remove_by)->value('fullname');
-                    $action = '<span class="d-block text-center text-danger" style="font-size: 14px;">Removed by '.$name.'</span>';
+
+                    $carbonDate = Carbon::parse($row->is_remove); 
+                    $remove_date = $carbonDate->toDayDateTimeString();
+
+                    $action = '<span class="d-block text-center text-danger popoverInRfteis" style="font-size: 13px; cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$remove_date.'" data-bs-content="'.$row->remove_remarks.'">Removed by '.$name.'</span>';
                 }
 
                 return $action;
@@ -825,7 +830,7 @@ class TransferRequestController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                    <span>TEIS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -2275,7 +2280,7 @@ class TransferRequestController extends Controller
 
         $tools->update();
 
-        if ($tools->sequence == $tobeApproveTools->sequence) {
+        if ($tools->sequence == $tobeApproveTools->sequence) { 
             $ps_transfer_request = PsTransferRequests::find($request->requestId);
             $ps_transfer_request->request_status = "approved";
             $ps_transfer_request->for_pricing = 1;
@@ -2451,6 +2456,61 @@ class TransferRequestController extends Controller
             return $html;
             
         } elseif ($request->trType == 'pullout') {
+
+            $tool_requests = PulloutLogs::where('status', 1)->where('request_number', $request->requestNumber)->get();
+
+            $html = '';
+            if(count($tool_requests) > 0){
+               foreach ($tool_requests as $tool_request) {
+
+                if($tool_request->action == 1){
+                    $icon = 'fa-file-pen bg-primary';
+                }elseif($tool_request->action == 2){
+                    $icon = 'fa-xmark bg-pulse';
+                }elseif($tool_request->action == 3){
+                    $icon = 'fa-check bg-earth';
+                }elseif($tool_request->action == 4){
+                    $icon = 'fa-upload bg-elegance';
+                }elseif($tool_request->action == 5){
+                    $icon = 'fa-truck-fast bg-info';
+                }elseif($tool_request->action == 6){
+                    $icon = 'fa-file-circle-check bg-corporate';
+                }elseif($tool_request->action == 7){
+                    $icon = 'fa-file-circle-xmark bg-danger';
+                }elseif($tool_request->action == 8){
+                    $icon = 'fa-road-circle-check bg-corporate';
+                }elseif($tool_request->action == 9){
+                    $icon = 'fa-road-circle-xmark bg-danger';
+                }elseif($tool_request->action == 10){
+                    $icon = 'fa-upload bg-primary';
+                }elseif($tool_request->action == 11){
+                    $icon = 'fa-upload bg-elegance';
+                }else{
+                    $icon = 'fa-file bg-primary';
+                }
+
+
+                $createdAt = $tool_request->created_at; 
+                $timeAgo = Carbon::parse($createdAt)->diffForHumans();
+
+                $html .='
+                    <li class="timeline-event">
+                        <div class="timeline-event-time">'.$timeAgo.'</div>
+                        <i class="timeline-event-icon fa '.$icon.'"></i>
+                        <div class="timeline-event-block">
+                        <p class="fw-semibold">'.$tool_request->title.'</p>
+                        <p>'.$tool_request->message.'</p>
+                        </div>
+                    </li>
+                ';
+                } 
+            }
+            
+
+            return $html;
+
+
+
     
         } else {
             $tool_requests = RttteLogs::where('status', 1)->where('request_number', $request->requestNumber)->get();
@@ -3001,8 +3061,9 @@ class TransferRequestController extends Controller
 
         $tool = TransferRequestItems::find($request->triId);
 
-        $tool->is_remove = 1;
+        $tool->is_remove = now();
         $tool->remove_by = Auth::id();
+        $tool->remove_remarks = $request->remarks;
 
         $tool->update();
 
@@ -3032,9 +3093,9 @@ class TransferRequestController extends Controller
         }else{
             $tool->transfer_state = 2;
 
-            PeLogs::where('status', 1)->where('request_number', $tool->teis_number)->where('tool_id', $tool->tool_id)->where('pe', $tool->pe)->first()->update([
-                'status' => 0
-            ]);
+            // PeLogs::where('status', 1)->where('request_number', $tool->teis_number)->where('tool_id', $tool->tool_id)->where('pe', $tool->pe)->first()->update([
+            //     'status' => 0
+            // ]);
 
         }
         $tool->update();

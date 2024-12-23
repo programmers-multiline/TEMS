@@ -26,6 +26,12 @@
 @section('content-title', 'List of Pullout Request')
 
 @section('content')
+    <div class="loader-container" id="loader"
+        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1056;">
+        <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+            style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
+            loop autoplay>Loading</dotlottie-player>
+    </div>
     <!-- Page Content -->
     <div class="content">
         <div id="tableContainer" class="block block-rounded">
@@ -142,6 +148,7 @@
     <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
     </script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     <script src="{{ asset('js/plugins/fullcalendar/index.global.min.js') }}"></script>
 
@@ -289,7 +296,11 @@
                         _token: '{{ csrf_token() }}',
 
                     },
+                    beforeSend() {
+                        $("#loader").show();
+                    },
                     success() {
+                        $("#loader").hide();
                         calendar.refetchEvents();
                         $("#addSched").modal('hide')
                         table.ajax.reload()

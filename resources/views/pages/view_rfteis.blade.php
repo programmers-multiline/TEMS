@@ -203,6 +203,10 @@
             font-size: 12px;
         }
     }
+    #example-radios-inline3, #example-radios-inline3{
+        pointer-events: none;
+        cursor: not-allowed;
+    }
     </style>
     <div class="page-wrapper">
 
@@ -282,7 +286,8 @@
                                     <label class="form-check-label" style="font-size: 13px;"
                                         for="example-radios-inline1">Supplier to Project Site</label>
                                 </div>
-                                <div style="padding-left: 20px; margin-top: 5px; margin-bottom: 5px;">
+                                <div style="padding-left: 20px; margin-top: 5px; margin-bottom: 5px; position: relative;">
+                                    <div class="text-pulse" style="position: absolute; left: 40px; top: -8px; font-size: 10px; font-weight: bold; text-transform: uppercase">{{ $request_tools->wh_location }}</div>
                                     <input class="form-check-input" type="radio" id="example-radios-inline2"
                                         name="example-radios-inline" value="option2"
                                         @if ($request_tools->tr_type == 'rfteis') checked @endif>
@@ -302,7 +307,7 @@
                         <thead>
                             <tr>
                                 <th class="text-center">QTY</th>
-                                <th class="text-center">UNIT</th>
+                                <th class="text-center">ASSET CODE</th>
                                 <th style="width: 40%" class="text-center">DESCRIPTION</th>
                                 <th class="text-center">ITEM CODE</th>
                                 @if ($path == 'pages/not_serve_items')
@@ -374,18 +379,18 @@
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">deduction purpose</h6>
-                            <div id="itemListDaf">
+                            <div id="itemListDaf" style="font-size: 15px">
                             </div>
                         </div>
                     </div>
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">amount in words</h6>
-                            <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">&nbsp;</p>
+                            <p id="amountInWord" style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px; font-size: 14px;"></p>
                         </div>
                         <div style="padding-left: 3px; width: 40%">
                             <h6 style="">amount in figure</h6>
-                            <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">&nbsp;</p>
+                            <p id="amountInFigure" style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"></p>
                         </div>
                     </div>
                     <div class="borders">
@@ -655,8 +660,10 @@
 
 
 
-                const request_number = {{ $request_tools->request_number }};
+                const request_number = "{{ $request_tools->request_number }}";
                 const user_type = {{ Auth::user()->user_type_id }};
+
+                console.log(request_number)
 
                 if(user_type == 2){
                   const jsonData = JSON.stringify({

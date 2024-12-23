@@ -25,6 +25,12 @@
 @section('content-title', 'List of RFTEIS')
 
 @section('content')
+    <div class="loader-container" id="loader"
+        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1056;">
+        <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+            style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
+            loop autoplay>Loading</dotlottie-player>
+    </div>
     <!-- Page Content -->
     <div class="content">
         <div id="tableContainer" class="block block-rounded">
@@ -82,6 +88,7 @@
     <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
     </script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
 
     <!-- Fileupload JS -->
@@ -182,7 +189,7 @@
                                     data: 'item_description'
                                 },
                                 {
-                                    data: 'item_code'
+                                    data: 'asset_code'
                                 },
                                 {
                                     data: 'action'
@@ -194,24 +201,42 @@
 
                                 console.log(data)
 
+                                let totalAmount = 0;
+
+                                
                                 for (var i = 0; i < data.length; i++) {
 
-                                    let formattedNumber = new Intl.NumberFormat('en-PH', {
-                                        style: 'currency',
-                                        currency: 'PHP'
-                                    }).format(data[i].price); 
+                                    let formattedNumber = pesoFormat(data[i].price);
 
-
+                                    totalAmount = totalAmount + Number(data[i].price);
+                                    
                                     $("#itemListDaf").append(
                                         `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"> 
-                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
-                                                (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}"> ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}"> No Price </span>`})
+                                            ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                            (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}" data-reqnum="${data[i].r_number}" > ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}  data-reqnum="${data[i].r_number}""> No Price </span>`})
                                             </p>`
-                                    );
-
-                                    // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
+                                        );
+                                        
+                                        // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                                 }
 
+
+                                const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
                                 // console.log(data)
                             },
                             drawCallback: function() {
@@ -281,114 +306,101 @@
             // });
 
 
-            $(document).on('dblclick', '.toolPrice', function () {
-                let currentValue = $(this).text().trim();
-                let id = $(this).data('id');
+            let suppressBlur = false; // Global flag to suppress blur event
 
-                // Replace span with an input
-                let input = $('<input>', {
-                    type: 'text',
-                    class: 'price-input form-control',
-                    value: currentValue,
-                    'data-id': id,
-                    css: {
-                        width: '100px',
-                        textAlign: 'right',
-                        display: 'unset !important',
-                    }
-                });
+            // Replace span with input on double-click
+            // $(document).on('dblclick', '.toolPrice', function() {
+            //     let currentValue = $(this).text().trim();
+            //     let id = $(this).data('id');
+            //     let reqnum = $(this).data('reqnum');
 
-                $(this).replaceWith(input);
-                input.focus();
-            });
+            //     // Replace span with input
+            //     let input = $('<input>', {
+            //         type: 'text',
+            //         class: 'price-input form-control',
+            //         value: currentValue,
+            //         'data-id': id,
+            //         'data-reqnum': reqnum,
+            //         css: {
+            //             width: '100px',
+            //             textAlign: 'right',
+            //             display: 'unset !important',
+            //         }
+            //     });
 
+            //     $(this).replaceWith(input);
+            //     input.focus();
+            // });
 
-            $(document).on('keydown', '.price-input', function(e) {
-                // Allow: Backspace, Delete, Tab, Escape, Enter, Arrow keys
-                if (
-                    $.inArray(e.key, ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
-                        'ArrowLeft', 'ArrowRight'
-                    ]) !== -1 ||
-                    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X (for copy-pasting)
-                    (e.ctrlKey && $.inArray(e.key, ['a', 'c', 'v', 'x']) !== -1)
-                ) {
-                    return; // Do not block the key
-                }
-
-                // Allow numbers and single period, block if multiple periods
-                if (!/[0-9.]/.test(e.key) || (e.key === '.' && $(this).val().includes('.'))) {
-                    e.preventDefault();
-                }
-            });
-
-
-             // On Enter, save the new price
-            $(document).on('keypress', '.price-input', function (e) {
+            // On Enter, save the new price
+            $(document).on('keypress', '.price-input', function(e) {
                 if (e.which == 13) { // Enter key
-                    let newPrice = $(this).val().trim();
-                    let id = $(this).data('id'); // Get the item's ID
+                    let $input = $(this);
+                    let newPrice = $input.val().trim();
+                    let id = $input.data('id');
+                    let reqnum = $input.data('reqnum');
+
                     // Basic validation
                     if (isNaN(newPrice) || newPrice <= 0) {
                         alert('Please enter a valid price.');
                         return;
                     }
 
-                    // $.ajax({
-                    //     url: '{{ route('add_price_acc') }}',
-                    //     method: 'post',
-                    //     data: {
-                    //         type,
-                    //         priceDatas: stringData,
-                    //         _token: "{{ csrf_token() }}"
-                    //     },
-                    //     success() {
-                    //         showToast("success", "Price Added!");
-                    //         $("#ongoingTeisRequestModal").modal('hide')
-                    //         $("#table").DataTable().ajax.reload();
-                    //     }
-                    // })
+                    suppressBlur = true; // Suppress blur since we're handling the change here
 
-                    const type = 'rfteis';
+                    // Format the price
+                    let formattedPrice = new Intl.NumberFormat('en-PH', {
+                        style: 'currency',
+                        currency: 'PHP'
+                    }).format(newPrice);
 
-                    // AJAX to save to database
+                    // Replace input with span
+                    let span = $('<span>', {
+                        class: 'toolPrice',
+                        'data-id': id,
+                        'data-reqnum': reqnum,
+                        text: formattedPrice
+                    });
+
+                    $input.replaceWith(span);
+
                     $.ajax({
                         url: '{{ route('add_price_acc') }}',
                         method: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
                             id,
-                            price: newPrice,
-                            type
+                            reqnum,
+                            price: newPrice
                         },
-                        success: function (response) {
-                            // Replace input back with span
-                            let span = $('<span>', {
-                                class: 'toolPrice',
-                                'data-id': id,
-                                text: newPrice
-                            });
-
+                        success: function() {
                             showToast("success", "Price updated!");
-                            $(e.target).replaceWith(span);
                         },
-                        error: function () {
+                        error: function() {
                             alert('An error occurred. Please try again.');
                         }
                     });
                 }
             });
 
+            // On blur, revert to the original value if not suppressed
+            $(document).on('blur', '.price-input', function() {
+                if (suppressBlur) {
+                    suppressBlur = false; // Reset flag
+                    return; // Skip blur handling
+                }
 
-            $(document).on('blur', '.price-input', function () {
                 let $input = $(this);
                 let value = $input.val().trim();
-                let id = $input.data('id'); 
+                let id = $input.data('id');
+                let reqnum = $input.data('reqnum');
 
-                // Replace with the original value if no changes are made
+                // Replace input with span, defaulting to 'No Price' if empty
                 let span = $('<span>', {
                     class: 'toolPrice',
                     'data-id': id,
-                    text: value || 'No Price' // Default to 'No Price' if the input is empty
+                    'data-reqnum': reqnum,
+                    text: value || 'No Price'
                 });
 
                 $input.replaceWith(span);
@@ -396,64 +408,67 @@
 
 
 
-            $("#addPriceBtn").click(function() {
+            // old inputing of price
+            // $("#addPriceBtn").click(function() {
 
 
-                const allData = [];
-                const prices = [];
+            //     const allData = [];
+            //     const prices = [];
 
-                $('.price').each(function(i, obj) {
-
-
-                    const id = $(this).data('id')
-                    const price = obj.value
-
-                    prices.push(price)
-
-                    const data = {
-                        id,
-                        price
-                    }
-
-                    if (price) {
-                        allData.push(data)
-                    }
-
-                });
-
-                console.log(prices)
-
-                const allPrices = prices.every(price => price == "")
-
-                if (allPrices) {
-                    showToast('error', 'No Price Inputed!')
-                    return
-                }
+            //     $('.price').each(function(i, obj) {
 
 
-                const stringData = JSON.stringify(allData)
+            //         const id = $(this).data('id')
+            //         const price = obj.value
 
-                const type = 'rfteis';
+            //         prices.push(price)
 
-                $.ajax({
-                    url: '{{ route('add_price_acc') }}',
-                    method: 'post',
-                    data: {
-                        type,
-                        priceDatas: stringData,
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success() {
-                        showToast("success", "Price Added!");
-                        $("#ongoingTeisRequestModal").modal('hide')
-                        $("#table").DataTable().ajax.reload();
-                    }
-                })
+            //         const data = {
+            //             id,
+            //             price
+            //         }
 
-            })
+            //         if (price) {
+            //             allData.push(data)
+            //         }
+
+            //     });
+
+            //     console.log(prices)
+
+            //     const allPrices = prices.every(price => price == "")
+
+            //     if (allPrices) {
+            //         showToast('error', 'No Price Inputed!')
+            //         return
+            //     }
+
+
+            //     const stringData = JSON.stringify(allData)
+
+            //     const type = 'rfteis';
+
+            //     $.ajax({
+            //         url: '{{ route('add_price_acc') }}',
+            //         method: 'post',
+            //         data: {
+            //             type,
+            //             priceDatas: stringData,
+            //             _token: "{{ csrf_token() }}"
+            //         },
+            //         success() {
+            //             showToast("success", "Price Added!");
+            //             $("#ongoingTeisRequestModal").modal('hide')
+            //             $("#table").DataTable().ajax.reload();
+            //         }
+            //     })
+
+            // })
 
             $(document).on('click', '.approveBtn', function() {
                 const requestNum = $(this).data('requestnum');
+
+                const prevCount = parseInt($("#rfteisAccCount").text());
 
                 const confirm = Swal.mixin({
                     customClass: {
@@ -492,6 +507,11 @@
                                     text: "Items Approved Successfully.",
                                     icon: "success"
                                 });
+                                if (prevCount == 1) {
+                                    $(".countContainer").addClass("d-none")
+                                } else {
+                                    $("#rfteisAccCount").text(prevCount - 1);
+                                }
                             }
                         })
 

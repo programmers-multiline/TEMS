@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PulloutLogs;
+use DateTime;
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Uploads;
+use App\Models\PulloutLogs;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use App\Models\ProjectSites;
@@ -13,8 +15,10 @@ use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
+use App\Mail\DeliveryScheduleNotif;
 use App\Models\PulloutRequestItems;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Models\ToolsAndEquipmentLogs;
 use App\Models\ToolPictureReceivingUploads;
 
@@ -609,6 +613,32 @@ class PullOutController extends Controller
     public function add_schedule(Request $request)
     {
         $pullout_request = PulloutRequest::where('status', 1)->where('pullout_number', $request->pulloutNum)->first();
+
+        $user_info = User::select('fullname', 'email')->where('status', 1)->where('id', $pullout_request->user_id)->first();
+
+        if ($pullout_request->pickup_date !== $request->pickupDate) {
+            $pulloutDate = new DateTime($pullout_request->pickup_date);
+            $requestedDate = new DateTime($request->pickupDate);
+
+            
+
+            if ($requestedDate > $pulloutDate) {
+                // Delayed
+                $change_type =  "delayed";
+            } else {
+                // Advanced
+                $change_type = "advanced";
+            }
+
+            $formated_date_original = $pulloutDate->format('F j, Y');
+            $formated_date_new = $requestedDate->format('F j, Y');
+
+
+            $mail_data = ['requestor_name' => $user_info->fullname,  'pullout_number' => $pullout_request->pullout_number, 'original_pickup_date' => $formated_date_original, 'new_pickup_date' => $formated_date_new, 'change_type' => $change_type];
+        
+            Mail::to($user_info->email)->send(new DeliveryScheduleNotif($mail_data));
+
+        }
 
         $pullout_request->approved_sched_date = $request->pickupDate;
 

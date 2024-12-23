@@ -28,11 +28,11 @@ class FileUploadController extends Controller
         if ($request->hasFile('teis_upload')) {
             $teis_form = $request->teis_upload;
             foreach ($teis_form as $teis) {
-                $teis_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $teis->extension();
+                $teis_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $teis->getClientOriginalExtension();
                 $uploads = Uploads::create([
                     'name' => $teis_name,
                     'original_name' => $teis->getClientOriginalName(),
-                    'extension' => $teis->extension(),
+                    'extension' => $teis->getClientOriginalExtension(),
                 ]);
                 $teis->move('uploads/teis_form/', $teis_name);
 
@@ -40,7 +40,7 @@ class FileUploadController extends Controller
                     $remarks = "From Warehouse";
                 }else{
                     //! mali ito dapat sa previous owner hindi sa nanghihiram ngayon
-                    $remarks = "galing kay mmmmm" . $request->pe;
+                    $remarks = "From Project Site";
                 }
 
                 $tool_ids = explode(',', $request->toolId);
@@ -63,6 +63,7 @@ class FileUploadController extends Controller
                 // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
                 TeisUploads::create([
+                    'teis' => $request->inputedTeisNum,
                     'teis_number' => $request->teisNum,
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
@@ -141,11 +142,11 @@ class FileUploadController extends Controller
             $ters_form = $request->ters_upload;
 
             foreach ($ters_form as $ters) {
-                $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->extension();
+                $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
                 $uploads = Uploads::create([
                     'name' => $ters_name,
                     'original_name' => $ters->getClientOriginalName(),
-                    'extension' => $ters->extension(),
+                    'extension' => $ters->getClientOriginalExtension(),
                 ]);
                 $ters->move('uploads/ters_form/', $ters_name);
 
@@ -194,17 +195,20 @@ class FileUploadController extends Controller
     public function upload_process_ters(Request $request)
     {
         //  dd($request->all());
+
+        $not_serve_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->pluck('tool_id')->toArray();
+
         if ($request->hasFile('ters_upload')) {
 
             $ters_form = $request->ters_upload;
 
             $image_id = mt_rand(111111, 999999) . date('YmdHms');
             foreach ($ters_form as $ters) {
-                $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->extension();
+                $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
                 $uploads = Uploads::create([
                     'name' => $ters_name,
                     'original_name' => $ters->getClientOriginalName(),
-                    'extension' => $ters->extension(),
+                    'extension' => $ters->getClientOriginalExtension(),
                 ]);
                 $ters->move('uploads/ters_form/', $ters_name);
 
@@ -234,6 +238,14 @@ class FileUploadController extends Controller
                 }
                 
                 /// for logs
+
+                foreach($not_serve_tools as $tool_id){
+                    PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
+                     'ters_upload_id' => $uploads->id,
+                     'remarks' => "Not serve tool",
+                     ]); 
+                 }
+
                 RfteisLogs::create([
                     'page' => 'not_serve_items',
                     'request_number' => $request->tersNum,
@@ -270,11 +282,11 @@ class FileUploadController extends Controller
             $toolPicture = $request->picture_upload;
 
             foreach ($toolPicture as $pic) {
-                $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->extension();
+                $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
                 $uploads = Uploads::create([
                     'name' => $pic_name,
                     'original_name' => $pic->getClientOriginalName(),
-                    'extension' => $pic->extension(),
+                    'extension' => $pic->getClientOriginalExtension(),
                 ]);
                 $pic->move('uploads/tool_pictures/', $pic_name);
 
@@ -319,11 +331,11 @@ class FileUploadController extends Controller
             $por = $request->proof_upload;
 
             foreach ($por as $proof) {
-                $proof_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $proof->extension();
+                $proof_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $proof->getClientOriginalExtension();
                 $uploads = Uploads::create([
                     'name' => $proof_name,
                     'original_name' => $proof->getClientOriginalName(),
-                    'extension' => $proof->extension(),
+                    'extension' => $proof->getClientOriginalExtension(),
                 ]);
                 $proof->move('uploads/receiving_proofs/', $proof_name);
 

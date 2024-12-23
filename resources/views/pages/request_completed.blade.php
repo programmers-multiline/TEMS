@@ -198,7 +198,7 @@
                                         data: 'qty'
                                     },
                                     {
-                                        data: 'unit'
+                                        data: 'asset_code'
                                     },
                                     {
                                         data: 'item_description'
@@ -246,7 +246,7 @@
                                         data: 'teis_no'
                                     },
                                     {
-                                        data: 'item_code'
+                                        data: 'asset_code'
                                     },
                                     {
                                         data: 'item_description'

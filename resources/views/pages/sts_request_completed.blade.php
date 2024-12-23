@@ -154,7 +154,7 @@
                             data: 'serial_number'
                         },
                         {
-                            data: 'item_code'
+                            data: 'asset_code'
                         },
                         {
                             data: 'item_description'

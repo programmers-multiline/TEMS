@@ -360,7 +360,7 @@
                                 requestId,
                                 _token: '{{ csrf_token() }}'
                             },
-                            success() {
+                            success() {srw
                                 $("#table").DataTable().ajax.reload()
                                 $("#ongoingPulloutRequestModal").modal('hide')
                                 confirm.fire({
@@ -402,8 +402,8 @@
                 });
 
                 confirm.fire({
-                    title: "Deliver?",
-                    text: "Are you sure you want to deliver this tools?",
+                    title: "Pullout?",
+                    text: "are you sure you want to pull out this tools?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
@@ -423,8 +423,8 @@
                             success() {
                                 table.ajax.reload();
                                 confirm.fire({
-                                    title: "On the way!",
-                                    text: "The tools are out for Delivery.",
+                                    title: "Pullout success!",
+                                    text: "The item has been successfully pull out.",
                                     icon: "success"
                                 });
                             }

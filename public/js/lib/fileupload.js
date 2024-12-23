@@ -42,6 +42,13 @@ $("#formRequest").on("submit", function (e) {
 
     pondteis = teisFormPond.getFiles();
 
+    const teisNumber = $('#inputedTeisNum').val();
+
+    if(!teisNumber){
+        showToast("warning", "Please input Teis Number");
+        return
+    }
+
     if(!pondteis[0]){
         showToast("warning", "Select teis file first");
         return

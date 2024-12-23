@@ -196,7 +196,7 @@
                                     data: 'item_description'
                                 },
                                 {
-                                    data: 'item_code'
+                                    data: 'asset_code'
                                 },
                                 {
                                     data: 'action'
@@ -206,18 +206,44 @@
                             initComplete: function() {
                                 const data = modalTable.rows().data();
 
+                                console.log(data)
+
+                                let totalAmount = 0;
+
+                                
                                 for (var i = 0; i < data.length; i++) {
 
-                                    $("#itemListDaf").append(
-                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
-                                                (${data[i].price ? data[i].price : '<span class="text-danger">No Price</span>'})
-                                            </p>`
-                                    );
+                                    let formattedNumber = pesoFormat(data[i].price);
 
-                                    // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
+                                    totalAmount = totalAmount + Number(data[i].price);
+                                    
+                                    $("#itemListDaf").append(
+                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"> 
+                                            ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                            (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}" data-reqnum="${data[i].r_number}" > ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}  data-reqnum="${data[i].r_number}""> No Price </span>`})
+                                            </p>`
+                                        );
+                                        
+                                        // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
                                 }
 
+
+                                const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
                                 // console.log(data)
                             },
                             drawCallback: function() {
@@ -434,6 +460,11 @@
                 const triId = $(this).data('triid');
                 const number = $(this).data('number');
 
+
+                const prevCount = parseInt($("#rfteisCount").text());
+
+                $('#ongoingTeisRequestModal').modal('hide');
+
                 const confirm = Swal.mixin({
                     customClass: {
                         confirmButton: "btn btn-success ms-2",
@@ -444,14 +475,22 @@
 
                 confirm.fire({
                     title: "Remove?",
-                    text: "Are you sure you want to remove this tool?",
+                    text: "Are you sure you want to remove this tool? Please provide a reason.",
                     icon: "warning",
+                    input: 'textarea',
+                    inputPlaceholder: 'Enter your remarks here...',
+                    inputValidator: (value) => {
+                        if (!value.trim()) {
+                            return 'Remarks are required!';
+                        }
+                    },
                     showCancelButton: true,
-                    confirmButtonText: "Yes!",
+                    confirmButtonText: "Submit",
                     cancelButtonText: "Back",
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        const remarks = result.value;
 
                         $.ajax({
                             url: '{{ route('remove_tool') }}',
@@ -459,21 +498,69 @@
                             data: {
                                 triId,
                                 number,
+                                remarks,
                                 _token: '{{ csrf_token() }}'
                             },
                             success() {
                                 $("#modalTable").DataTable().ajax.reload();
                                 showToast('success','remove tool success')
+                            },
+                            error() {
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "An error occurred while processing your request.",
+                                    icon: "error"
+                                });
                             }
                         })
-
-                    } else if (
-                        /* Read more about handling dismissals below */
-                        result.dismiss === Swal.DismissReason.cancel
-                    ) {
-
                     }
+                }).finally(() => {
+                    $('#ongoingTeisRequestModal').modal('show'); // Reopen modal
                 });
+
+
+
+
+                // const confirm = Swal.mixin({
+                //     customClass: {
+                //         confirmButton: "btn btn-success ms-2",
+                //         cancelButton: "btn btn-danger"
+                //     },
+                //     buttonsStyling: false
+                // });
+
+                // confirm.fire({
+                //     title: "Remove?",
+                //     text: "Are you sure you want to remove this tool?",
+                //     icon: "warning",
+                //     showCancelButton: true,
+                //     confirmButtonText: "Yes!",
+                //     cancelButtonText: "Back",
+                //     reverseButtons: true
+                // }).then((result) => {
+                //     if (result.isConfirmed) {
+
+                //         $.ajax({
+                //             url: '{{ route('remove_tool') }}',
+                //             method: 'post',
+                //             data: {
+                //                 triId,
+                //                 number,
+                //                 _token: '{{ csrf_token() }}'
+                //             },
+                //             success() {
+                //                 $("#modalTable").DataTable().ajax.reload();
+                //                 showToast('success','remove tool success')
+                //             }
+                //         })
+
+                //     } else if (
+                //         /* Read more about handling dismissals below */
+                //         result.dismiss === Swal.DismissReason.cancel
+                //     ) {
+
+                //     }
+                // });
 
             })
 

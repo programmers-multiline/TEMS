@@ -227,7 +227,9 @@
             document.getElementById('start-camera').addEventListener('click', () => {
 
 
-                navigator.mediaDevices.getUserMedia({ video: true })
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } // Use the back camera
+                })
                 .then((stream) => {
                     const video = document.querySelector('video');
                     video.srcObject = stream;

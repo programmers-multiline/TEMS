@@ -27,6 +27,7 @@
                     <thead>
                         <tr>
                             <th>Request#</th>
+                            <th>Assigned to</th>
                             <th>PO Number</th>
                             <th>Asset Code</th>
                             <th>Item Code</th>
@@ -67,18 +68,30 @@
 
             const path = $("#path").val();
 
+            const userId = {{ Auth::user()->user_type_id }}
+
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
                 destroy: true,
                 scrollX: true,
+                "aoColumnDefs": [
+                    {
+                        "targets": [1],
+                        "visible": userId == 5,
+                        "searchable": userId == 5
+                    }
+                ],
                 ajax: {
                     type: 'get',
-                    url: '{{ route('report_pe_logs') }}', /// gawin ito bukas
+                    url: '{{ route('report_pe_logs') }}', 
                 },
                 columns: [
                     {
                         data: 'request_number'
+                    },
+                    {
+                        data: 'fullname'
                     },
                     {
                         data: 'po_number'
@@ -114,7 +127,7 @@
             $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
-                const type = $(this).data("type");
+                const type = $(this).data("transfertype");
 
                 $.ajax({
                     url: '{{ route('view_transfer_request') }}',
@@ -122,7 +135,6 @@
                     data: {
                         id,
                         type,
-                        path,
                         _token: '{{ csrf_token() }}',
                     },
                     success(result) {
@@ -144,7 +156,6 @@
                                     data: {
                                         id,
                                         type,
-                                        path,
                                         _token: '{{ csrf_token() }}'
                                     }
 
@@ -153,7 +164,7 @@
                                         data: 'qty'
                                     },
                                     {
-                                        data: 'unit'
+                                        data: 'asset_code'
                                     },
                                     {
                                         data: 'item_description'
@@ -171,22 +182,48 @@
                                 ],
                                 // scrollX: true,
                                 initComplete: function() {
-                                    const data = modalTable.rows().data();
+                                const data = modalTable.rows().data();
 
-                                    for (var i = 0; i < data.length; i++) {
+                                console.log(data)
 
-                                        $("#itemListDaf").append(
-                                            `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
-                                                (${data[i].price ? data[i].price : '<span class="text-danger">No Price</span>'})
+                                let totalAmount = 0;
+
+                                
+                                for (var i = 0; i < data.length; i++) {
+
+                                    let formattedNumber = pesoFormat(data[i].price);
+
+                                    totalAmount = totalAmount + Number(data[i].price);
+                                    
+                                    $("#itemListDaf").append(
+                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"> 
+                                            ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                            (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}" data-reqnum="${data[i].r_number}" > ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}  data-reqnum="${data[i].r_number}""> No Price </span>`})
                                             </p>`
                                         );
-
+                                        
                                         // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
-                                    }
+                                }
 
-                                    // console.log(data)
-                                },
+
+                                const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
+                                // console.log(data)
+                            },
                                 drawCallback: function() {
                                     $(".receivedBtn").tooltip();
                                 }
@@ -222,7 +259,7 @@
                                         data: 'teis_no'
                                     },
                                     {
-                                        data: 'item_code'
+                                        data: 'asset_code'
                                     },
                                     {
                                         data: 'item_description'
@@ -247,22 +284,48 @@
                                     }
                                 ],
                                 initComplete: function() {
-                                    const data = modalTable.rows().data();
+                                const data = modalTable.rows().data();
 
-                                    for (var i = 0; i < data.length; i++) {
+                                console.log(data)
 
-                                        $("#itemListDaf").append(
-                                            `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                                ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
-                                                (${data[i].price ? data[i].price : '<span class="text-danger">No Price</span>'})
+                                let totalAmount = 0;
+
+                                
+                                for (var i = 0; i < data.length; i++) {
+
+                                    let formattedNumber = pesoFormat(data[i].price);
+
+                                    totalAmount = totalAmount + Number(data[i].price);
+                                    
+                                    $("#itemListDaf").append(
+                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"> 
+                                            ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                            (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}" data-reqnum="${data[i].r_number}" > ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}  data-reqnum="${data[i].r_number}""> No Price </span>`})
                                             </p>`
                                         );
-
+                                        
                                         // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
-                                    }
+                                }
 
-                                    // console.log(data)
-                                },
+
+                                const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
+                                // console.log(data)
+                            },
                                 drawCallback: function() {
                                     $('table thead th.pictureHeader').show();
                                 }

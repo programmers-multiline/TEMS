@@ -364,7 +364,7 @@ class ViewFormsController extends Controller
     {
 
         if ($request->type == 'rfteis') {
-            $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'wh_location')
                 ->where('status', 1)
                 // ->where('progress', 'ongoing')
                 ->where('teis_number', $request->id)
@@ -392,7 +392,7 @@ class ViewFormsController extends Controller
         if ($request->path == 'pages/request_for_receiving') {
 
             if ($request->type == 'rfteis') {
-                $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver')
+                $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'wh_location')
                     ->where('status', 1)
                     ->where('progress', 'ongoing')
                     ->where('request_status', 'approved')
@@ -684,7 +684,7 @@ class ViewFormsController extends Controller
     public function rfteis_approvers_view(Request $request)
     {
 
-        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by')
+        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by', 'wh_location')
             ->where('status', 1)
             // ->where('progress', 'ongoing')
             ->where('teis_number', $request->id)
