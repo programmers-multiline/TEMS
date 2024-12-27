@@ -119,14 +119,15 @@ class PullOutController extends Controller
                 $have_sched = $row->approved_sched_date ? '' : 'disabled';
                 $have_sched2 = $row->is_deliver ? 'd-none' : 'd-block';
                 if ($user_type == 4) {
-                    $action = '<div class="d-flex">
+                    $action = '<div class="d-flex gap-2">
                 <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                 <button ' . $have_sched . ' data-num="' . $row->pullout_number . '" data-type="' . $row->tr_type . '" type="button" class="deliverBtn ' . $have_sched2 . ' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 </div>';
                 } else if ($user_type == 3 || $user_type == 5) {
-                    $action = '<div class="d-flex">
-                <button type="button" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
-                </div>';
+                //     $action = '<div class="d-flex">
+                // <button type="button" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
+                // </div>';
+                $action = '';
                 };
                 return $action;
             })
@@ -382,7 +383,8 @@ class PullOutController extends Controller
                     $query->where('progress', 'ongoing')
                         ->orWhereNull('ters_uploads.pullout_number');
                 })
-                // ->where('ters_uploads.tr_type', 'pullout')
+                ->distinct()
+                ->orderBy('ters_uploads.created_at', 'desc')
                 ->whereNotNull('is_deliver')
                 ->get();
 
@@ -427,6 +429,14 @@ class PullOutController extends Controller
                 return $view_tools = '<button data-id="' . $row->pullout_number . '" data-bs-toggle="modal" data-bs-target="#ongoingPulloutRequestModal" class="teisNumber btn text-primary fs-6 d-block me-auto">View</button>';
             })
             ->addColumn('action', function ($row) use ($request) {
+
+                $pri = PulloutRequestItems::where('status', 1)
+                ->where('pullout_request_id', $row->id)
+                ->pluck('req_num', 'tool_id')
+                ->toArray();
+
+                $priJson = htmlspecialchars(json_encode($pri), ENT_QUOTES, 'UTF-8');
+                
                 // $user_type = Auth::user()->user_type_id;
                 $ters_uploads = TersUploads::where('status', 1)
                     ->where('tr_type', 'pullout')->get();
@@ -441,8 +451,8 @@ class PullOutController extends Controller
 
                 if ($request->path == "pages/pullout_for_receiving") {
                     $action = '<div class="d-flex align-items-center justify-content-center">
-            <button ' . $have_ters . ' ' . $is_tools_received . ' data-pulloutnum="' . $row->pullout_number . '" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
-            ';
+                        <button ' . $have_ters . ' ' . $is_tools_received . ' data-pulloutnum="' . $row->pullout_number . '" data-jsondata="' .$priJson. '" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
+                        ';
                 } else {
                     $action = '<div class="d-flex align-items-center gap-2">
                 <button id="addSchedBtn" data-pulloutnum="' . $row->pullout_number . '" data-pe="' . $row->fullname . '" data-location="' . $row->project_address . '" data-pickupdate="' . $row->pickup_date . '" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>

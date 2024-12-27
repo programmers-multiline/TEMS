@@ -190,13 +190,13 @@
                                     data: 'qty'
                                 },
                                 {
-                                    data: 'unit'
+                                    data: 'asset_code'
                                 },
                                 {
                                     data: 'item_description'
                                 },
                                 {
-                                    data: 'asset_code'
+                                    data: 'item_code'
                                 },
                                 {
                                     data: 'action'

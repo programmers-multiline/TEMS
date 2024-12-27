@@ -114,8 +114,8 @@
                     },
                     {
                         "targets": [0],
-                        "visible": userId != 2,
-                        "searchable": userId != 2
+                        "visible": userId == 2,
+                        "searchable": userId == 2
                     }
                 ],
                 ajax: {

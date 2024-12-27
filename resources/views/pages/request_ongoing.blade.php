@@ -209,6 +209,7 @@
                     success(result) {
                         $("#requestFormLayout").html(result)
                         $('.popoverInPending').popover({ trigger: 'hover' })
+                        
 
                         // const table = $("#modalTable").DataTable({
                         //     paging: false,
@@ -292,6 +293,8 @@
                                 ],
                                 scrollX: true,
                                 initComplete: function() {
+
+                                        $('.popoverInRfteis').popover({ trigger: 'hover' })
                                         const data = modalTable.rows().data();
 
                                         console.log(data)

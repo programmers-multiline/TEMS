@@ -178,7 +178,7 @@ class ProjectSiteController extends Controller
                 } else if ($user_type == 3 || $user_type == 4 || $user_type == 5) {
                     $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 }
-                return $action;
+                return $action = '';
             })
 
             ->addColumn('po_number', function($row){

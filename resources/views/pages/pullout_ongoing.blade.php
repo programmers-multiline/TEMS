@@ -360,7 +360,7 @@
                                 requestId,
                                 _token: '{{ csrf_token() }}'
                             },
-                            success() {srw
+                            success() {
                                 $("#table").DataTable().ajax.reload()
                                 $("#ongoingPulloutRequestModal").modal('hide')
                                 confirm.fire({

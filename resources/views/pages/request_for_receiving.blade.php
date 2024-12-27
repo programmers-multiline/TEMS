@@ -413,6 +413,7 @@
                                 ],
                                 // scrollX: true,
                                 initComplete: function() {
+                                $('.popoverInRfteis').popover({ trigger: 'hover' })
                                 const data = modalTable.rows().data();
 
                                 console.log(data)

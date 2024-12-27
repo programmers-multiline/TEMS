@@ -17,6 +17,7 @@ use App\Models\TransferRequest;
 use App\Models\ToolsAndEquipment;
 use Illuminate\Http\UploadedFile;
 use App\Models\PsTransferRequests;
+use App\Models\PulloutRequestItems;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 
@@ -198,6 +199,7 @@ class FileUploadController extends Controller
 
         $not_serve_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->pluck('tool_id')->toArray();
 
+        $pullout_tools = PulloutRequestItems::where('status', 1)->where('pullout_number', $request->tersNum)->where('item_status', 1)->pluck('tool_id')->toArray();
         if ($request->hasFile('ters_upload')) {
 
             $ters_form = $request->ters_upload;
@@ -221,9 +223,9 @@ class FileUploadController extends Controller
                 ]);
 
                 ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
-                TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
-                    'clear' => 1
-                ]);
+                // TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
+                //     'clear' => 1
+                // ]);
 
                 $tr_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->whereNull('is_remove')->pluck('clear');
                 ///tignan kung ang bawat row is 1 lahat
@@ -231,32 +233,43 @@ class FileUploadController extends Controller
                     return $value === 1;
                 });
 
-                if($is_all_clear){
-                    TransferRequest::where('status', 1)->where('teis_number', $request->tersNum)->update([
-                        'progress' => 'completed'
-                    ]);
-                }
+                // if($is_all_clear){
+                //     TransferRequest::where('status', 1)->where('teis_number', $request->tersNum)->update([
+                //         'progress' => 'completed'
+                //     ]);
+                // }
                 
                 /// for logs
 
-                foreach($not_serve_tools as $tool_id){
-                    PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
-                     'ters_upload_id' => $uploads->id,
-                     'remarks' => "Not serve tool",
-                     ]); 
-                 }
+                if($request->path == 'pages/pullout_for_receiving'){
+        
+                    foreach($pullout_tools as $tool_id){
+                        PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
+                         'ters_upload_id' => $uploads->id,
+                         'remarks' => "Pullout tool",
+                         ]); 
+                     }
+                }else{
+                    foreach($not_serve_tools as $tool_id){
+                       PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
+                        'ters_upload_id' => $uploads->id,
+                        'remarks' => "Not serve tool",
+                        ]); 
+                    }
+                    
+                    RfteisLogs::create([
+                        'page' => 'not_serve_items',
+                        'request_number' => $request->tersNum,
+                        'title' => 'Upload TERS',
+                        'message' => Auth::user()->fullname .' '. 'upload TERS due to "Not served" tool redelivery unavailable.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+                        $ters_name . '">
+                            <span>View</span>
+                            </a>',
+                        'action' => 11,
+                        'approver_name' => Auth::user()->fullname,
+                    ]);
+                }
 
-                RfteisLogs::create([
-                    'page' => 'not_serve_items',
-                    'request_number' => $request->tersNum,
-                    'title' => 'Upload TERS',
-                    'message' => Auth::user()->fullname .' '. 'upload TERS due to "Not served" tool redelivery unavailable.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
-                    $ters_name . '">
-                        <span>View</span>
-                        </a>',
-                    'action' => 11,
-                    'approver_name' => Auth::user()->fullname,
-                ]);
 
                 ///para lang kasi ito sa pullout
                 if($request->path != 'pages/not_serve_items'){

@@ -2466,7 +2466,7 @@ class TransferRequestController extends Controller
                 if($tool_request->action == 1){
                     $icon = 'fa-file-pen bg-primary';
                 }elseif($tool_request->action == 2){
-                    $icon = 'fa-xmark bg-pulse';
+                    $icon = 'fa-check bg-earth';
                 }elseif($tool_request->action == 3){
                     $icon = 'fa-check bg-earth';
                 }elseif($tool_request->action == 4){
