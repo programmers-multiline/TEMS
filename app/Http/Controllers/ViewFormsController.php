@@ -718,7 +718,7 @@ class ViewFormsController extends Controller
             $mx_auto = 'mx-auto';
         }
 
-        $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $request->trid)->pluck('tool_id')->toArray();
+        $tools = TransferRequestItems::where('status', 1)->whereNull('is_remove')->where('transfer_request_id', $request->trid)->pluck('tool_id')->toArray();
         $items = json_encode($tools);
 
         // para to sa pe (para sa disapproved rfteis)
@@ -902,7 +902,7 @@ class ViewFormsController extends Controller
 
         ///para lang gumitna ang approve btn haha
 
-        $tools = PsTransferRequestItems::where('status', 1)->where('ps_transfer_request_id', $request->pstrid)->pluck('tool_id')->toArray();
+        $tools = PsTransferRequestItems::where('status', 1)->whereNull('is_remove')->where('ps_transfer_request_id', $request->pstrid)->pluck('tool_id')->toArray();
         $items = json_encode($tools);
 
         // return count($tools);

@@ -15,13 +15,13 @@
                     <form id="pulloutFrom">
                         @csrf
                         <div class="row mb-3">
-                            <div class="col-3">
+                            <div class="col-lg-3 mb-3">
                                 <label class="form-label" for="client">Client <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="client" name="client"
                                     placeholder="Enter Client">
                             </div>
-                            <div class="col-5">
+                            <div class="col-lg-5 mb-3">
                                 {{-- <label class="form-label" for="projectName">Project Name <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="projectName" name="projectName" size="1">
@@ -40,13 +40,13 @@
                             <input type="text" class="form-control" id="projectName" name="projectName"
                                 placeholder="Enter Project Name">
                             </div>
-                            <div class="col-2">
+                            <div class="col-lg-2 mb-3">
                                 <label class="form-label" for="contact">Contact No. <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="contact" name="contact"
                                     placeholder="Enter Contact No.">
                             </div>
-                            <div class="col-2">
+                            <div class="col-lg-2 ">
                                 <label class="form-label" for="dateToPick">Date to Pick-up <span
                                         class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="dateToPick" name="dateToPick" min="{{ date('Y-m-d') }}"
@@ -54,18 +54,18 @@
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-3">
+                            <div class="col-lg-3 mb-3">
                                 <label class="form-label" for="projectCode">Project Code <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectCode" name="projectCode"
                                     placeholder="Enter Project code" >
                             </div>
-                            <div class="col-3">
+                            <div class="col-lg-3 mb-3">
                                 <label class="form-label" for="subcon">SubContractor</label>
                                 <input type="text" class="form-control" id="subcon" name="subcon"
                                     placeholder="Enter Subcon">
                             </div>
-                            <div class="col-6">
+                            <div class="col-lg-6">
                                 <label class="form-label" for="projectAddress">Project Address <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectAddress" name="projectAddress"
@@ -79,18 +79,20 @@
                     </form>
                     <hr class="mt-5">
                     <h3 class="mb-1 text-secondary">Selected Tools</h3>
-                    <table class="table table-hover table-bordered table-vcenter">
-                        <thead>
-                            <tr>
-                                <th>Asset Code</th>
-                                <th>Item Code</th>
-                                <th>Item Description</th>
-                                <th>PM/TL/PE Recommendation</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyPulloutModal">
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th>Asset Code</th>
+                                    <th>Item Code</th>
+                                    <th>Item Description</th>
+                                    <th>PM/TL/PE Recommendation</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPulloutModal">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="block-content block-content-full block-content-sm text-end border-top">
                     <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis"

@@ -1336,9 +1336,9 @@
 
     <script>
 
-            setTimeout(function() {
-                document.querySelector('.fl-container').classList.remove('fl-show');
-            }, 2000);
+            // setTimeout(function() {
+            //     document.querySelector('.fl-container').classList.remove('fl-show');
+            // }, 2000);
 
             function showToast(icon, title) {
                 const Toast = Swal.mixin({

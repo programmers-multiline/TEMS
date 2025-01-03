@@ -91,19 +91,70 @@ class MyToolsAndEquipmentController extends Controller
 
         // }
 
+        /// under ng OM
+        $PEs = AssignedProjects::where('status', 1)->where('assigned_by', Auth::id())->pluck('user_id')->toArray();
+
+        /// under ng PM
+        $projectIds = AssignedProjects::where('status', 1)
+            ->where('user_id', Auth::id())
+            ->where('pos', 'pm')
+            ->pluck('project_id');
+
+        // Get PE user IDs associated with those project IDs
+        $peUserIds = AssignedProjects::where('status', 1)
+            ->whereIn('project_id', $projectIds)
+            ->where('pos', 'pe')
+            ->pluck('user_id');
+
         if($request->projectId){
-            $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+
+            if(Auth::user()->user_type_id == 5){
+                $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+                ->whereIn('tools_and_equipment.current_pe', $PEs)
+                ->where('tools_and_equipment.status', 1)
+                ->where('tools_and_equipment.current_site_id', $request->projectId)
+                ->get();
+
+            }elseif(Auth::user()->user_type_id == 3){
+                $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+                ->whereIn('tools_and_equipment.current_pe', $peUserIds)
+                ->where('tools_and_equipment.status', 1)
+                ->where('tools_and_equipment.current_site_id', $request->projectId)
+                ->get();
+
+            }else{
+                $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
                 ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
                 ->where('tools_and_equipment.current_pe', Auth::user()->id)
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.current_site_id', $request->projectId)
                 ->get();
+            }
+            
         }else{
-            $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
-                ->where('tools_and_equipment.current_pe', Auth::user()->id)
-                ->where('tools_and_equipment.status', 1)
-                ->get();
+
+            if(Auth::user()->user_type_id == 5){
+                $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+                    ->whereIn('tools_and_equipment.current_pe', $PEs)
+                    ->where('tools_and_equipment.status', 1)
+                    ->get();
+
+            }elseif(Auth::user()->user_type_id == 3){
+                $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+                    ->whereIn('tools_and_equipment.current_pe', $peUserIds)
+                    ->where('tools_and_equipment.status', 1)
+                    ->get();
+            }else{
+                $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
+                    ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
+                    ->where('tools_and_equipment.current_pe', Auth::user()->id)
+                    ->where('tools_and_equipment.status', 1)
+                    ->get();
+            }
             
         }
 
@@ -174,6 +225,8 @@ class MyToolsAndEquipmentController extends Controller
             }else if($user_type == 4){
                 $action =  '<button data-bs-toggle="modal" data-bs-target="#modalEditTools" type="button" id="editBtn" data-id="'.$row->id.'" data-po="'.$row->po_number.'" data-asset="'.$row->asset_code.'" data-serial="'.$row->serial_number.'" data-itemcode="'.$row->item_code.'" data-itemdesc="'.$row->item_description.'" data-brand="'.$row->brand.'" data-location="'.$row->location.'" data-status="'.$row->tools_status.'" class="btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
                 ?</button>';
+            }else{
+                $action = '';
             }
             return $action;
         })
@@ -306,6 +359,7 @@ class MyToolsAndEquipmentController extends Controller
                 'pullout_number' => $new_pullout_number,
                 'user_id' => Auth::user()->id,
                 'tools_status' => $table_data['tools_status'],
+                'req_num' => $table_data['prev_req_num'],
             ]);
 
             $te = ToolsAndEquipment::where('status', 1)->where('id', $table_data['id'])->first();

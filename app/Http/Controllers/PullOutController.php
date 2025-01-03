@@ -347,7 +347,15 @@ class PullOutController extends Controller
                 return $action;
             })
 
-            ->rawColumns(['view_tools', 'action', 'approver_name'])
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'action', 'approver_name', 'subcon'])
             ->toJson();
     }
 
@@ -432,6 +440,7 @@ class PullOutController extends Controller
 
                 $pri = PulloutRequestItems::where('status', 1)
                 ->where('pullout_request_id', $row->id)
+                ->where('item_status', 1)
                 ->pluck('req_num', 'tool_id')
                 ->toArray();
 
@@ -451,7 +460,7 @@ class PullOutController extends Controller
 
                 if ($request->path == "pages/pullout_for_receiving") {
                     $action = '<div class="d-flex align-items-center justify-content-center">
-                        <button ' . $have_ters . ' ' . $is_tools_received . ' data-pulloutnum="' . $row->pullout_number . '" data-jsondata="' .$priJson. '" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
+                        <button ' . $have_ters . ' ' . $is_tools_received . ' data-pulloutnum="' . $row->pullout_number . '" data-prevreqdata="' .$priJson. '" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
                         ';
                 } else {
                     $action = '<div class="d-flex align-items-center gap-2">
@@ -596,10 +605,10 @@ class PullOutController extends Controller
 
 
                 if ($user_type == 4) {
-                    $action = '<button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                    $action = '<button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                 ';
                 } else if ($user_type == 3 || $user_type == 5) {
-                    $action = '<div class="d-flex"><button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                    $action = '<div class="d-flex"><button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                 <button type="button" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
                 </div>';
                 } else {
@@ -608,7 +617,15 @@ class PullOutController extends Controller
                 return $action;
             })
 
-            ->rawColumns(['view_tools', 'ters', 'action'])
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'ters', 'action', 'subcon'])
             ->toJson();
     }
 
@@ -653,6 +670,18 @@ class PullOutController extends Controller
         $pullout_request->approved_sched_date = $request->pickupDate;
 
         $pullout_request->update();
+
+
+        PulloutLogs::create([
+            'page' => 'pullout_warehouse',
+            'request_number' => $request->pulloutNum,
+            'title' => 'Schedule',
+            'message' => Auth::user()->fullname . ' ' . 'created a schedule for your tools delivery.',
+            'approver_name' => Auth::user()->fullname,
+            'action' => 3,
+        ]);
+
+
     }
 
     public function received_pullout_tools(Request $request)
@@ -737,6 +766,9 @@ class PullOutController extends Controller
             $tools->wh_ps = 'wh';
             $tools->current_pe = null;
             $tools->current_site_id = null;
+            $tools->usage_end_date = null;
+            $tools->prev_request_num = null;
+            $tools->transfer_state = 0;
             $tools->tools_status = $request->whEval;
 
             $tools->update();
@@ -748,6 +780,31 @@ class PullOutController extends Controller
                 'tr_type' => 'pullout',
                 'remarks' => 'Received in warehouse',
             ]);
+
+            /// for logs
+            PulloutLogs::create([
+                'page' => 'pullout_for_receiving',
+                'request_number' => $received_tools->pullout_number,
+                'title' => 'Received Tool',
+                'message' => 'Warehouse received ' . $tools->item_description,
+                'action' => 5,
+                'approver_name' => Auth::user()->fullname,
+            ]);
+
+
+            
+                /// for logs
+                // RttteLogs::create([
+                //     'page' => 'request_for_receiving',
+                //     'request_number' => $scannedTools->request_number,
+                //     'title' => 'Tool Picture (Receiving Proof)',
+                //     'message' => Auth::user()->fullname .' '. 'uploaded a picture of '.$tools->item_description .'.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_picture_receiving_uploads') . '/' .
+                //     $pic_name . '">
+                //         <span>View</span>
+                //         </a>',
+                //     'action' => 8,
+                //     'approver_name' => Auth::user()->fullname,
+                // ]);
 
         }
 
@@ -772,6 +829,19 @@ class PullOutController extends Controller
         $received_tools = PulloutRequestItems::find($request->priId);
         $received_tools->item_status = 2;
         $received_tools->update();
+
+
+        /// for logs
+        $tool_name = ToolsAndEquipment::where('status', 1)->where('id', $received_tools->tool_id)->value('item_description');
+
+        PulloutLogs::create([
+            'page' => 'pullout_for_receiving',
+            'request_number' => $received_tools->pullout_number,
+            'title' => 'Not Received Tool',
+            'message' => 'Warehouse did not received the' . $tool_name,
+            'action' => 6,
+            'approver_name' => Auth::user()->fullname,
+        ]);
     }
 
     public function fetch_current_site(Request $request)

@@ -135,7 +135,7 @@ class TransferRequestController extends Controller
                         
                         $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                         <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                        <span>TEIS.pdf</span>
+                        <span>'.$item['teis'].'.pdf</span>
                         </a>
                         </div>';
                         
@@ -262,7 +262,7 @@ class TransferRequestController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                    <span>TEIS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -345,7 +345,7 @@ class TransferRequestController extends Controller
 
                     $uploads_file .= '<div class=" animated fadeIn pictureContainer">
                     <a target="_blank" class="img-link img-link-zoom-in" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                    <span>TEIS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -929,7 +929,7 @@ class TransferRequestController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                    <span>TEIS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -1130,7 +1130,7 @@ class TransferRequestController extends Controller
             ->addColumn('action', function ($row) use ($request) {
                 $user_type = Auth::user()->user_type_id;
 
-                $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $row->id)->pluck('tool_id')->toArray();
+                $tools = TransferRequestItems::where('status', 1)->whereNull('is_remove')->where('transfer_request_id', $row->id)->pluck('tool_id')->toArray();
 
                 $items = json_encode($tools);
 
@@ -1176,7 +1176,16 @@ class TransferRequestController extends Controller
                 $uploads_file .= '</div>';
                 return $uploads_file;
             })
-            ->rawColumns(['view_tools', 'uploads', 'action'])
+
+            ->addColumn('subcon', function($row){
+                if(!$row->subcon){
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                }else{
+                    return $row->subcon;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'uploads', 'action', 'subcon'])
             ->toJson();
     }
 
@@ -1315,14 +1324,14 @@ class TransferRequestController extends Controller
 
         }else{
             $nextSec = $tools->sequence + 1;
-            if($nextSec != 4){
-                $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
-                    ->select('request_approvers.*', 'users.fullname', 'users.email')
-                    ->where('request_approvers.status', 1)
-                    ->where('request_type', 1)
-                    ->where('request_approvers.request_id', $tools->request_id)
-                    ->where('request_approvers.sequence', $nextSec)
-                    ->first();
+
+            $approver = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
+                ->select('request_approvers.*', 'users.fullname', 'users.email')
+                ->where('request_approvers.status', 1)
+                ->where('request_type', 1)
+                ->where('request_approvers.request_id', $tools->request_id)
+                ->where('request_approvers.sequence', $nextSec)
+                ->first();
         
                 // return $approver;
         
@@ -1333,11 +1342,20 @@ class TransferRequestController extends Controller
                 foreach ($items as $tool) {
                     array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
                 }
-        
-        
+
+            if($nextSec != 4){
+
+                // email para sa ibang approvers
                 $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
         
                 Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+            }else{
+                // para sa accounting email
+                $user = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 7)->first();
+
+                $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $user->fullname, 'items' => json_encode($mail_Items)];
+        
+                Mail::to($user->email)->send(new ApproverEmail($mail_data));
             }
 
             
@@ -2378,6 +2396,17 @@ class TransferRequestController extends Controller
             $pullout_tools->is_deliver = Carbon::now();
 
             $pullout_tools->update();
+
+            /// for logs
+            PulloutLogs::create([
+                'page' => 'pullout_ongoing',
+                'request_number' => $request->requestNum,
+                'title' => 'Pullout',
+                'message' => 'tools are on the way to warehouse!',
+                'action' => 4,
+                'approver_name' => Auth::user()->fullname,
+            ]);
+
         } else {
             $tool_request = PsTransferRequests::where('status', 1)->where('request_number', $request->requestNum)->first();
 
@@ -2468,23 +2497,13 @@ class TransferRequestController extends Controller
                 }elseif($tool_request->action == 2){
                     $icon = 'fa-check bg-earth';
                 }elseif($tool_request->action == 3){
-                    $icon = 'fa-check bg-earth';
+                    $icon = 'fa-calendar-check bg-info';
                 }elseif($tool_request->action == 4){
-                    $icon = 'fa-upload bg-elegance';
+                    $icon = 'fa-truck-moving bg-elegance';
                 }elseif($tool_request->action == 5){
-                    $icon = 'fa-truck-fast bg-info';
+                    $icon = 'fa-file-circle-check bg-primary';
                 }elseif($tool_request->action == 6){
-                    $icon = 'fa-file-circle-check bg-corporate';
-                }elseif($tool_request->action == 7){
                     $icon = 'fa-file-circle-xmark bg-danger';
-                }elseif($tool_request->action == 8){
-                    $icon = 'fa-road-circle-check bg-corporate';
-                }elseif($tool_request->action == 9){
-                    $icon = 'fa-road-circle-xmark bg-danger';
-                }elseif($tool_request->action == 10){
-                    $icon = 'fa-upload bg-primary';
-                }elseif($tool_request->action == 11){
-                    $icon = 'fa-upload bg-elegance';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }
@@ -2743,7 +2762,7 @@ class TransferRequestController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                 <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                <span>TEIS.pdf</span>
+                <span>'.$item['teis'].'.pdf</span>
                 </a>
             </div>';
 
@@ -2812,7 +2831,7 @@ class TransferRequestController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                 <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
-                <span>TEIS.pdf</span>
+                <span>'.$item['teis'].'.pdf</span>
                 </a>
             </div>';
 

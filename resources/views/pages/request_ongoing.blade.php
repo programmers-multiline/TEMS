@@ -53,7 +53,7 @@
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
-                <table id="table" class="table fs-sm table-bordered hover table-vcenter js-dataTable-responsive">
+                <table id="table" class="table fs-sm table-bordered hover table-vcenter">
                     <thead>
                         <tr>
                             <th>Items</th>
@@ -111,7 +111,7 @@
             const table = $("#table").DataTable({
                 processing: true,
                 serverSide: false,
-                // scrollX: true,
+                scrollX: true,
                 ajax: {
                     type: 'get',
                     url: '{{ route('ongoing_teis_request') }}'

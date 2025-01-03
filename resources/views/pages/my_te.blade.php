@@ -37,14 +37,17 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="d-flex gap-2">
+                @if (Auth::user()->user_type_id == 4)
+                    <div class="d-flex gap-2">
                     {{-- <button type="button" id="changeStateBtn" class="btn btn-success" data-bs-toggle="modal"
                         data-bs-target="#changeTransferStateModal" disabled><i class="fa fa-arrows-rotate me-1"></i>Change
                         Transfer
                         State</button> --}}
-                    <button type="button" id="pulloutRequestBtn" class="btn btn-danger" disabled><i
+                        <button type="button" id="pulloutRequestBtn" class="btn btn-danger" disabled><i
                             class="fa fa-truck-arrow-right me-1"></i>Pull-Out</button>
-                </div>
+                    </div>
+                @endif
+                
             </div>
         @endif
         <div id="tableContainer" class="block block-rounded">
@@ -352,11 +355,12 @@
                     selected: true
                 }).data();
 
+                console.log(data);
 
                 for (var i = 0; i < data.length; i++) {
 
                     $("#tbodyPulloutModal").append(
-                        `<tr><td>${data[i].asset_code}</td><td>${data[i].item_code} <input type="hidden" value="${data[i].id}"></td><td class="d-none d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="defective">Defective</option></select></td></tr>`
+                        `<tr><td>${data[i].asset_code}</td><td>${data[i].item_code} <input type="hidden" class="ids" value="${data[i].id}"> <input type="hidden" class="prevReqNum" value="${data[i].prev_request_num}"></td><td class="d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="defective">Defective</option></select></td></tr>`
                     );
                     //<option value="dispose">Disposal</option>
                 }
@@ -387,7 +391,8 @@
 
 
                 /// kunin ang id ng tools and yung status na nilagay ng user
-                const id = $("#tbodyPulloutModal input[type=hidden]").map((i, id) => id.value);
+                const id = $("#tbodyPulloutModal .ids").map((i, id) => id.value);
+                const prevReqNum = $("#tbodyPulloutModal .prevReqNum").map((i, reqNum) => reqNum.value);
                 const toolsStatus = $(".toolsStatus").map((i, toolsStatus) => toolsStatus.value);
 
 
@@ -404,6 +409,7 @@
                 for (var i = 0; i < id.length; i++) {
                     selectedItemId.push({
                         id: id[i],
+                        prev_req_num: prevReqNum[i],
                         tools_status: toolsStatus[i]
                     })
                 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TeisUploads;
 use Carbon\Carbon;
 use App\Models\PeLogs;
 use App\Models\Uploads;
@@ -48,14 +49,15 @@ class ReportsController extends Controller
             ->addColumn('teis', function ($row) {
                 if($row->teis_upload_id){
                     $teis_uploads = Uploads::where('status', 1)->where('id', $row->teis_upload_id)->first()->toArray();
+                    $teis_num = TeisUploads::where('status', 1)->where('upload_id', $row->teis_upload_id)->value('teis');
     
                     return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                         <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $teis_uploads['name'] . '">
-                        <span>TEIS.pdf</span>
+                        <span>'.$teis_num.'.pdf</span>
                         </a>
                     </div></div>';
                 }else{
-                    return '';
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
                 }
 
     
@@ -71,7 +73,7 @@ class ReportsController extends Controller
                     </a>
                 </div></div>';
                 }else{
-                    return '';
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
                 }
 
                 

@@ -267,7 +267,7 @@
                     </div>
                     <div style="border-right: 1px solid black; padding-inline: 3px; width: 60%">
                         <h6 style="">subcontractor</h6>
-                        <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">S{{ ucwords(strtolower($pullout_tools->subcon)) }}</p>
+                        <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">{{ ucwords(strtolower($pullout_tools->subcon)) }}</p>
                     </div>
                     <div style="padding-left: 3px; width: 100%">
                         <h6 style="">company</h6>

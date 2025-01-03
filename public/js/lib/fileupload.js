@@ -162,7 +162,13 @@ $(document).on("click", ".uploadTersBtn", function () {
         $("#tersNumModalhidden").val(rfteisNum);
     }else{
         const pulloutnum = $(this).data("pulloutnum");
+        const prevReqData = $(this).data("prevreqdata");
+
+        const prevReqDataString = JSON.stringify(prevReqData) 
+
         $("#tersNumModalhidden").val(pulloutnum);
+        $("#prevReqDataModalhidden").val(prevReqDataString);
+        console.log(prevReqDataString)
     }
 
     const trType = $(this).data("type");

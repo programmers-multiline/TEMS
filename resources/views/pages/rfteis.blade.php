@@ -147,12 +147,22 @@
                 ],
             });
 
+            let view_id = '';
+            let view_trid = '';
+            let view_pe = '';
+            let view_path = '';
+
             $(document).on('click', '.teisNumber', function() {
 
                 const id = $(this).data("id");
                 const trid = $(this).data("trid");
                 const pe = $(this).data("pe");
                 const path = $('#path').val();
+
+                let view_id = id;
+                let view_trid = trid;
+                let view_pe = pe;
+                let view_path = path;
 
                 $.ajax({
                     url: '{{ route('rfteis_approvers_view') }}',
@@ -515,7 +525,8 @@
                         })
                     }
                 }).finally(() => {
-                    $('#ongoingTeisRequestModal').modal('show'); // Reopen modal
+                    // $('#ongoingTeisRequestModal').modal('show'); // Reopen modal
+                    $(".teisNumber").click();
                 });
 
 

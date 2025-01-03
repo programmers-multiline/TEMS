@@ -303,12 +303,12 @@
                             showToast("success", "Qr Code Scanned Successfully");
                             $("#tableHead").removeClass('d-none')
 
-                            const data = JSON.parse(decodedText);
+                            // const data = JSON.parse(decodedText);
                             // Display scanned data
                             // $("#driverName").text(data.name);
-                            $("#requestNumber").text(data.request_number);
+                            $("#requestNumber").text(decodedText);
 
-                            const request_number = data.request_number;
+                            const request_number = decodedText;
                             // const driver_name = data.name;
                             const scannedToolsTable = $("#scannedTools").DataTable({
                                 processing: true,

@@ -119,94 +119,100 @@
         }
 
         /* Approver table */
-    .timeline-float {
-        max-width: 900px;
-        padding: 15px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        background-color: white;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%; 
-    }
-
-    #approverTable {
-        width: 100%; 
-        border-collapse: collapse; 
-    }
-
-    #approverTable th, #approverTable td {
-        padding: 8px;
-        text-align: left;
-        font-size: 14px; 
-        word-wrap: break-word; 
-    }
-
-    #approverTable thead th {
-        background-color: #f9f9f9; 
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        /* Adjust layout for tablets and small screens */
         .timeline-float {
-            max-width: 100%; /* Full width on small screens */
-            top: auto;
-            left: auto;
-            transform: none;
-            position: relative;
-            margin: 20px auto;
+            max-width: 900px;
+            padding: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background-color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
         }
 
-        #approverTable th, #approverTable td {
-            font-size: 12px; 
-            padding: 6px; 
+        #approverTable {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        #approverTable thead {
-            display: none; 
+        #approverTable th,
+        #approverTable td {
+            padding: 8px;
+            text-align: left;
+            font-size: 14px;
+            word-wrap: break-word;
         }
 
-        #approverTable tbody tr {
-            display: block; 
-            margin-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
+        #approverTable thead th {
+            background-color: #f9f9f9;
         }
 
-        #approverTable tbody td {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px; 
+        /* Responsive Design */
+        @media (max-width: 768px) {
+
+            /* Adjust layout for tablets and small screens */
+            .timeline-float {
+                max-width: 100%;
+                /* Full width on small screens */
+                top: auto;
+                left: auto;
+                transform: none;
+                position: relative;
+                margin: 20px auto;
+            }
+
+            #approverTable th,
+            #approverTable td {
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            #approverTable thead {
+                display: none;
+            }
+
+            #approverTable tbody tr {
+                display: block;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 10px;
+            }
+
+            #approverTable tbody td {
+                display: flex;
+                justify-content: space-between;
+                font-size: 14px;
+            }
+
+            #approverTable tbody td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-right: 10px;
+                flex-basis: 30%;
+            }
+
+            #approverTable tbody td:last-child {
+                text-align: right;
+            }
         }
 
-        #approverTable tbody td::before {
-            content: attr(data-label); 
-            font-weight: bold;
-            margin-right: 10px;
-            flex-basis: 30%;
+        @media (max-width: 480px) {
+            .timeline-float {
+                padding: 10px;
+            }
+
+            #approverTable tbody td {
+                font-size: 12px;
+            }
         }
 
-        #approverTable tbody td:last-child {
-            text-align: right; 
+        #example-radios-inline3,
+        #example-radios-inline3 {
+            pointer-events: none;
+            cursor: not-allowed;
         }
-    }
-
-    @media (max-width: 480px) {
-        .timeline-float {
-            padding: 10px;
-        }
-
-        #approverTable tbody td {
-            font-size: 12px;
-        }
-    }
-    #example-radios-inline3, #example-radios-inline3{
-        pointer-events: none;
-        cursor: not-allowed;
-    }
     </style>
     <div class="page-wrapper">
 
@@ -224,20 +230,22 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
-                                <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE SLIP</h3>
+                                <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE
+                                    SLIP</h3>
                             </div>
                             <div id="qrCode">
-                                
+
                             </div>
                         </div>
                     @else
                         <div class="flex">
                             <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
-                            <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE SLIP
+                            <h3 style="margin-block: 7px; font-size: 16px;">REQUEST FOR TOOLS AND EQUIPMENT ISSUANCE
+                                SLIP
                             </h3>
                         </div>
                     @endif
-                    
+
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">project engineer</h6>
@@ -251,7 +259,7 @@
                         <div style="padding-left: 3px; width: 60%">
                             <h6 style="">Date</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $request_tools->date_requested }}</p>
+                                {{ \Carbon\Carbon::parse($request_tools->date_requested)->format('m-d-Y') }}</p>
                         </div>
                     </div>
                     <div class="borders" style="display: flex;">
@@ -286,8 +294,11 @@
                                     <label class="form-check-label" style="font-size: 13px;"
                                         for="example-radios-inline1">Supplier to Project Site</label>
                                 </div>
-                                <div style="padding-left: 20px; margin-top: 5px; margin-bottom: 5px; position: relative;">
-                                    <div class="text-pulse" style="position: absolute; left: 40px; top: -8px; font-size: 10px; font-weight: bold; text-transform: uppercase">{{ $request_tools->wh_location }}</div>
+                                <div
+                                    style="padding-left: 20px; margin-top: 5px; margin-bottom: 5px; position: relative;">
+                                    <div class="text-pulse"
+                                        style="position: absolute; left: 40px; top: -8px; font-size: 10px; font-weight: bold; text-transform: uppercase">
+                                        {{ $request_tools->wh_location }}</div>
                                     <input class="form-check-input" type="radio" id="example-radios-inline2"
                                         name="example-radios-inline" value="option2"
                                         @if ($request_tools->tr_type == 'rfteis') checked @endif>
@@ -355,7 +366,7 @@
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 40%">
                             <h6 style="">date</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $request_tools->date_requested }}</p>
+                                {{ \Carbon\Carbon::parse($request_tools->date_requested)->format('m-d-Y') }}</p>
                         </div>
                         <div style="padding-left: 3px; width: 40%">
                             <h6 style="">daf no.</h6>
@@ -386,7 +397,8 @@
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">amount in words</h6>
-                            <p id="amountInWord" style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px; font-size: 14px;"></p>
+                            <p id="amountInWord"
+                                style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px; font-size: 14px;"></p>
                         </div>
                         <div style="padding-left: 3px; width: 40%">
                             <h6 style="">amount in figure</h6>
@@ -508,12 +520,14 @@
                         </div>
                         <div style="border-right: 1px solid black; padding-left: 3px; width: 100%;">
                             <h6 style="">Signature</h6>
-                            <p style="text-align: center; padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"><span class="fw-bold text-secondary" style="font-size: 14px;">No Signature Required</span></p>
+                            <p style="text-align: center; padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"><span
+                                    class="fw-bold text-secondary" style="font-size: 14px;">No Signature
+                                    Required</span></p>
                         </div>
                         <div style=" padding-left: 3px; width: 50%">
                             <h6 style="">Date</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $request_tools->date_requested }}</p>
+                                {{ \Carbon\Carbon::parse($request_tools->date_requested)->format('m-d-Y') }}</p>
                         </div>
                     </div>
                     <div class="borders"
@@ -665,8 +679,8 @@
 
                 console.log(request_number)
 
-                if(user_type == 2){
-                  const jsonData = JSON.stringify({
+                if (user_type == 2) {
+                    const jsonData = JSON.stringify({
                         request_number
                     });
 
@@ -676,10 +690,10 @@
                         width: 128,
                         height: 128,
                     });
-  
+
                 }
 
-                    
+
 
 
 
