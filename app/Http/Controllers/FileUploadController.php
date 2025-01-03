@@ -162,7 +162,8 @@ class FileUploadController extends Controller
                         ->where('tool_id', $tool_id)
                         ->where('pe', $request->prevPe)
                         ->update([
-                            'ters_upload_id' => $uploads->id
+                            'ters_upload_id' => $uploads->id,
+                            'remarks' => "Project site"
                         ]);
                 }
                 ;

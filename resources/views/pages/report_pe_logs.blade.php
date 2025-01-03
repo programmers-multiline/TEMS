@@ -2,6 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -11,6 +12,9 @@
         #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
+        .form-select{
+            width: unset !important;
+        }
     </style>
 @endsection
 
@@ -19,6 +23,10 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
+        <select class="js-select2 form-select col-lg-3 mb-3" id="selectTools">
+            <option disabled selected>Select Tools</option>
+                
+        </select>
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -61,6 +69,7 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
+    <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
 
 
     <script>
@@ -118,11 +127,43 @@
                         data: 'action'
                     },
                 ],
+                initComplete: function() {
+                    const data = table.rows().data();
+
+                    /// para di maulit ang ilalagay sa select
+
+                    // Step 1: Use a Set to store unique IDs
+                    const uniqueIds = new Set();
+
+                    // Step 2: Filter the data to include only rows with unique IDs
+                    const filteredData = [];
+
+                    data.each(item => {
+                        if (!uniqueIds.has(item.id)) {
+                            uniqueIds.add(item.id); // Add the unique ID to the Set
+                            filteredData.push(item); // Add the row to the filtered data
+                        }
+                    });
+
+                    for (var i = 0; i < filteredData.length; i++) {
+
+                    $("#selectTools").append(
+                        `<option value="${filteredData[i].id}">${filteredData[i].asset_code} '-' . ${filteredData[i].item_description}</option>`
+                    );
+                    
+                    }
+
+                },
                 drawCallback: function() {
                     $(".uploadTeisBtn").tooltip();
                     $(".uploadTersBtn").tooltip();
                 }
             });
+
+            $("#selectTools").change(function() {
+                const toolId = $(this).val();
+                table.ajax.url('{{ route('report_pe_logs') }}?toolId=' + toolId).load();
+            })
 
             $(document).on('click', '.teisNumber', function() {
 
