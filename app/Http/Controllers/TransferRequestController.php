@@ -836,7 +836,12 @@ class TransferRequestController extends Controller
 
                 }
                 $uploads_file .= '</div>';
-                return $uploads_file;
+                
+                if(!$teis_uploads){
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                }else{
+                    return $uploads_file;
+                }
             })
             ->addColumn('ters', function ($row) {
                 $ters_uploads = TersUploads::with('uploads')->where('status', 1)->where('pullout_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
@@ -890,7 +895,23 @@ class TransferRequestController extends Controller
                 return Str::upper($row->tr_type);
             })
 
-            ->rawColumns(['view_tools', 'action', 'teis', 'ters', 'received_proof', 'progress'])
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'action', 'teis', 'ters', 'received_proof', 'progress', 'subcon', 'customer_name'])
             ->toJson();
     }
 
@@ -2146,7 +2167,7 @@ class TransferRequestController extends Controller
     {
         if (Auth::user()->user_type_id == 4) {
             $tool_approvers = PsTransferRequests::leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id', 'users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id', 'ps_transfer_requests.progress', 'users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                 ->where('ps_transfer_requests.status', 1)
                 ->where('users.status', 1)
                 ->where('request_status', 'pending')
@@ -2169,7 +2190,7 @@ class TransferRequestController extends Controller
                 if ($approver->sequence == 1) {
                     $ps_request_tools = PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
                         ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                        ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id', 'users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                        ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id', 'ps_transfer_requests.progress', 'users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
                         ->where('ps_transfer_requests.status', 1)
                         ->where('request_approvers.status', 1)
                         ->where('request_approvers.approver_id', Auth::user()->id)
@@ -2194,7 +2215,7 @@ class TransferRequestController extends Controller
                     if ($prev_approver->approver_status == 1) {
                         $ps_request_tools = PsTransferRequests::leftjoin('request_approvers', 'request_approvers.request_id', 'ps_transfer_requests.id')
                             ->leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
-                            ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id','users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                            ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.progress', 'ps_transfer_requests.id','users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'request_approvers.id as request_approver_id', 'request_approvers.request_id', 'request_approvers.series')
                             ->where('ps_transfer_requests.status', 1)
                             ->where('request_approvers.status', 1)
                             ->where('request_approvers.approver_id', Auth::user()->id)
@@ -2272,7 +2293,24 @@ class TransferRequestController extends Controller
                 $uploads_file .= '</div>';
                 return $uploads_file;
             })
-            ->rawColumns(['view_tools', 'request_status', 'request_type', 'uploads', 'action'])
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'request_status', 'request_type', 'uploads', 'action', 'customer_name', 'subcon'])
             ->toJson();
     }
 
@@ -2322,8 +2360,9 @@ class TransferRequestController extends Controller
 
 
             $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
+            $mail_data = ['fullname' => $user->fullname, 'request_number' => $ps_transfer_request->request_number, 'items' => json_encode($mail_Items)];
 
-            // Mail::to($user->email)->send(new EmailRequestor($mail_data));
+            Mail::to($user->email)->send(new EmailRequestor($mail_data));
 
 
         }

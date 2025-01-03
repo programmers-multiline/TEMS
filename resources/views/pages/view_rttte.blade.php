@@ -240,7 +240,7 @@
                         alt="logo">
                     <div style="border-left: 1px solid black; width: 15%; padding-left: 10px;">
                         <h6 style="font-weigth: 700;">Date</h6>
-                        <p>{{ $request_tools->date_requested }}</p>
+                        <p>{{ \Carbon\Carbon::parse($request_tools->date_requested)->format('m-d-Y') }}</p>
                     </div>
                 </div>
                 <div class="borders">
@@ -353,7 +353,7 @@
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 40%">
                             <h6 style="">date</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $request_tools->date_requested }}</p>
+                                {{ \Carbon\Carbon::parse($request_tools->date_requested)->format('m-d-Y') }}</p>
                         </div>
                         <div style="padding-left: 3px; width: 40%">
                             <h6 style="">daf no.</h6>
@@ -384,11 +384,11 @@
                     <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">amount in words</h6>
-                            <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">&nbsp;</p>
+                            <p id="amountInWord" style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">&nbsp;</p>
                         </div>
                         <div style="padding-left: 3px; width: 40%">
                             <h6 style="">amount in figure</h6>
-                            <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">&nbsp;</p>
+                            <p id="amountInFigure" style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">&nbsp;</p>
                         </div>
                     </div>
                     <div class="borders">
@@ -511,7 +511,7 @@
                         <div style=" padding-left: 3px; width: 50%">
                             <h6 style="">Date</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $request_tools->date_requested }}</p>
+                                {{ \Carbon\Carbon::parse($request_tools->date_requested)->format('m-d-Y') }}</p>
                         </div>
                     </div>
                     <div class="borders"
@@ -685,7 +685,7 @@
                     }
                 });
 
-                const request_number = {{ $request_tools->request_number }};
+                const request_number = "{{ $request_tools->request_number }}";
                 const user_type = {{ Auth::user()->user_type_id }};
 
                 if(user_type == 2){

@@ -32,13 +32,13 @@
                             </select>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-6">
+                            <div class="col-lg-6 mb-3">
                                 <label class="form-label" for="pe">Project Enginner <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="pe" name="pe"
                                     value="{{ Auth::user()->fullname }}" disabled placeholder="Enter PE" required>
                             </div>
-                            <div class="col-6">
+                            <div class="col-lg-6">
                                 <label class="form-label" for="projectCode">Project Code <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="projectCode" name="projectCode"
@@ -59,23 +59,23 @@
                         <div>
                             <h3 class='mt-2 mb-4'>DAF</h3>
                             <div class="row mb-3">
-                                <div class="col-5">
+                                <div class="col-lg-5 mb-3">
                                     <label class="form-label" for="pe">Project Enginner <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="pe" name="pe"
                                         value="{{ Auth::user()->fullname }}" disabled placeholder="Enter PE" required>
                                 </div>
-                                <div class="col-2">
+                                <div class="col-lg-2 mb-3">
                                     <label class="form-label" for="empId">Employee id</label>
                                     <input value="{{ Auth::user()->emp_id }}" type="text" class="form-control" id="empId" name="empId"
                                         placeholder="(Optional)" disabled>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-lg-3 mb-3">
                                     <label class="form-label" for="department">Department</label>
                                     <input value="{{ $dept->department_name }}" disabled type="text" class="form-control" id="department" name="department"
                                         placeholder="Enter Department">
                                 </div>
-                                <div class="col-2">
+                                <div class="col-lg-2">
                                     <label class="form-label" for="date">Date <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="date"
                                         value="{{ now()->format('m-d-Y') }}" disabled name="date" placeholder="">
@@ -105,17 +105,19 @@
                     </form>
                     <hr class="mt-5">
                     <h3 class="mb-1 text-secondary">Selected Tools</h3>
-                    <table class="table table-hover table-bordered table-vcenter">
-                        <thead>
-                            <tr>
-                                <th>Item Code</th>
-                                <th>Asset Code</th>
-                                <th class="d-lg-table-cell" style="width: 60%;">Item Description</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyModal">
-                        </tbody>
-                    </table>
+                    <div class="table-respossive">
+                        <table class="table table-hover table-bordered table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th>Item Code</th>
+                                    <th>Asset Code</th>
+                                    <th class="d-lg-table-cell" style="width: 60%;">Item Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyModal">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="block-content block-content-full block-content-sm text-end border-top">
                     <button type="button" id="closeModal" class="btn btn-alt-secondary closeModalRfteis"

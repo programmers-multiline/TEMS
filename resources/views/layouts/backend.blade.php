@@ -993,7 +993,7 @@
                                             style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $rfteis_acc_count }}</span>
                                     </span>
                                 </li>
-                                <li class="nav-main-item">
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/rttte_acc') ? ' active' : '' }}"
                                         href="/pages/rttte_acc">
                                         <i class="nav-main-link-icon fa fa-box-open"></i>

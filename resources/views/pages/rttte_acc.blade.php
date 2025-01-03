@@ -483,6 +483,8 @@
             $(document).on('click', '.approveBtn', function() {
                 const requestNum = $(this).data('requestnum');
 
+                const prevCount = parseInt($("#rttteAccCount").text());
+
                 const confirm = Swal.mixin({
                     customClass: {
                         confirmButton: "btn btn-success ms-2",
@@ -520,6 +522,12 @@
                                     text: "Items Approved Successfully.",
                                     icon: "success"
                                 });
+
+                                if (prevCount == 1) {
+                                    $(".countContainer").addClass("d-none")
+                                } else {
+                                    $("#rttteAccCount").text(prevCount - 1);
+                                }
                             }
                         })
 
