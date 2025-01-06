@@ -287,19 +287,36 @@ class TransferRequestController extends Controller
                 $uploads_file .= '</div>';
                 return $uploads_file;
             })
-            ->rawColumns(['view_tools', 'request_status', 'request_type', 'teis', 'ters', 'action'])
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'request_status', 'request_type', 'teis', 'ters', 'action', 'subcon', 'customer_name'])
             ->toJson();
     }
 
 
     public function completed_teis_request()
     {
-        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
             ->where('status', 1)
             ->where('progress', 'completed')
             ->where('pe', Auth::user()->id);
 
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
             ->where('status', 1)
             ->where('progress', 'completed')
             ->where('user_id', Auth::user()->id);
@@ -370,7 +387,24 @@ class TransferRequestController extends Controller
                 $uploads_file .= '</div>';
                 return $uploads_file;
             })
-            ->rawColumns(['view_tools', 'request_status', 'request_type', 'teis', 'ters', 'action'])
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'request_status', 'request_type', 'teis', 'ters', 'action', 'subcon', 'customer_name'])
             ->toJson();
     }
 
@@ -3005,7 +3039,16 @@ class TransferRequestController extends Controller
             ->addColumn('uploads', function ($row) {
                 $teis_uploads = TeisUploads::with('uploads')->where('status', 1)->where('teis_number', $row->id)->get()->toArray();
             })
-            ->rawColumns(['view_tools', 'action', 'uploads'])
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'action', 'uploads', 'subcon'])
             ->toJson();
     }
 

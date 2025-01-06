@@ -963,9 +963,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->user_type_id == 6 &&
-                                    Auth::user()->comp_id == 2 &&
-                                    (Auth::user()->pos_id == 5 || Auth::user()->pos_id == 6))
+                            @if (Auth::user()->user_type_id == 6 && (Auth::user()->pos_id == 2 || Auth::user()->pos_id == 6))
                                 <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
                                         href="/pages/daf">

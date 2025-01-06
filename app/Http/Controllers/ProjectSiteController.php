@@ -178,7 +178,7 @@ class ProjectSiteController extends Controller
                 } else if ($user_type == 3 || $user_type == 4 || $user_type == 5) {
                     $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 }
-                return $action = '';
+                return $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
             })
 
             ->addColumn('po_number', function($row){
@@ -437,7 +437,16 @@ class ProjectSiteController extends Controller
             ->addColumn('uploads', function ($row) {
                 $teis_uploads = TeisUploads::with('uploads')->where('status', 1)->where('teis_number', $row->id)->get()->toArray();
             })
-            ->rawColumns(['view_tools', 'action', 'uploads'])
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'action', 'uploads', 'submit'])
             ->toJson();
     }
 

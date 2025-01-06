@@ -501,7 +501,16 @@ class PullOutController extends Controller
                 $uploads_file .= '</div>';
                 return $uploads_file;
             })
-            ->rawColumns(['view_tools', 'action', 'ters'])
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'action', 'ters', 'subcon'])
             ->toJson();
     }
 

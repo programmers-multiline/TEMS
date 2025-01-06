@@ -2,7 +2,7 @@
     <style>
         #requestFormLayout{
             height: 80vh;
-            overflow-y: scroll;
+            overflow: scroll;
         }
     </style>
 

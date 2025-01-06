@@ -1,13 +1,13 @@
 <style>
     #requestFormLayout{
         height: 80vh;
-        overflow-y: scroll;
+        overflow-x: scroll;
     }
 </style>
 
 <div class="modal fade" id="ongoingPulloutRequestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-popin"
     aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen modal-dialog-popin" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-popin" role="document">
         <div class="modal-content">
             <div class="block block-rounded shadow-none mb-0">
                 <div class="block-header block-header-default">
@@ -53,7 +53,7 @@
 
                         </tbody>
                     </table> --}}
-                    <div id="requestFormLayout" class="d-flex justify-content-center">
+                    <div id="requestFormLayout">
 
                     </div>
                 </div>

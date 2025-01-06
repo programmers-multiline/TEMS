@@ -83,13 +83,13 @@
                     <div class="block-content fs-sm">
                         <div class="row mb-3">
                             <input type="hidden" value="{{ date('Y-m-d') }}" id="currentDate">
-                            <div class="col-6">
+                            <div class="col-lg-6 mb-3">
                                 <label class="form-label" for="pe">Project Enginner <span
                                         class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="pe" name="pe" disabled
                                     placeholder="Enter PE" required>
                             </div>
-                            <div class="col-6">
+                            <div class="col-lg-6">
                                 <label class="form-label" for="pickupDate">Pick-up Date <span
                                         class="text-danger">*</span></label>
                                 <input type="date" class="form-control" id="pickupDate" name="pickupDate"

@@ -14,6 +14,7 @@
         }
         .form-select{
             width: unset !important;
+            max-width: 500px;
         }
     </style>
 @endsection
@@ -23,7 +24,7 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
-        <select class="js-select2 form-select col-lg-3 mb-3" id="selectTools">
+        <select class="js-select2 form-select w-100 mb-3" id="selectTools">
             <option disabled selected>Select Tools</option>
                 
         </select>
@@ -148,7 +149,7 @@
                     for (var i = 0; i < filteredData.length; i++) {
 
                     $("#selectTools").append(
-                        `<option value="${filteredData[i].id}">${filteredData[i].asset_code} '-' . ${filteredData[i].item_description}</option>`
+                        `<option value="${filteredData[i].id}">${filteredData[i].asset_code} - ${filteredData[i].item_description}</option>`
                     );
                     
                     }

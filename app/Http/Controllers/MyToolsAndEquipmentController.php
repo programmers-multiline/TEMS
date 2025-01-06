@@ -147,6 +147,7 @@ class MyToolsAndEquipmentController extends Controller
                     ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
                     ->whereIn('tools_and_equipment.current_pe', $peUserIds)
                     ->where('tools_and_equipment.status', 1)
+                    ->whereIn('tools_and_equipment.current_site_id', $projectIds)
                     ->get();
             }else{
                 $tools = ToolsAndEquipment::leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')

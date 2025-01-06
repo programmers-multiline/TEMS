@@ -339,9 +339,9 @@
                 </div>
             </div> <!-- End page body-->
 
-            <h1 style="text-align:center">DAF</h1>
             <div class="py-3">
                 <div style="width: 1000px; height: 1056px;" class="containerPrint containerPrintDaf px-2 mx-auto">
+                    <h1 style="text-align:center">DAF</h1>
                     <div class="flex">
                         <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
                         <h3 style="margin-block: 7px; font-size: 16px; text-transform: uppercase;">Deduction
@@ -677,7 +677,7 @@
                 const request_number = "{{ $request_tools->request_number }}";
                 const user_type = {{ Auth::user()->user_type_id }};
 
-                console.log(request_number)
+                // console.log(request_number)
 
                 if (user_type == 2) {
                     const jsonData = JSON.stringify({
@@ -727,6 +727,13 @@
                         // footer: $("#printFooter")
                         header: null,
                         footer: null,
+                        beforePrint: function() {
+                            $("h1").hide()
+
+                        },
+                        afterPrint: function() {
+                            $("h1").show()
+                        },
 
 
                     });
