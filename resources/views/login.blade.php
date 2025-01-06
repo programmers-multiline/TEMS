@@ -47,12 +47,12 @@
             <input type="password" class="form-control" id="login_password" name="login_password" placeholder="Enter your password" required>
             <label class="form-label" for="login-password">Password</label>
           </div>
-          <div class="mb-4">
+          {{-- <div class="mb-4">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" value="" id="login-remember-me" name="login-remember-me" checked>
               <label class="form-check-label" for="login-remember-me">Remember Me</label>
             </div>
-          </div>
+          </div> --}}
           <div class="mb-4">
             <button type="submit" class="btn btn-lg btn-alt-primary fw-semibold">
               Sign In

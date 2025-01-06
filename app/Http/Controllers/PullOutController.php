@@ -463,8 +463,9 @@ class PullOutController extends Controller
                         <button ' . $have_ters . ' ' . $is_tools_received . ' data-pulloutnum="' . $row->pullout_number . '" data-prevreqdata="' .$priJson. '" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
                         ';
                 } else {
+                    $dateSched = $row->approved_sched_date ? $row->approved_sched_date : $row->pickup_date;
                     $action = '<div class="d-flex align-items-center gap-2">
-                <button id="addSchedBtn" data-pulloutnum="' . $row->pullout_number . '" data-pe="' . $row->fullname . '" data-location="' . $row->project_address . '" data-pickupdate="' . $row->pickup_date . '" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
+                <button id="addSchedBtn" data-pulloutnum="' . $row->pullout_number . '" data-pe="' . $row->fullname . '" data-location="' . $row->project_address . '" data-pickupdate="' . $dateSched . '" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
                 ';
                 }
 

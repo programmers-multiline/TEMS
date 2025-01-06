@@ -124,77 +124,193 @@
                 const type = $(this).data("type");
                 const path = $("#path").val();
 
-
-                const modalTable = $("#modalTable").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    destroy: true,
-                    ajax: {
-                        type: 'get',
-                        url: '{{ route('ongoing_teis_request_modal') }}',
-                        data: {
-                            id,
-                            type,
-                            path,
-                            _token: '{{ csrf_token() }}'
-                        }
-
+                $.ajax({
+                    url: '{{ route('view_transfer_request') }}',
+                    method: 'get',
+                    data: {
+                        id,
+                        type,
+                        _token: '{{ csrf_token() }}',
                     },
-                    columns: [
-                        {
-                            data: 'picture'
-                        },
-                        {
-                            data: 'po_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'serial_number'
-                        },
-                        {
-                            data: 'asset_code'
-                        },
-                        {
-                            data: 'item_description'
-                        },
-                        {
-                            data: 'brand'
-                        },
-                        {
-                            data: 'warehouse_name'
-                        },
-                        {
-                            data: 'price'
-                        },
-                        {
-                            data: 'tools_status'
-                        },
-                        {
-                            data: 'action'
-                        }
-                    ],
-                    scrollX: true,
-                    drawCallback: function() {
-                        $(".receivedBtn").tooltip();
+                    success(result) {
+                        $("#requestFormLayout").html(result)
 
-                        // if(type == 'rttte'){
-                        //     $('table thead th.pictureHeader').show();
-                        // }else{
-                        //     $('table thead th.pictureHeader').hide();
-                        // }
+                            const modalTable = $("#modalTable").DataTable({
+                                paging: false,
+                                order: false,
+                                searching: false,
+                                info: false,
+                                sort: false,
+                                processing: true,
+                                serverSide: false,
+                                destroy: true,
+                                scrollX: true,
+                                ajax: {
+                                    type: 'get',
+                                    url: '{{ route('ps_ongoing_teis_request_modal') }}',
+                                    data: {
+                                        id,
+                                        type,
+                                        _token: '{{ csrf_token() }}'
+                                    }
+
+                                },
+                                columns: [{
+                                        data: 'picture'
+                                    },
+                                    {
+                                        data: 'item_no'
+                                    },
+                                    {
+                                        data: 'teis_no'
+                                    },
+                                    {
+                                        data: 'asset_code'
+                                    },
+                                    {
+                                        data: 'item_description'
+                                    },
+                                    {
+                                        data: 'serial_number'
+                                    },
+                                    {
+                                        data: 'qty'
+                                    },
+                                    {
+                                        data: 'unit'
+                                    },
+                                    {
+                                        data: 'tools_status'
+                                    },
+                                    {
+                                        data: 'reason_for_transfer'
+                                    },
+                                    {
+                                        data: 'action'
+                                    }
+                                ],
+                                initComplete: function() {
+                                const data = modalTable.rows().data();
+
+                                console.log(data)
+
+                                let totalAmount = 0;
+
+                                
+                                for (var i = 0; i < data.length; i++) {
+
+                                    let formattedNumber = pesoFormat(data[i].price);
+
+                                    totalAmount = totalAmount + Number(data[i].price);
+                                    
+                                    $("#itemListDaf").append(
+                                        `<p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"> 
+                                            ${data[i].qty} ${data[i].unit ? data[i].unit : ''} - ${data[i].asset_code} ${data[i].item_description} 
+                                            (${data[i].price ? `<span class="toolPrice" data-id="${data[i].tool_id}" data-reqnum="${data[i].r_number}" > ${formattedNumber} </span>` : `<span class="text-danger toolPrice" data-id="${data[i].tool_id}  data-reqnum="${data[i].r_number}""> No Price </span>`})
+                                            </p>`
+                                        );
+                                        
+                                        // $("#tbodyModal").append('<td></td><td class="d-none d-sm-table-cell"></td><td class="text-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" title="Delete"><i class="fa fa-times"></i></button></div></td>');
+                                }
+
+
+                                const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
+                                // console.log(data)
+                            },
+                                drawCallback: function() {
+                                    $('table thead th.pictureHeader').show();
+                                }
+                            });
+
                     }
-                });
+                })
+
+                // old viewing of tools
+                // const modalTable = $("#modalTable").DataTable({
+                //     processing: true,
+                //     serverSide: false,
+                //     destroy: true,
+                //     ajax: {
+                //         type: 'get',
+                //         url: '{{ route('ongoing_teis_request_modal') }}',
+                //         data: {
+                //             id,
+                //             type,
+                //             path,
+                //             _token: '{{ csrf_token() }}'
+                //         }
+
+                //     },
+                //     columns: [
+                //         {
+                //             data: 'picture'
+                //         },
+                //         {
+                //             data: 'po_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'serial_number'
+                //         },
+                //         {
+                //             data: 'asset_code'
+                //         },
+                //         {
+                //             data: 'item_description'
+                //         },
+                //         {
+                //             data: 'brand'
+                //         },
+                //         {
+                //             data: 'warehouse_name'
+                //         },
+                //         {
+                //             data: 'price'
+                //         },
+                //         {
+                //             data: 'tools_status'
+                //         },
+                //         {
+                //             data: 'action'
+                //         }
+                //     ],
+                //     scrollX: true,
+                //     drawCallback: function() {
+                //         $(".receivedBtn").tooltip();
+
+                //         // if(type == 'rttte'){
+                //         //     $('table thead th.pictureHeader').show();
+                //         // }else{
+                //         //     $('table thead th.pictureHeader').hide();
+                //         // }
+                //     }
+                // });
 
 
-                if (type == 'rttte') {
-                    modalTable.column(0).visible(true);
-                    modalTable.column(0).searchable(true);
-                } else {
-                    modalTable.column(0).visible(false);
-                    modalTable.column(0).searchable(false);
-                }
+                // if (type == 'rttte') {
+                //     modalTable.column(0).visible(true);
+                //     modalTable.column(0).searchable(true);
+                // } else {
+                //     modalTable.column(0).visible(false);
+                //     modalTable.column(0).searchable(false);
+                // }
 
             })
 

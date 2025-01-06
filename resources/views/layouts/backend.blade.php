@@ -1105,12 +1105,12 @@
                                 </h5>
                             </div>
                             <div class="p-2">
-                                <a class="dropdown-item d-flex align-items-center justify-content-between space-x-1"
+                                {{-- <a class="dropdown-item d-flex align-items-center justify-content-between space-x-1"
                                     href="javascript:void(0)">
                                     <span>Profile</span>
                                     <i class="fa fa-fw fa-user opacity-25"></i>
-                                </a>
-                                <div class="dropdown-divider"></div>
+                                </a> --}}
+                                {{-- <div class="dropdown-divider"></div> --}}
                                 <a class="dropdown-item d-flex align-items-center justify-content-between space-x-1"
                                     href="#" onclick="logoutUser()">
                                     <span>Sign Out</span>
@@ -1123,11 +1123,11 @@
 
                     <!-- Notifications -->
                     <div class="dropdown d-inline-block">
-                        <button type="button" class="btn btn-sm btn-alt-secondary" id="page-header-notifications"
+                        {{-- <button type="button" class="btn btn-sm btn-alt-secondary" id="page-header-notifications"
                             data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fa fa-bell animated swing loop"></i>
                             <span class="text-xl text-primary">&bull;</span>
-                        </button>
+                        </button> --}}
                         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0"
                             aria-labelledby="page-header-notifications">
                             <div class="px-2 py-3 bg-body-light rounded-top">

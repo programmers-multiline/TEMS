@@ -994,7 +994,23 @@ class TransferRequestController extends Controller
                 return $uploads_file;
             })
 
-            ->rawColumns(['view_tools', 'teis', 'ters', 'received_proof'])
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'teis', 'ters', 'received_proof', 'customer_name', 'subcon'])
             ->toJson();
     }
 
@@ -2827,7 +2843,23 @@ class TransferRequestController extends Controller
                 return $uploads_file;
             })
 
-            ->rawColumns(['view_tools', 'teis', 'ters'])
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'teis', 'ters', 'subcon', 'customer_name'])
             ->toJson();
     }
 
@@ -2896,7 +2928,23 @@ class TransferRequestController extends Controller
                 return $uploads_file;
             })
 
-            ->rawColumns(['view_tools', 'teis', 'ters', 'request_status'])
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'teis', 'ters', 'request_status', 'subcon', 'customer_name'])
             ->toJson();
     }
 

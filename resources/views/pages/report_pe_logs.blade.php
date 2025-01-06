@@ -36,7 +36,7 @@
                         <tr>
                             <th>Request#</th>
                             <th>Assigned to</th>
-                            <th>PO Number</th>
+                            {{-- <th>PO Number</th> --}}
                             <th>Asset Code</th>
                             <th>Item Code</th>
                             <th>Item Desc</th>
@@ -102,9 +102,9 @@
                     {
                         data: 'fullname'
                     },
-                    {
-                        data: 'po_number'
-                    },
+                    // {
+                    //     data: 'po_number'
+                    // },
                     {
                         data: 'asset_code'
                     },
