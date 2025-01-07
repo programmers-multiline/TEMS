@@ -202,7 +202,7 @@
         @if ($user_type_id == 2)
         <div class="row">
             <!-- Row #1 -->
-            <div class="col-12 col-xl-3">
+            {{-- <div class="col-12 col-xl-3">
                 <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                     <div class="block-content block-content-full d-flex justify-content-between align-items-center">
                         <div class="d-sm-block">
@@ -214,7 +214,7 @@
                         </div>
                     </div>
                 </a>
-            </div>
+            </div> --}}
             <div class="col-12 col-xl-3">
                 <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                     <div class="block-content block-content-full d-flex justify-content-between align-items-center">
@@ -228,7 +228,7 @@
                     </div>
                 </a>
             </div>
-            <div class="col-12 col-xl-3">
+            {{-- <div class="col-12 col-xl-3">
                 <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                     <div class="block-content block-content-full d-flex justify-content-between align-items-center">
                         <div class=" d-sm-block">
@@ -240,7 +240,7 @@
                         </div>
                     </div>
                 </a>
-            </div>
+            </div> --}}
             <div class="col-12 col-xl-3">
                 <a class="block block-rounded block-bordered block-link-shadow" href="javascript:void(0)">
                     <div class="block-content block-content-full d-flex justify-content-between align-items-center">
