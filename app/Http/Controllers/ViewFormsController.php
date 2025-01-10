@@ -536,6 +536,61 @@ class ViewFormsController extends Controller
                                 </div>
                             </div>
             ';
+
+
+            // $html = '
+            //     <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+            //         <h6 style="">prepared by</h6>
+            //         <div style="text-align: center; padding-top: 10px;">
+            //             <p style="margin-bottom: 0px; font-weight: bold; text-transform: uppercase;">
+            //                 ' . $requestor . '</p>
+            //             <p style="margin-block: 0px; font-weight: 500; font-size: 10px;">PROJECT ENGINEER</p>
+            //         </div>
+            //     </div>
+
+            //     <div style="border-right: 1px solid black; padding-inline: 3px; width: 120%; position: relative;">
+            //         ' . ($is_approved2 && $is_approved3 ? '<div style="opacity: .40; position: absolute; top: 60%; right: -20px; background-color: #28a745; color: white; padding: 5px 10px; font-size: 10px; font-weight: bold; transform: rotate(40deg); transform-origin: top right; width: 100px; text-align: center;">APPROVED</div>' : '') . '
+            //         <div class="d-flex justify-content-between">
+            //             <h6>Noted by</h6>
+            //             <div class="d-flex">
+            //                 <h6>' . $date_approved_second . '</h6> /
+            //                 <h6>' . $date_approved_third . '</h6>
+            //             </div>
+            //         </div>
+            //         <div style="text-align: center; padding-top: 10px;">
+            //             <p style="margin-bottom: 0px; font-weight: bold; text-transform: uppercase;">' . $name_second . ' / ' . $name_third . '</p>
+            //             <p style="margin-block: 0px; font-weight: 500; font-size: 10px;">PID TEAM LEADER/OPERATIONS MANAGER</p>
+            //         </div>
+            //     </div>
+
+            //     <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%; position: relative;">
+            //         ' . ($is_approved4 ? '<div style="position: absolute; top: 0; right: 0; background-color: #28a745; color: white; padding: 5px 10px; font-size: 10px; font-weight: bold; transform: rotate(45deg); transform-origin: top right; width: 100px; text-align: center;">APPROVED</div>' : '') . '
+            //         <div class="d-flex justify-content-between">
+            //             <h6>Approved by</h6>
+            //             <div class="d-flex">
+            //                 <h6>' . $date_approved_fourth . '</h6>
+            //             </div>
+            //         </div>
+            //         <div style="text-align: center; padding-top: 10px;">
+            //             <p style="margin-bottom: 0px; font-weight: bold; text-transform: uppercase;">' . $name_fourth . '</p>
+            //             <p style="margin-block: 0px; font-weight: 500; font-size: 10px;">CNC MANAGER</p>
+            //         </div>
+            //     </div>
+
+            //     <div style="padding-inline: 3px; width: 100%; position: relative;">
+            //         ' . ($is_approved1 ? '<div style="position: absolute; top: 0; right: 0; background-color: #28a745; color: white; padding: 5px 10px; font-size: 10px; font-weight: bold; transform: rotate(45deg); transform-origin: top right; width: 100px; text-align: center;">APPROVED</div>' : '') . '
+            //         <div class="d-flex justify-content-between">
+            //             <h6>Verified by</h6>
+            //             <div class="d-flex">
+            //                 <h6>' . $date_approved_first . '</h6>
+            //             </div>
+            //         </div>
+            //         <div style="text-align: center; padding-top: 10px;">
+            //             <p style="margin-bottom: 0px; font-weight: bold; text-transform: uppercase;">' . $name_first . '</p>
+            //             <p style="margin-block: 0px; font-weight: 500; font-size: 10px;">WAREHOUSE MANAGER</p>
+            //         </div>
+            //     </div>
+            // ';
         } else {
             //PM ng nanghihiram
             $firstApprover = $approvers[0]->approver_status;

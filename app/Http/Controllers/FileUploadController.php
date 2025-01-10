@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\User;
 use App\Models\PeLogs;
 use App\Models\Uploads;
 use App\Models\RttteLogs;
 use App\Models\RfteisLogs;
+use App\Models\PulloutLogs;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Support\Str;
+use App\Mail\EmailRequestor;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\ReceivingProof;
+use App\Models\RequestApprover;
 use App\Models\TransferRequest;
 use App\Models\ToolsAndEquipment;
 use Illuminate\Http\UploadedFile;
@@ -20,6 +25,9 @@ use App\Models\PsTransferRequests;
 use App\Models\PulloutRequestItems;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WarehouseDocsClerkNotif;
+use App\Models\ToolPictureForPullout;
 
 class FileUploadController extends Controller
 {
@@ -71,8 +79,51 @@ class FileUploadController extends Controller
                 ]);
 
 
-                /// for logs
                 if ($request->trType == 'rfteis') {
+
+                    $transfer_request = TransferRequest::where('status', 1)->where('teis_number', $request->teisNum)->first();
+
+                    $transfer_request->is_deliver = Carbon::now();
+        
+                    $transfer_request->update();
+
+
+                    $mail_Items = [];
+                    $cc_emails = [];
+
+
+                    $user = User::where('status', 1)->where('id', $transfer_request->pe)->first();
+
+                    $cc_email = RequestApprover::join('users', 'users.id', 'request_approvers.approver_id')
+                    ->select('fullname', 'email')
+                    ->where('request_approvers.status', 1)
+                    ->where('users.status', 1)
+                    ->where('request_approvers.request_id', $transfer_request->id)
+                    ->where('request_type', 1)
+                    ->orderBy('request_approvers.sequence', 'asc')
+                    ->get();
+
+                    $cc_emails[] = $cc_email[1]->email;
+                    $cc_emails[] = $cc_email[2]->email;
+
+
+                    $tools_approved = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
+                        ->select('tools_and_equipment.*')
+                        ->where('tools_and_equipment.status', 1)
+                        ->where('transfer_request_items.item_status', 0)
+                        ->where('transfer_request_id', $transfer_request->id)
+                        ->get();
+
+                    foreach ($tools_approved as $tool) {
+                        array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
+                    }
+
+                    $mail_data = ['fullname' => $user->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
+
+                    Mail::to($user->email)->cc($cc_emails)->send(new EmailRequestor($mail_data));
+
+
+                    // LOGS
                     RfteisLogs::create([
                         'page' => 'rftte',
                         'request_number' => $request->teisNum,
@@ -194,7 +245,7 @@ class FileUploadController extends Controller
     }
 
 
-
+    /// TERS - RFTEIS
     public function upload_process_ters(Request $request)
     {
         //  dd($request->all());
@@ -220,6 +271,7 @@ class FileUploadController extends Controller
                 // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
 
                 TersUploads::create([
+                    'teis' => $request->inputedTersNum,
                     'pullout_number' => $request->tersNum,
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
@@ -385,6 +437,61 @@ class FileUploadController extends Controller
 
 
 
+    // Capture a photo of tool for pullout
+    public function upload_photo_for_pullout(Request $request){
+        $pulloutTools = PulloutRequestItems::find($request->id);
+
+        if ($request->has('photo')) {
+            $toolPicture = $request->photo;
+        
+            // Decode base64 image
+            $image = explode(',', $toolPicture)[1]; // Remove "data:image/jpeg;base64,"
+            $image = base64_decode($image);
+        
+            // Generate a unique file name
+            $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.jpg';
+        
+            // Save the file to the desired directory
+            $uploadPath = public_path('uploads/tool_picture_for_pullout/');
+            $filePath = $uploadPath . $pic_name;
+        
+            // Ensure directory exists
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+        
+            file_put_contents($filePath, $image);
+        
+            $uploads = Uploads::create([
+                'name' => $pic_name,
+                'original_name' => $pic_name,
+                'extension' => 'jpg',
+            ]);
+        
+            ToolPictureForPullout::create([
+                'pullout_item_id' => $pulloutTools->id, 
+                'tool_id' => $pulloutTools->tool_id,
+                'upload_id' => $uploads->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            ///for logs
+
+            $tool_name = ToolsAndEquipment::where('status', 1)->where('id', $pulloutTools->tool_id)->value('item_description');
+
+            PulloutLogs::create([
+                'page' => 'pullout_ongoing',
+                'request_number' => $pulloutTools->pullout_number,
+                'title' => 'Upload photo for pullout',
+                'message' => Auth::user()->fullname . ' upload a photo of ' . $tool_name . ' for pullout' . '.'. '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_picture_for_pullout') . '/' .
+                        $pic_name . '">
+                        <span>View</span>
+                        </a>',
+                'action' => 99,
+                'approver_name' => Auth::user()->fullname,
+            ]);
+        }
+    }
 
 
 }

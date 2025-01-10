@@ -379,7 +379,7 @@ class MyToolsAndEquipmentController extends Controller
         $approvers = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
         ->select('request_approvers.*', 'users.fullname', 'users.email')
         ->where('request_approvers.status', 1)->where('request_type', 3)
-        ->where('request_approvers.request_id', $last)
+        ->where('request_approvers.request_id', 5)
         ->orderBy('request_approvers.sequence', 'asc')
         ->get();
 
@@ -387,7 +387,7 @@ class MyToolsAndEquipmentController extends Controller
         $tools = ToolsAndEquipment::where('status', 1)->whereIn('id',$array_id)->get();
 
         foreach ($tools as $tool) {
-            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+            array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
         }
         
         
@@ -395,7 +395,7 @@ class MyToolsAndEquipmentController extends Controller
         foreach ($approvers as $approver) {
             $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
         
-            // Mail::to($approver->email)->send(new ApproverEmail($mail_data));
+            Mail::to($approver->email)->queue(new ApproverEmail($mail_data));
         }
 
          PulloutLogs::create([

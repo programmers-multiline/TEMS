@@ -205,6 +205,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('upload_process_ters', [FileUploadController::class, 'upload_process_ters'])->name('upload_process_ters');
     Route::post('upload_tools_pic', [FileUploadController::class, 'upload_tools_pic'])->name('upload_tools_pic');
     Route::post('upload_proof_of_receiving', [FileUploadController::class, 'upload_proof_of_receiving'])->name('upload_proof_of_receiving');
+    Route::post('upload_photo_for_pullout', [FileUploadController::class, 'upload_photo_for_pullout'])->name('upload_photo_for_pullout');
     
     
     Route::post('search', [SearchController::class, 'search'])->name('search');

@@ -309,28 +309,30 @@
             let suppressBlur = false; // Global flag to suppress blur event
 
             // Replace span with input on double-click
-            // $(document).on('dblclick', '.toolPrice', function() {
-            //     let currentValue = $(this).text().trim();
-            //     let id = $(this).data('id');
-            //     let reqnum = $(this).data('reqnum');
+            $(document).on('dblclick', '.toolPrice', function() {
+                let currentValue = $(this).text().trim();
+                let id = $(this).data('id');
+                let reqnum = $(this).data('reqnum');
 
-            //     // Replace span with input
-            //     let input = $('<input>', {
-            //         type: 'text',
-            //         class: 'price-input form-control',
-            //         value: currentValue,
-            //         'data-id': id,
-            //         'data-reqnum': reqnum,
-            //         css: {
-            //             width: '100px',
-            //             textAlign: 'right',
-            //             display: 'unset !important',
-            //         }
-            //     });
+                let cton = parseFloat(currentValue.replace(/[₱,]/g, ''));
 
-            //     $(this).replaceWith(input);
-            //     input.focus();
-            // });
+                // Replace span with input
+                let input = $('<input>', {
+                    type: 'text',
+                    class: 'price-input form-control',
+                    value: cton,
+                    'data-id': id,
+                    'data-reqnum': reqnum,
+                    css: {
+                        width: '100px',
+                        textAlign: 'right',
+                        display: 'unset !important',
+                    }
+                });
+
+                $(this).replaceWith(input);
+                input.focus();
+            });
 
             // On Enter, save the new price
             $(document).on('keypress', '.price-input', function(e) {
@@ -375,6 +377,33 @@
                         },
                         success: function() {
                             showToast("success", "Price updated!");
+                            $('#ongoingTeisRequestModal').modal('show')
+                            let totalAmount = 0; 
+                            $('.toolPrice').each(function() { 
+
+                                let price = Number(parseFloat($(this).text().replace(/[₱,]/g, '')))
+
+                                totalAmount += price
+                            });
+
+
+                            const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
+
                         },
                         error: function() {
                             alert('An error occurred. Please try again.');
@@ -400,7 +429,7 @@
                     class: 'toolPrice',
                     'data-id': id,
                     'data-reqnum': reqnum,
-                    text: value || 'No Price'
+                    text: pesoFormat(value) || 'No Price'
                 });
 
                 $input.replaceWith(span);
@@ -472,7 +501,7 @@
 
                 const confirm = Swal.mixin({
                     customClass: {
-                        confirmButton: "btn btn-success ms-2",
+                        confirmButton: "btn btn-success me-2",
                         cancelButton: "btn btn-danger"
                     },
                     buttonsStyling: false
@@ -485,7 +514,7 @@
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
                     cancelButtonText: "Close",
-                    reverseButtons: true
+                    reverseButtons: false
                 }).then((result) => {
                     if (result.isConfirmed) {
 

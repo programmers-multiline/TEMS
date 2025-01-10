@@ -12,6 +12,91 @@
         #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
             display: none;
         }
+
+        .camera-container {
+            position: relative;
+            width: 90vw;
+            height: auto;
+            overflow: hidden;
+            margin-top: 2%;
+        }
+
+        video,
+        canvas,
+        #cameraModal img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: none;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            gap: 15px;
+        }
+
+        .controls button {
+            padding: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .controls button:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+        }
+
+        @media only screen and (max-width: 420px) {
+            .controls {
+                /* position: relative; */
+                /* margin-top: 100%;  */
+                bottom: 24%;
+                /* left: unset;
+                transform: unset;
+                align-items: center;
+                justify-content: center; */
+            }
+
+            .camera-container {
+                margin-top: 20%;
+            }
+        }
+
+        #cameraModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 11050;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .camera-container {
+            display: inline-block;
+            position: relative;
+            background: white;
+            /* padding: 20px; */
+            border-radius: 8px;
+        }
+
+        .controls {
+            margin-top: 10px;
+        }
     </style>
 @endsection
 
@@ -20,6 +105,12 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
+        <div class="loader-container" id="loader"
+            style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1056;">
+            <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+                style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1"
+                playMode="normal" loop autoplay>Loading</dotlottie-player>
+        </div>
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -49,6 +140,25 @@
             </div>
         </div>
     </div>
+
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" style="display: none;">
+        <div class="camera-container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+            <img id="photo" src="" alt="Captured Image" style="display: none;" />
+        </div>
+        <div class="controls">
+            <button id="start-camera">Start Camera</button>
+            <button id="capture" style="display: none;">Capture</button>
+            <button id="retake" style="display: none;">Retake</button>
+            <button id="upload" style="display: none;">Upload</button>
+            <button id="cancel" style="display: none;">Cancel</button>
+        </div>
+    </div>
+
+
     <!-- END Page Content -->
 
     @include('pages.modals.ongoing_pullout_request_modal')
@@ -65,6 +175,8 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
     <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/webcam-easy/dist/webcam-easy.min.js"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
@@ -72,6 +184,82 @@
 
 
     <script>
+        const webcamElement = document.getElementById('webcam');
+        const canvasElement = document.getElementById('canvas');
+        const photoElement = document.getElementById('photo');
+        let pictureDataURL = null; // Store the captured photo
+        const webcam = new Webcam(webcamElement, 'environment', canvasElement);
+
+        function showCameraModal() {
+
+            pictureDataURL = null;
+            photoElement.style.display = 'none'; // Hide previous photo
+            webcamElement.style.display = 'block'; // Show camera
+            document.getElementById('cameraModal').style.display = 'block';
+            document.getElementById('start-camera').style.display = 'inline-block';
+            document.getElementById('capture').style.display = 'none';
+            document.getElementById('retake').style.display = 'none';
+            document.getElementById('upload').style.display = 'none';
+            document.getElementById('cancel').style.display = 'inline-block';
+            $('#cameraModal').fadeIn();
+        }
+
+        function hideCameraModal() {
+            document.getElementById('cameraModal').style.display = 'none';
+            webcam.stop();
+        }
+
+        // Start the camera
+        document.getElementById('start-camera').addEventListener('click', () => {
+
+            navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment'
+                    } // Use the back camera
+                })
+                .then((stream) => {
+                    const video = document.querySelector('video');
+                    video.srcObject = stream;
+                    video.play();
+                });
+
+            webcam.start()
+                .then(() => {
+                    document.getElementById('start-camera').style.display = 'none';
+                    document.getElementById('capture').style.display = 'inline-block';
+                })
+                .catch(err => console.error(err));
+        });
+
+        // Capture photo
+        document.getElementById('capture').addEventListener('click', () => {
+            pictureDataURL = webcam.snap();
+            photoElement.src = pictureDataURL;
+            photoElement.style.display = 'block';
+            webcamElement.style.display = 'none';
+            document.getElementById('capture').style.display = 'none';
+            document.getElementById('retake').style.display = 'inline-block';
+            document.getElementById('upload').style.display = 'inline-block';
+        });
+
+        // Retake photo
+        document.getElementById('retake').addEventListener('click', () => {
+            photoElement.style.display = 'none';
+            webcamElement.style.display = 'block';
+            webcam.start();
+            document.getElementById('capture').style.display = 'inline-block';
+            document.getElementById('retake').style.display = 'none';
+            document.getElementById('upload').style.display = 'none';
+        });
+
+        // Cancel camera modal
+        document.getElementById('cancel').addEventListener('click', () => {
+            hideCameraModal();
+        });
+
+
+
+
         $(document).ready(function() {
             const table = $("#table").DataTable({
                 processing: true,
@@ -156,6 +344,7 @@
 
             $(document).on('click', '.pulloutNumber', function() {
 
+                const userId = {{ Auth::user()->user_type_id }}
                 const id = $(this).data("id");
                 const path = $("#path").val();
 
@@ -180,6 +369,13 @@
                             processing: true,
                             serverSide: false,
                             destroy: true,
+                            "aoColumnDefs": [
+                                {
+                                    "targets": [-1],
+                                    "visible": userId == 4 && path == 'pages/pullout_ongoing',
+                                    "searchable": userId == 4 && path == 'pages/pullout_ongoing'
+                                }
+                            ],
                             ajax: {
                                 type: 'get',
                                 url: '{{ route('ongoing_pullout_request_modal') }}',
@@ -211,9 +407,9 @@
                                 {
                                     data: 'reason'
                                 },
-                                // {
-                                //     data: 'action'
-                                // }
+                                {
+                                    data: 'capture_tool'
+                                }
                             ],
                             drawCallback: function() {
 
@@ -277,7 +473,7 @@
                 })
 
             })
-            
+
             /// old view of tools
             // const modalTable = $("#modalTable").DataTable({
             //     processing: true,
@@ -335,7 +531,7 @@
 
                 const confirm = Swal.mixin({
                     customClass: {
-                        confirmButton: "btn btn-success ms-2",
+                        confirmButton: "btn btn-success me-2",
                         cancelButton: "btn btn-danger"
                     },
                     buttonsStyling: false
@@ -348,7 +544,7 @@
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
                     cancelButtonText: "Back",
-                    reverseButtons: true
+                    reverseButtons: false
                 }).then((result) => {
                     if (result.isConfirmed) {
 
@@ -390,12 +586,22 @@
 
 
             $(document).on('click', '.deliverBtn', function() {
+
+                
+                /// para malaman kung may mga wala pang picture sa ipupullout
+                const isClear = $(this).data('proceed_pullout');
+                
+                if(!isClear){
+                    showToast('warning', 'Please take a photo of all tools to be pulled out.')
+                    return
+                }
+
                 const requestNum = $(this).data('num');
                 const type = $(this).data('type');
 
                 const confirm = Swal.mixin({
                     customClass: {
-                        confirmButton: "btn btn-success ms-2",
+                        confirmButton: "btn btn-success me-2",
                         cancelButton: "btn btn-danger"
                     },
                     buttonsStyling: false
@@ -408,7 +614,7 @@
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
                     cancelButtonText: "Close",
-                    reverseButtons: true
+                    reverseButtons: false
                 }).then((result) => {
                     if (result.isConfirmed) {
 
@@ -441,6 +647,52 @@
             })
 
 
+
+            $(document).on('click', '.pulloutCaptureBtn', function() {
+                const id = $(this).data('pri_id');
+                const pullout_num = $(this).data('number');
+                const type = $(this).data('trtype');
+
+                // Show camera modal
+                showCameraModal();
+
+                // Handle upload click
+                $(document).off('click', '#upload').on('click', '#upload', function() {
+
+                    hideCameraModal();
+
+                    if (!pictureDataURL) {
+                        alert("No photo captured!");
+                        return;
+                    }
+
+                    // Execute AJAX after photo is captured
+                    $.ajax({
+                        url: '{{ route('upload_photo_for_pullout') }}',
+                        method: 'post',
+                        data: {
+                            id,
+                            pullout_num,
+                            type,
+                            photo: pictureDataURL, // Pass photo as base64
+                            _token: '{{ csrf_token() }}',
+                        },
+                        beforeSend() {
+                            $("#loader").show()
+                        },
+                        success(result) {
+                            $("#loader").hide()
+                            showToast("success", "Photo saved");
+                            $("#modalTable").DataTable().ajax.reload();
+                            $("#table").DataTable().ajax.reload();
+                        },
+                        error(err) {
+                            showToast("error",
+                                "An error occurred. Please try again.");
+                        }
+                    });
+                });
+            });
 
         })
     </script>

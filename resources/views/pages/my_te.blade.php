@@ -338,7 +338,7 @@
                         $("#projectName").val(currenSite.project_name)
                         $("#projectCode").val(currenSite.project_code)
 
-                        // $("#pulloutRequestBtn").prop('disabled', true);
+                        $("#pulloutRequestBtn").prop('disabled', true);
                         $("#changeStateBtn").prop('disabled', true);
                     },
                     complete() {

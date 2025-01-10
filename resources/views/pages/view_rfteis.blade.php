@@ -213,12 +213,28 @@
             pointer-events: none;
             cursor: not-allowed;
         }
+
+        .stamp{
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.1;
+            text-transform: uppercase;
+            font-size: 180px;
+            color: #65a30d;
+        }
     </style>
     <div class="page-wrapper">
 
         <div class="page-body">
             <div class="py-3">
-                <div style="width:1000px; height: 1056px;" class="containerPrint containerPrintRfteis px-2 mx-auto">
+                <div style="width:1000px; height: 1056px; position: relative" class="containerPrint containerPrintRfteis px-2 mx-auto">
+                    @if (Auth::user()->user_type_id == 2)   
+                    <div class="stamp">Approved</div>
+                    @endif
                     <div class="actionButtons">
                         <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
                         @if (Auth::user()->user_type_id == 2)
@@ -521,8 +537,7 @@
                         <div style="border-right: 1px solid black; padding-left: 3px; width: 100%;">
                             <h6 style="">Signature</h6>
                             <p style="text-align: center; padding-left: 10px;margin-top: 5px;margin-bottom: 5px;"><span
-                                    class="fw-bold text-secondary" style="font-size: 14px;">No Signature
-                                    Required</span></p>
+                                    class="fw-bold text-secondary" style="font-size: 13px;">No Signature Required as agreed to the System</span></p>
                         </div>
                         <div style=" padding-left: 3px; width: 50%">
                             <h6 style="">Date</h6>

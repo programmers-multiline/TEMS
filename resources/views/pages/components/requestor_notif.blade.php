@@ -102,21 +102,21 @@
               <tr>
                 <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #ffffff; box-sizing: border-box; padding: 24px;" valign="top">
                   <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi, <span style='font-weight: bold'>{{$mail_data['fullname']}}</span></p>
-                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Your request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span> has been approved. Please check the details below.</h4>          
+                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Your request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span> has been approved, and the teis file from SAP has been uploaded. Please check the tools below.</h4>          
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; padding: 20px;">
                       <thead>
                           <tr>
-                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Code</th>
+                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Asset Code</th>
                           <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Descriptiom</th>
-                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Brand</th>
+                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Price</th>
                           </tr>
                       </thead>
                       <tbody>
                           @foreach (json_decode($mail_data['items']) as $tool)
                           <tr>
-                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_code}}</td>
+                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->asset_code}}</td>
                               <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_description}}</td>
-                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->brand}}</td>
+                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->price}}</td>
                           </tr>
                           @endforeach
                       </tbody>
@@ -129,7 +129,7 @@
                           <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                             <tbody>
                               <tr>
-                                <td style="font-family: Helvetica, sans-serif; text-align:center; margin-top: 15px; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; background-color: #0867ec;" valign="top" align="center" bgcolor="#0867ec"> <a href="http://htmlemail.io" target="_blank" style="border: solid 2px #0867ec; border-radius: 4px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize; background-color: #0867ec; border-color: #0867ec; color: #ffffff;">View</a> </td>
+                                <td style="font-family: Helvetica, sans-serif; text-align:center; margin-top: 15px; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; background-color: #0867ec;" valign="top" align="center" bgcolor="#0867ec"> <a href="https://www.tems.multi-linegroupofcompanies.com" target="_blank" style="border: solid 2px #0867ec; border-radius: 4px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize; background-color: #0867ec; border-color: #0867ec; color: #ffffff;">View</a> </td>
                               </tr>
                             </tbody>
                           </table>
@@ -153,12 +153,12 @@
                 <tr>
                   <td class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
                     <span class="apple-link" style="color: #9a9ea6; font-size: 16px; text-align: center;">Multi-Line Corp., Calderon Bldg., 827 EDSA, South Triangle, Quezon City, Philippines</span>
-                    {{-- <br> Don't like these emails? <a href="http://htmlemail.io/blog" style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>. --}}
+                    {{-- <br> Don't like these emails? <a href="https://www.tems.multi-linegroupofcompanies.com/blog" style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>. --}}
                   </td>
                 </tr>
                 <tr>
                   <td class="content-block powered-by" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
-                    <a href="http://127.0.0.1:8000/" style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">https://www.tems.multi-linegroupofcompanies.com/</a>
+                    <a href="https://www.tems.multi-linegroupofcompanies.com/" style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">https://www.tems.multi-linegroupofcompanies.com/</a>
                   </td>
                 </tr>
               </table>

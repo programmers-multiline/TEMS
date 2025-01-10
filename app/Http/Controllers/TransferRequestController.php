@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PulloutLogs;
 use Mail;
 use Carbon\Carbon;
 use App\Models\Daf;
@@ -14,6 +13,7 @@ use App\Models\RttteLogs;
 use App\Models\Warehouse;
 use App\Models\RfteisLogs;
 use App\Mail\ApproverEmail;
+use App\Models\PulloutLogs;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Support\Str;
@@ -22,6 +22,7 @@ use App\Mail\EmailRequestor;
 use App\Models\ProjectSites;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
+use App\Mail\RemoveToolNotif;
 use App\Models\PulloutRequest;
 use App\Models\ReceivingProof;
 use App\Models\RequestApprover;
@@ -30,6 +31,7 @@ use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PsTransferRequests;
+use Illuminate\Support\Facades\DB;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\WarehouseDocsClerkNotif;
@@ -47,24 +49,43 @@ class TransferRequestController extends Controller
 
         $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
             ->where('status', 1)
-            ->where('progress', 'ongoing')
+            ->where(function($query) {
+                $query->where('progress', 'ongoing')
+                    ->orWhere('progress', 'partial');
+            })
             ->where('pe', Auth::user()->id);
 
         $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress')
             ->where('status', 1)
-            ->where('progress', 'ongoing')
+            ->where(function($query) {
+                $query->where('progress', 'ongoing')
+                    ->orWhere('progress', 'partial');
+            })
             ->where('user_id', Auth::user()->id);
 
 
         if ($request->path == 'pages/request_for_receiving') {
-            $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
-                ->where('status', 1)
+            $request_tools = TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                ->select('transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+                ->where('transfer_requests.status', 1)
+                ->where('transfer_request_items.status', 1)
+                ->whereNull('transfer_request_items.is_remove')
                 ->where(function($query) {
                     $query->where('progress', 'ongoing')
                         ->orWhere('progress', 'partial');
                 })
-                ->where('pe', Auth::user()->id)
-                ->whereNotNull('is_deliver');
+                ->where('transfer_requests.pe', Auth::user()->id)
+                ->whereNotNull('is_deliver')
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('transfer_request_items')
+                        ->whereColumn('transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                        ->whereNull('transfer_request_items.is_remove')
+                        ->where('transfer_request_items.item_status', 0);
+                });
+
+                // dd($request_tools->toSql(), $request_tools->getBindings());
+
 
             $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
                 ->where('status', 1)
@@ -156,7 +177,7 @@ class TransferRequestController extends Controller
                         $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                         <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                         $item['uploads']['name'] . '">
-                        <span>TERS.pdf</span>
+                        <span>'.$item['teis'].'.pdf</span>
                         </a>
                     </div>';
 
@@ -279,7 +300,7 @@ class TransferRequestController extends Controller
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                     $item['uploads']['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -379,7 +400,7 @@ class TransferRequestController extends Controller
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                     $item['uploads']['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -442,7 +463,7 @@ class TransferRequestController extends Controller
                 }else{
                     $tools = TransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'transfer_request_items.tool_id')
                     ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
-                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.remove_remarks', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
+                    ->select('tools_and_equipment.*', 'tools_and_equipment.price', 'transfer_request_items.not_serve_date', 'transfer_request_items.not_serve_remark', 'transfer_request_items.transfer_state', 'transfer_request_items.is_remove', 'transfer_request_items.remove_by', 'transfer_request_items.remove_remarks', 'transfer_request_items.tool_id', 'warehouses.warehouse_name', 'transfer_request_items.id as tri_id', 'transfer_request_items.teis_number as r_number', 'transfer_request_items.item_status')
                     ->where('transfer_request_items.status', 1)
                     ->whereNull('transfer_request_items.is_remove')
                     ->where('transfer_request_items.teis_number', $request->id)
@@ -639,7 +660,12 @@ class TransferRequestController extends Controller
                 if ($status == 1) {
                     $status = '<div class="text-center"><span class="badge bg-success text-center">Served</span></div>';
                 } else if ($status == 2) {
-                    $status ='<div class="text-center"><span class="badge bg-danger">Not Served</span></div>';
+                    $carbonDate = Carbon::parse($row->not_serve_date); 
+                    $not_serve_date = $carbonDate->toDayDateTimeString();
+
+                    $status = '<div class="text-center"><span class="badge bg-danger popoverInWh" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$not_serve_date.'" data-bs-content="'.$row->not_serve_remark.'">Not serve</span></div>';
+
+                    // $status ='<div class="text-center"><span class="badge bg-danger popoverInWh">Not Served</span></div>';
                 } else {
                     $status = '<div class="text-center"><span class="badge bg-warning">Waiting</span></div>';
                 }
@@ -753,7 +779,7 @@ class TransferRequestController extends Controller
                         
                         $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                             <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="'.asset('uploads/ters_form') . '/' .$item['uploads']['name'].'">
-                            <span>TERS.pdf</span>
+                            <span>'.$item['teis'].'.pdf</span>
                             </a>
                         </div>';
                         
@@ -793,9 +819,9 @@ class TransferRequestController extends Controller
                     $action = '
                             <div class="d-flex gap-2 align-items-center justify-content-center">
                                 <button ' . $have_teis . ' data-pe="'.$row->pe.'" data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TEIS</span></button>
-                                <button ' . $have_teis2 . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="deliverBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
-                            </div>
-                            ';
+                                </div>
+                                ';
+                                // <button ' . $have_teis2 . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="deliverBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 } else {
                     // kunin lahat ng tool id na nakapaloob dito sa request na ito. para sa pe_logs
                     $ps_tool_ids = PsTransferRequestItems::where('status', 1)->whereNull('is_remove')->where('request_number', $row->teis_number)->pluck('tool_id')->toArray();
@@ -823,8 +849,8 @@ class TransferRequestController extends Controller
                     $action = '<div class="d-flex gap-2">
                     <button ' . $have_ters . ' data-prevreqnum="'.$prev_request_number.'" data-prevpe="'.$row->current_pe.'" data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
                     <button ' . $have_teis . ' '.$have_ters2.' data-pe="'.$row->pe.'" data-type="' . $row->tr_type . '" data-num="' . $row->teis_number . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
-                    <button ' . $have_ters2 . ' '.$have_teis2.' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                     </div>';
+                    ///<button ' . $have_ters2 . ' '.$have_teis2.' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                     }
                     /// for proof of receiving in warehouse
                     if($request->path == 'pages/rftte_signed_form_proof'){
@@ -886,7 +912,7 @@ class TransferRequestController extends Controller
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                     $item['uploads']['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -1001,7 +1027,7 @@ class TransferRequestController extends Controller
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                     $item['uploads']['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -1131,17 +1157,28 @@ class TransferRequestController extends Controller
                     // }
                     // return $current_approvers;
                 } elseif($approver->sequence == 4){
-                    $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-                    ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-                    ->where('transfer_requests.status', 1)
-                    ->where('request_approvers.status', 1)
-                    ->where('approver_id', Auth::user()->id)
-                    ->where('approver_status', 0)
-                    ->where('request_type', 1)
-                    ->where('request_approvers.id', $approver->id)
-                    ->where('for_pricing', '2')
-                    ->whereNot('transfer_requests.request_status', 'disapproved')
-                    ->get();
+
+                    $prev_sequence = $approver->sequence - 1;
+
+                    $prev_approver = RequestApprover::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
+                        ->where('request_type', 1)
+                        ->first();
+
+                    if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers = RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                        ->where('transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 1)
+                        ->where('request_approvers.id', $approver->id)
+                        ->where('for_pricing', '2')
+                        ->whereNot('transfer_requests.request_status', 'disapproved')
+                        ->get();
+                    }  
                 } else {
                     $prev_sequence = $approver->sequence - 1;
 
@@ -1380,16 +1417,16 @@ class TransferRequestController extends Controller
                 ->get();
 
             foreach ($tools_approved as $tool) {
-                array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+                array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
             }
 
             $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->first();
 
 
-            $mail_data = ['fullname' => $user->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
+            // $mail_data = ['fullname' => $user->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
             $mail_data_wh = ['fullname' => $docs_clerk->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
 
-            Mail::to($user->email)->send(new EmailRequestor($mail_data));
+            // Mail::to($user->email)->cc([])->send(new EmailRequestor($mail_data));
             Mail::to($docs_clerk->email)->send(new WarehouseDocsClerkNotif($mail_data_wh));
 
 
@@ -1411,7 +1448,7 @@ class TransferRequestController extends Controller
                 $items = ToolsAndEquipment::where('status', 1)->whereIn('id', $request->toolId)->get();
         
                 foreach ($items as $tool) {
-                    array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+                    array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
                 }
 
             if($nextSec != 4){
@@ -1905,6 +1942,8 @@ class TransferRequestController extends Controller
                 $scannedTools = TransferRequestItems::find($request->id);
 
                 $scannedTools->item_status = 2;
+                $scannedTools->not_serve_remark = $request->remarks;
+                $scannedTools->not_serve_date = Carbon::now();
                 $scannedTools->transfer_state = 0;
 
                 $scannedTools->update();
@@ -2127,7 +2166,7 @@ class TransferRequestController extends Controller
                 ->get();
 
             foreach ($tools_approved as $tool) {
-                array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+                array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
             }
 
 
@@ -2405,7 +2444,7 @@ class TransferRequestController extends Controller
                 ->get();
 
             foreach ($tools_approved as $tool) {
-                array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+                array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
             }
 
 
@@ -2593,6 +2632,8 @@ class TransferRequestController extends Controller
                     $icon = 'fa-file-circle-check bg-primary';
                 }elseif($tool_request->action == 6){
                     $icon = 'fa-file-circle-xmark bg-danger';
+                }elseif($tool_request->action == 99){
+                    $icon = 'fa-camera bg-warning';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }
@@ -2868,7 +2909,7 @@ class TransferRequestController extends Controller
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                 <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                 $item['uploads']['name'] . '">
-                <span>TERS.pdf</span>
+                <span>'.$item['teis'].'.pdf</span>
                 </a>
             </div>';
 
@@ -2953,7 +2994,7 @@ class TransferRequestController extends Controller
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                 <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' .
                 $item['uploads']['name'] . '">
-                <span>TERS.pdf</span>
+                <span>'.$item['teis'].'.pdf</span>
                 </a>
             </div>';
 
@@ -3082,7 +3123,7 @@ class TransferRequestController extends Controller
         $mail_Items = [];
 
         foreach ($tools_approved as $tool) {
-            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+            array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
         }
 
 
@@ -3216,7 +3257,16 @@ class TransferRequestController extends Controller
 
         $tool->update();
 
-        $tool_name = ToolsAndEquipment::where('status', 1)->where('id', $tool->tool_id)->value('item_description');
+        $tool_info = ToolsAndEquipment::where('status', 1)->where('id', $tool->tool_id)->first();
+
+
+        $email_info = User::select('fullname', 'email')->where('status', 1)->where('id', $tool->pe)->first();
+
+        $mail_Item[] = ['asset_code' => $tool_info['asset_code'], 'item_description' => $tool_info['item_description'], 'price' => $tool_info['price']];
+
+        $mail_data = ['fullname' => $email_info->fullname, 'request_number' => $tool->teis_number, 'remarks' => $request->remarks, 'remove_by' => Auth::user()->fullname,  'items' => json_encode($mail_Item)];
+
+        Mail::to($email_info->email)->send(new RemoveToolNotif($mail_data));
 
         /// for logs
         RfteisLogs::create([
@@ -3224,7 +3274,7 @@ class TransferRequestController extends Controller
             'page' => 'rfteis',
             'request_number' => $request->number,
             'title' => 'Remove Tool',
-            'message' => Auth::user()->fullname .' '. 'removed ' . $tool_name,
+            'message' => Auth::user()->fullname .' '. 'removed ' . $tool_info->item_description,
             'action' => 2,
         ]);
 

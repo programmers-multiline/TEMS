@@ -67,7 +67,11 @@ $("#formRequest").on("submit", function (e) {
         contentType: false,
         cache: false,
         data: form_data,
+        beforeSend(){
+            $("#loader").show()
+        },
         success: function (response) {
+            $("#loader").hide()
             $("#createTeis").modal("hide");
             table.ajax.reload();
             showToast("success", "TEIS Uploaded");
@@ -187,8 +191,15 @@ $("#uploadTersForm").on("submit", function (e) {
 
     pondters = tersFormPond.getFiles();
 
+    const pulloutNumber = $('#inputedTersNum').val();
+
+    if(!pulloutNumber){
+        showToast("warning", "Please input TERS Number");
+        return
+    }
+
     if(!pondters[0]){
-        showToast("warning", "Select ters file first");
+        showToast("warning", "Select TERS file first");
         return
     }
 
@@ -205,7 +216,11 @@ $("#uploadTersForm").on("submit", function (e) {
         contentType: false,
         cache: false,
         data: form_data,
+        beforeSend(){
+            $("#loader").show()
+        },
         success: function (response) {
+            $("#loader").hide()
             $("#uploadTers").modal("hide");
             table.ajax.reload();
             showToast("success", "TERS Uploaded");

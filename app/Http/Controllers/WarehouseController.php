@@ -364,7 +364,7 @@ class WarehouseController extends Controller
         // $tools = ToolsAndEquipment::where('status', 1)->whereIn('id', $array_id)->get();
 
         // foreach ($tools as $tool) {
-        //     array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+        //     array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
         // }
 
 
@@ -389,7 +389,7 @@ class WarehouseController extends Controller
         $tools = ToolsAndEquipment::where('status', 1)->whereIn('id', $array_id)->get();
 
         foreach ($tools as $tool) {
-            array_push($mail_Items, ['item_code' => $tool->item_code, 'item_description' => $tool->item_description, 'brand' => $tool->brand]);
+            array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
         }
 
         $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];

@@ -81,17 +81,17 @@
                                         <table style="width: 100%; border-collapse: collapse; margin-top: 20px; ">
                                             <thead>
                                                 <tr>
-                                                <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Code</th>
+                                                <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Asset Code</th>
                                                 <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Descriptiom</th>
-                                                <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Brand</th>
+                                                <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Price</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach (json_decode($mail_data['items']) as $tool)
                                                 <tr>
-                                                    <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_code}}</td>
+                                                    <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->asset_code}}</td>
                                                     <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_description}}</td>
-                                                    <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->brand}}</td>
+                                                    <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->price}}</td>
                                                 </tr>
                                                 @endforeach
                                             </tbody>

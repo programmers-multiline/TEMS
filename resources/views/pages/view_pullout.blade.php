@@ -327,6 +327,13 @@
                             <th class=""
                                 style="border-bottom: none; position: relative; width: 13%; font-size: 12px">
                                 <span class="th-absolute">REASON FOR TRANSFER</span></th>
+
+                            @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
+                                <th class=""
+                                style="border-bottom: none; position: relative; width: 10%; font-size: 12px">
+                                <span class="th-absolute">Tool Photo</span></th>
+                            @endif
+
                             @if ($path == 'pages/pullout_for_receiving')
                             <th class=""
                                 style="border-bottom: none; position: relative; width: 13%; font-size: 12px">
@@ -354,6 +361,9 @@
                             <th>FOR KILO/ DISPOSAL</th>
                             <th>OTHERS</th> --}}
                             <th></th>
+                            @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
+                            <th></th>
+                            @endif
                             @if ($path == 'pages/pullout_for_receiving')
                             <th></th>
                             <th></th>

@@ -129,7 +129,7 @@
                           <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
                             <tbody>
                               <tr>
-                                <td style="font-family: Helvetica, sans-serif; text-align:center; margin-top: 15px; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; background-color: #0867ec;" valign="top" align="center" bgcolor="#0867ec"> <a href="http://htmlemail.io" target="_blank" style="border: solid 2px #0867ec; border-radius: 4px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize; background-color: #0867ec; border-color: #0867ec; color: #ffffff;">View</a> </td>
+                                <td style="font-family: Helvetica, sans-serif; text-align:center; margin-top: 15px; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; background-color: #0867ec;" valign="top" align="center" bgcolor="#0867ec"> <a href="https://www.tems.multi-linegroupofcompanies.com" target="_blank" style="border: solid 2px #0867ec; border-radius: 4px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 16px; font-weight: bold; margin: 0; padding: 12px 24px; text-decoration: none; text-transform: capitalize; background-color: #0867ec; border-color: #0867ec; color: #ffffff;">View</a> </td>
                               </tr>
                             </tbody>
                           </table>
@@ -153,12 +153,12 @@
                 <tr>
                   <td class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
                     <span class="apple-link" style="color: #9a9ea6; font-size: 16px; text-align: center;">Multi-Line Corp., Calderon Bldg., 827 EDSA, South Triangle, Quezon City, Philippines</span>
-                    {{-- <br> Don't like these emails? <a href="http://htmlemail.io/blog" style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>. --}}
+                    {{-- <br> Don't like these emails? <a href="https://www.tems.multi-linegroupofcompanies.com/blog" style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>. --}}
                   </td>
                 </tr>
                 <tr>
                   <td class="content-block powered-by" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
-                    <a href="http://127.0.0.1:8000/" style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">https://www.tems.multi-linegroupofcompanies.com/</a>
+                    <a href="https://www.tems.multi-linegroupofcompanies.com/" style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">https://www.tems.multi-linegroupofcompanies.com/</a>
                   </td>
                 </tr>
               </table>

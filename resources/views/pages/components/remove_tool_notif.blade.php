@@ -102,7 +102,8 @@
               <tr>
                 <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #ffffff; box-sizing: border-box; padding: 24px;" valign="top">
                   <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi, <span style='font-weight: bold'>{{$mail_data['fullname']}}</span></p>
-                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">The request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span> has been approved. Please upload the TEIS form at your earliest convenience.</h4>          
+                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;"><b>{{$mail_data['remove_by']}}</b> removed an item from your request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span>.</p>
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-top: 20px; margin-bottom: 10px;"><b>Remarks: </b>{{{$mail_data['remarks']}}}.</p>        
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; padding: 20px;">
                       <thead>
                           <tr>

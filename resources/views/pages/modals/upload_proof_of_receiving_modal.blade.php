@@ -20,7 +20,7 @@
                         <div class="block block-rounded">
                             <div class="block-content">
                                 <input type="file" class="proofUpload" multiple
-                                    data-allow-reorder="true" data-max-file-size="10MB" data-max-files="3">
+                                    data-allow-reorder="true" data-max-file-size="10MB" data-max-files="1">
 
 
                             </div>

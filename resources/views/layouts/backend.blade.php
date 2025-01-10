@@ -45,17 +45,28 @@
                     // }
                     // return $current_approvers;
                 } elseif($approver->sequence == 4){
-                    $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
-                    ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
-                    ->where('transfer_requests.status', 1)
-                    ->where('request_approvers.status', 1)
-                    ->where('approver_id', Auth::user()->id)
-                    ->where('approver_status', 0)
-                    ->where('request_type', 1)
-                    ->where('request_approvers.id', $approver->id)
-                    ->where('for_pricing', '2')
-                    ->whereNot('transfer_requests.request_status', 'disapproved')
-                    ->get();
+
+                    $prev_sequence = $approver->sequence - 1;
+
+                    $prev_approver = App\Models\RequestApprover::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
+                        ->where('request_type', 1)
+                        ->first();
+
+                    if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                        ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                        ->where('transfer_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 1)
+                        ->where('request_approvers.id', $approver->id)
+                        ->where('for_pricing', '2')
+                        ->whereNot('transfer_requests.request_status', 'disapproved')
+                        ->get();
+                    }
                 } else {
                     $prev_sequence = $approver->sequence - 1;
 
@@ -309,15 +320,33 @@
 
 
     //My TEIS Request - for receiving
-    
-    $request_tools_for_receiving =  App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
-        ->where('status', 1)
+    $request_tools_for_receiving = App\Models\TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+        ->select('transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+        ->where('transfer_requests.status', 1)
+        ->where('transfer_request_items.status', 1)
+        ->whereNull('transfer_request_items.is_remove')
         ->where(function($query) {
             $query->where('progress', 'ongoing')
                 ->orWhere('progress', 'partial');
         })
-        ->where('pe', Auth::user()->id)
-        ->whereNotNull('is_deliver');
+        ->where('transfer_requests.pe', Auth::user()->id)
+        ->whereNotNull('is_deliver')
+        ->whereExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('transfer_request_items')
+                ->whereColumn('transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                ->whereNull('transfer_request_items.is_remove')
+                ->where('transfer_request_items.item_status', 0);
+        });
+    
+    // $request_tools_for_receiving =  App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+    //     ->where('status', 1)
+    //     ->where(function($query) {
+    //         $query->where('progress', 'ongoing')
+    //             ->orWhere('progress', 'partial');
+    //     })
+    //     ->where('pe', Auth::user()->id)
+    //     ->whereNotNull('is_deliver');
 
     $ps_request_tools_for_receiving =  App\Models\PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
         ->where('status', 1)
@@ -1385,7 +1414,7 @@
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
                     cancelButtonText: "Back",
-                    reverseButtons: true
+                    reverseButtons: false
                 }).then((result) => {
                     if (result.isConfirmed) {
                         dialogConfirm.fire({

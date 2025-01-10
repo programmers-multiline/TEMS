@@ -738,7 +738,7 @@
 
                 const confirm = Swal.mixin({
                     customClass: {
-                        confirmButton: "btn btn-success ms-2",
+                        confirmButton: "btn btn-success me-2",
                         cancelButton: "btn btn-danger"
                     },
                     buttonsStyling: false
@@ -751,7 +751,7 @@
                     showCancelButton: true,
                     confirmButtonText: "Yes!",
                     cancelButtonText: "Back",
-                    reverseButtons: true
+                    reverseButtons: false
                 }).then((result) => {
                     if (result.isConfirmed) {
 
@@ -824,7 +824,7 @@
             //         showCancelButton: true,
             //         confirmButtonText: "Yes!",
             //         cancelButtonText: "Back",
-            //         reverseButtons: true
+            //         reverseButtons: false
             //     }).then((result) => {
             //         if (result.isConfirmed) {
 
@@ -864,9 +864,11 @@
                 const teis_num = $(this).data('number');
                 const type = $(this).data('trtype');
 
+                $('#ongoingTeisRequestModal').modal('hide');
+
                 const confirm = Swal.mixin({
                     customClass: {
-                        confirmButton: "btn btn-success ms-2",
+                        confirmButton: "btn btn-success me-2",
                         cancelButton: "btn btn-danger"
                     },
                     buttonsStyling: false
@@ -874,14 +876,22 @@
 
                 confirm.fire({
                     title: "Not Serve?",
-                    text: "Are you sure this tool is not serve?",
+                    text: "Please provide a reason.",
                     icon: "warning",
+                    input: 'textarea',
+                    inputPlaceholder: 'Enter your remarks here...',
+                    inputValidator: (value) => {
+                        if (!value.trim()) {
+                            return 'Remarks are required!';
+                        }
+                    },
                     showCancelButton: true,
-                    confirmButtonText: "Yes!",
+                    confirmButtonText: "Submit",
                     cancelButtonText: "Back",
-                    reverseButtons: true
+                    reverseButtons: false
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        const remarks = result.value;
 
                         $.ajax({
                             url: '{{ route('teis_not_received') }}',
@@ -890,13 +900,22 @@
                                 id,
                                 teis_num,
                                 type,
+                                remarks,
                                 _token: '{{ csrf_token() }}',
                             },
                             success(result) {
                                 showToast("success",
                                     "Tool not Received");
                                 $("#modalTable").DataTable().ajax.reload();
+                                $("#table").DataTable().ajax.reload();
 
+                            },
+                            error() {
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "An error occurred while processing your request.",
+                                    icon: "error"
+                                });
                             }
                         })
 
@@ -906,6 +925,9 @@
                     ) {
 
                     }
+                }).finally(() => {
+                    // $('#ongoingTeisRequestModal').modal('show'); // Reopen modal
+                    $(".teisNumber").click();
                 });
 
 

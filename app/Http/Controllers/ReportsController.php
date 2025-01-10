@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TeisUploads;
 use Carbon\Carbon;
 use App\Models\PeLogs;
 use App\Models\Uploads;
+use App\Models\TeisUploads;
+use App\Models\TersUploads;
 use Illuminate\Http\Request;
 use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
@@ -93,9 +94,10 @@ class ReportsController extends Controller
                 
                 if($row->ters_upload_id){
                     $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
+                    $teis_num = TersUploads::where('status', 1)->where('upload_id', $row->ters_upload_id)->value('teis');
                     return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$teis_num.'.pdf</span>
                     </a>
                 </div></div>';
                 }else{

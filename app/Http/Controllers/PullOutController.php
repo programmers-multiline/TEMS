@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ToolPictureForPullout;
 use DateTime;
 use Carbon\Carbon;
 use App\Models\User;
@@ -108,9 +109,9 @@ class PullOutController extends Controller
 
             ->addColumn('action', function ($row) {
 
-                $tool = PulloutRequest::where('status', 1)
-                    ->where('pullout_requests.request_status', 'approved')
-                    ->get();
+                // $tool = PulloutRequest::where('status', 1)
+                //     ->where('pullout_requests.request_status', 'approved')
+                //     ->get();
 
                 // $isApproved = $row->request_status == 'approved' ? 'disabled' : '';
     
@@ -119,9 +120,20 @@ class PullOutController extends Controller
                 $have_sched = $row->approved_sched_date ? '' : 'disabled';
                 $have_sched2 = $row->is_deliver ? 'd-none' : 'd-block';
                 if ($user_type == 4) {
+
+                    $pri_ids = PulloutRequestItems::where('status', 1)->where('pullout_request_id', $row->id)->pluck('id')->toArray();
+
+                    $all_has_pic = ToolPictureForPullout::where('status', 1)->whereIn('pullout_item_id', $pri_ids)->count() == count($pri_ids);
+
+                    if ($all_has_pic) {
+                        $atr = 'data-proceed_pullout="1"';
+                    } else {
+                        $atr = 'data-proceed_pullout="0"';
+                    }
+
                     $action = '<div class="d-flex gap-2">
                 <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
-                <button ' . $have_sched . ' data-num="' . $row->pullout_number . '" data-type="' . $row->tr_type . '" type="button" class="deliverBtn ' . $have_sched2 . ' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
+                <button ' . $have_sched . ' data-num="' . $row->pullout_number . '" data-type="' . $row->tr_type . '" '.$atr.' type="button" class="deliverBtn ' . $have_sched2 . ' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                 </div>';
                 } else if ($user_type == 3 || $user_type == 5) {
                 //     $action = '<div class="d-flex">
@@ -131,6 +143,9 @@ class PullOutController extends Controller
                 };
                 return $action;
             })
+            
+
+            
 
             // ->setRowClass(function ($row) { 
             //     $tool = PulloutRequest::where('status', 1)->get();
@@ -299,7 +314,42 @@ class PullOutController extends Controller
                 }
             })
 
-            ->rawColumns(['tools_status', 'action', 'new_tools_status', 'new_tools_status_defective', 'checker', 'wh_eval', 'item_no'])
+
+            ->addColumn('capture_tool', function ($row) use ($request) {
+                if ($request->path == "pages/pullout_ongoing") {
+
+                    $picture = ToolPictureForPullout::leftjoin('uploads', 'uploads.id', 'upload_id')
+                        ->select('uploads.name', 'uploads.original_name')
+                        ->where('tool_picture_for_pullouts.status', 1)
+                        ->where('pullout_item_id', $row->pri_id)
+                        ->orderBy('tool_picture_for_pullouts.created_at', 'desc')
+                        ->first();
+
+                        if($picture){
+                            $uploads_file =
+                                '<div class="d-flex justify-content-center align-items-center">
+                                <div class="animated fadeIn pictureContainer">
+                                    <a target="_blank" class="img-link-zoom-in" href="' . asset('uploads/tool_picture_for_pullout') . '/' . $picture->name . '">
+                                    <span>'.$picture->original_name.'</span>
+                                    </a>
+                                </div>
+                            </div>';
+                        } else {
+                            if (Auth::user()->user_type_id == 4 && $request->path == 'pages/pullout_ongoing') {
+                                $uploads_file = '<div class="d-flex gap-2 justify-content-center align-items-center">
+                            <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" type="button" class="pulloutCaptureBtn noPicture btn btn-sm btn-alt-info" data-bs-toggle="tooltip" aria-label="Capture Pullout Tool" data-bs-original-title="Capture Pullout Tool"><i class="fa fa-camera"></i></button>
+                            </div>';
+                            } else {
+                                $uploads_file = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                            }
+                        }
+
+                    return $uploads_file;
+                }
+            })
+
+
+            ->rawColumns(['tools_status', 'action', 'new_tools_status', 'new_tools_status_defective', 'checker', 'wh_eval', 'item_no', 'capture_tool'])
             ->toJson();
     }
 
@@ -493,7 +543,7 @@ class PullOutController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $item['uploads']['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 
@@ -601,7 +651,7 @@ class PullOutController extends Controller
 
                     $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $item['uploads']['name'] . '">
-                    <span>TERS.pdf</span>
+                    <span>'.$item['teis'].'.pdf</span>
                     </a>
                 </div>';
 

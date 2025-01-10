@@ -652,7 +652,7 @@
                         showCancelButton: true,
                         confirmButtonText: "Yes!",
                         cancelButtonText: "Back",
-                        reverseButtons: true
+                        reverseButtons: false
                     }).then((result) => {
                         if (result.isConfirmed) {
 
@@ -744,7 +744,7 @@
                         showCancelButton: true,
                         confirmButtonText: "Yes!",
                         cancelButtonText: "Back",
-                        reverseButtons: true
+                        reverseButtons: false
                     }).then((result) => {
                         if (result.isConfirmed) {
 
