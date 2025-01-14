@@ -179,7 +179,7 @@ class PullOutController extends Controller
             $tools = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
                 ->leftjoin('warehouses', 'warehouses.id', 'tools_and_equipment.location')
                 ->leftJoin('pullout_requests', 'pullout_requests.id', 'pullout_request_items.pullout_request_id')
-                ->select('tools_and_equipment.*', 'pullout_requests.reason', 'pullout_requests.pullout_number', 'pullout_request_items.tool_id', 'pullout_request_items.teis_no_dr_ar', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.wh_tool_eval', 'pullout_request_items.checker', 'pullout_request_items.id as pri_id', 'pullout_request_items.item_status')
+                ->select('tools_and_equipment.*', 'pullout_requests.reason', 'pullout_requests.request_status', 'pullout_requests.pullout_number', 'pullout_request_items.tool_id', 'pullout_request_items.teis_no_dr_ar', 'warehouses.warehouse_name', 'pullout_request_items.tools_status as tool_status_eval', 'pullout_request_items.wh_tool_eval', 'pullout_request_items.checker', 'pullout_request_items.id as pri_id', 'pullout_request_items.item_status')
                 ->where('pullout_request_items.status', 1)
                 ->where('pullout_requests.status', 1)
                 ->where('tools_and_equipment.status', 1)
@@ -335,7 +335,7 @@ class PullOutController extends Controller
                                 </div>
                             </div>';
                         } else {
-                            if (Auth::user()->user_type_id == 4 && $request->path == 'pages/pullout_ongoing') {
+                            if (Auth::user()->user_type_id == 4 && $request->path == 'pages/pullout_ongoing' && $row->request_status == 'approved') {
                                 $uploads_file = '<div class="d-flex gap-2 justify-content-center align-items-center">
                             <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" type="button" class="pulloutCaptureBtn noPicture btn btn-sm btn-alt-info" data-bs-toggle="tooltip" aria-label="Capture Pullout Tool" data-bs-original-title="Capture Pullout Tool"><i class="fa fa-camera"></i></button>
                             </div>';

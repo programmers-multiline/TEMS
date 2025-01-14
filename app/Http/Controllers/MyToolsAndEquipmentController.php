@@ -379,7 +379,7 @@ class MyToolsAndEquipmentController extends Controller
         $approvers = RequestApprover::leftjoin('users', 'users.id', 'request_approvers.approver_id')
         ->select('request_approvers.*', 'users.fullname', 'users.email')
         ->where('request_approvers.status', 1)->where('request_type', 3)
-        ->where('request_approvers.request_id', 5)
+        ->where('request_approvers.request_id', $last)
         ->orderBy('request_approvers.sequence', 'asc')
         ->get();
 
@@ -391,10 +391,9 @@ class MyToolsAndEquipmentController extends Controller
         }
         
         
-        
         foreach ($approvers as $approver) {
             $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
-        
+            
             Mail::to($approver->email)->queue(new ApproverEmail($mail_data));
         }
 

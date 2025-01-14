@@ -446,7 +446,7 @@ class ProjectSiteController extends Controller
                 }
             })
 
-            ->rawColumns(['view_tools', 'action', 'uploads', 'submit'])
+            ->rawColumns(['view_tools', 'action', 'uploads', 'submit', 'subcon'])
             ->toJson();
     }
 

@@ -319,8 +319,13 @@
                 const prevReqNum = $("#tbodyModal .prevReqNum").val();
 
 
-                if(!projectName){
+                if(!projectName || !reason.trim()){
                     showToast('warning','Fill up all fields!');
+                    return;
+                }
+
+                if($("#tbodyModal").children().length === 0){
+                    showToast('error','No selected Item/s!');
                     return;
                 }
 

@@ -639,7 +639,7 @@
 
                     const confirm = Swal.mixin({
                         customClass: {
-                            confirmButton: "btn btn-success ms-2",
+                            confirmButton: "btn btn-success me-2",
                             cancelButton: "btn btn-danger"
                         },
                         buttonsStyling: false

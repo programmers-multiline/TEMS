@@ -19,6 +19,8 @@
                     <div class="block-content fs-sm">
                         <div class="block block-rounded">
                             <div class="block-content">
+                                <label class="form-label d-block text-center" for="inputedTersNum">SAP GENERATED TERS NUMBER</label>
+                                <input class="form-control w-50 mx-auto mb-4" type="number" id="psInputedTersNum" name="psInputedTersNum">
                                 <input type="file" id="ps-ters-fileupload" multiple
                                     data-allow-reorder="true" data-max-file-size="10MB" data-max-files="1" accept="application/pdf">
 

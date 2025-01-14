@@ -316,18 +316,20 @@
             //         }
             //     });
             // })
-
+            let suppressBlur = false;
 
             $(document).on('dblclick', '.toolPrice', function () {
                 let currentValue = $(this).text().trim();
                 let id = $(this).data('id');
                 let reqnum = $(this).data('reqnum');
 
+                let cton = parseFloat(currentValue.replace(/[₱,]/g, ''));
+
                 // Replace span with an input
                 let input = $('<input>', {
                     type: 'text',
                     class: 'price-input form-control',
-                    value: currentValue,
+                    value: cton,
                     'data-id': id,
                     'data-reqnum': reqnum,
                     css: {
@@ -364,29 +366,34 @@
              // On Enter, save the new price
             $(document).on('keypress', '.price-input', function (e) {
                 if (e.which == 13) { // Enter key
-                    let newPrice = $(this).val().trim();
-                    let id = $(this).data('id'); // Get the item's ID
-                    let reqnum = $(this).data('reqnum');
+                    let $input = $(this);
+                    let newPrice = $input.val().trim();
+                    let id = $input.data('id');
+                    let reqnum = $input.data('reqnum');
+
                     // Basic validation
                     if (isNaN(newPrice) || newPrice <= 0) {
                         alert('Please enter a valid price.');
                         return;
                     }
 
-                    // $.ajax({
-                    //     url: '{{ route('add_price_acc') }}',
-                    //     method: 'post',
-                    //     data: {
-                    //         type,
-                    //         priceDatas: stringData,
-                    //         _token: "{{ csrf_token() }}"
-                    //     },
-                    //     success() {
-                    //         showToast("success", "Price Added!");
-                    //         $("#ongoingTeisRequestModal").modal('hide')
-                    //         $("#table").DataTable().ajax.reload();
-                    //     }
-                    // })
+                    suppressBlur = true; // Suppress blur since we're handling the change here
+
+                    // Format the price
+                    let formattedPrice = new Intl.NumberFormat('en-PH', {
+                        style: 'currency',
+                        currency: 'PHP'
+                    }).format(newPrice);
+
+                    // Replace input with span
+                    let span = $('<span>', {
+                        class: 'toolPrice',
+                        'data-id': id,
+                        'data-reqnum': reqnum,
+                        text: formattedPrice
+                    });
+
+                    $input.replaceWith(span);
 
                     const type = 'rttte';
 
@@ -402,16 +409,34 @@
                             type
                         },
                         success: function (response) {
-                            // Replace input back with span
-                            let span = $('<span>', {
-                                class: 'toolPrice',
-                                'data-id': id,
-                                'data-reqnum': reqnum,
-                                text: newPrice
+                            showToast("success", "Price updated!");
+                            $('#psOngoingTeisRequestModal').modal('show')
+                            let totalAmount = 0; 
+                            $('.toolPrice').each(function() { 
+
+                                let price = Number(parseFloat($(this).text().replace(/[₱,]/g, '')))
+
+                                totalAmount += price
                             });
 
-                            showToast("success", "Price updated!");
-                            $(e.target).replaceWith(span);
+
+                            const amountInWord = numberstowords.toInternationalWords(totalAmount, {
+                                    integerOnly: false, 
+                                    useCurrency: true,
+                                    majorCurrencySymbol: 'pesos',
+                                    minorCurrencySymbol: 'centavos',
+                                    majorCurrencyAtEnd: true,
+                                    minorCurrencyAtEnd: true,
+                                    // useOnlyWord: true,
+                                    useCase: 'upper', // Converts the result to uppercase
+                                    useComma: true,   // Adds commas for readability
+                                    useAnd: true
+                                })
+
+                                    
+                                $('#amountInFigure').text(pesoFormat(totalAmount));
+                                $('#amountInWord').text(amountInWord);
+
                         },
                         error: function () {
                             alert('An error occurred. Please try again.');
@@ -422,6 +447,12 @@
 
 
             $(document).on('blur', '.price-input', function () {
+
+                if (suppressBlur) {
+                    suppressBlur = false; // Reset flag
+                    return; // Skip blur handling
+                }
+
                 let $input = $(this);
                 let value = $input.val().trim();
                 let id = $input.data('id'); 
@@ -432,7 +463,7 @@
                     class: 'toolPrice',
                     'data-id': id,
                     'data-reqnum': reqnum,
-                    text: value || 'No Price' // Default to 'No Price' if the input is empty
+                    text: pesoFormat(value) || 'No Price' // Default to 'No Price' if the input is empty
                 });
 
                 $input.replaceWith(span);

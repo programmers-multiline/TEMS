@@ -903,7 +903,11 @@
                                 remarks,
                                 _token: '{{ csrf_token() }}',
                             },
+                            beforeSend(){
+                                $("#loader").show()
+                            },
                             success(result) {
+                                $("#loader").hide()
                                 showToast("success",
                                     "Tool not Received");
                                 $("#modalTable").DataTable().ajax.reload();

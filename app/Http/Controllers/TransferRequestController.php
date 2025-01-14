@@ -2355,9 +2355,10 @@ class TransferRequestController extends Controller
                 $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
 
                 if ($user_type !== 4) {
-                    $action = '<div class="d-flex gap-1"><button data-requestid="' . $row->request_id . '" data-id="' . $row->request_approver_id . '" data-series="' . $row->series . '" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>
-                </div>
-                ';
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                //     $action = '<div class="d-flex gap-1"><button data-requestid="' . $row->request_id . '" data-id="' . $row->request_approver_id . '" data-series="' . $row->series . '" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>
+                // </div>
+                // ';
                 }else{
                     $action = '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->request_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                     </div>
@@ -2432,27 +2433,26 @@ class TransferRequestController extends Controller
 
             $ps_transfer_request->update();
 
-
-            $user = User::where('status', 1)->where('id', $ps_transfer_request->user_id)->first();
-
-
-            $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-                ->select('tools_and_equipment.*')
-                ->where('tools_and_equipment.status', 1)
-                // ->where('ps_transfer_request_items.item_status', 1)
-                ->where('ps_transfer_request_id', $ps_transfer_request->id)
-                ->get();
-
-            foreach ($tools_approved as $tool) {
-                array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
-            }
+            //? nilipat sa pag upload nalang ng ters at teis
+            // $user = User::where('status', 1)->where('id', $ps_transfer_request->user_id)->first();
 
 
-            $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
-            $mail_data = ['fullname' => $user->fullname, 'request_number' => $ps_transfer_request->request_number, 'items' => json_encode($mail_Items)];
+            // $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+            //     ->select('tools_and_equipment.*')
+            //     ->where('tools_and_equipment.status', 1)
+            //     // ->where('ps_transfer_request_items.item_status', 1)
+            //     ->where('ps_transfer_request_id', $ps_transfer_request->id)
+            //     ->get();
 
-            Mail::to($user->email)->send(new EmailRequestor($mail_data));
+            // foreach ($tools_approved as $tool) {
+            //     array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
+            // }
 
+
+            // // $mail_data = ['fullname' => $user->fullname, 'items' => json_encode($mail_Items)];
+            // $mail_data = ['fullname' => $user->fullname, 'request_number' => $ps_transfer_request->request_number, 'items' => json_encode($mail_Items)];
+
+            // Mail::to($user->email)->send(new EmailRequestor($mail_data));
 
         }
 

@@ -29,7 +29,7 @@ class UserController extends Controller
 
         
         // check if user is exists
-        $user = User::where('username', $request->login_username)->where('password', $request->login_password)->first();
+        $user = User::where('status', 1)->where('username', $request->login_username)->where('password', $request->login_password)->first();
 
         // condition if found and status is active or equivalent
         if(!$user) {

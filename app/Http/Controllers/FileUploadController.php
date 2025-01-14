@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PsTransferRequestItems;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\PeLogs;
@@ -136,6 +137,49 @@ class FileUploadController extends Controller
                         'approver_name' => Auth::user()->fullname,
                     ]);
                 } else {
+                    $ps_transfer_request = PsTransferRequests::where('status', 1)->where('request_number', $request->teisNum)->first();
+
+                    $ps_transfer_request->is_deliver = Carbon::now();
+        
+                    $ps_transfer_request->update();
+
+
+                    $mail_Items = [];
+                    $cc_emails = [];
+
+
+                    $user = User::where('status', 1)->where('id', $ps_transfer_request->user_id)->first();
+
+                    $cc_email = RequestApprover::join('users', 'users.id', 'request_approvers.approver_id')
+                    ->select('fullname', 'email')
+                    ->where('request_approvers.status', 1)
+                    ->where('users.status', 1)
+                    ->where('request_approvers.request_id', $ps_transfer_request->id)
+                    ->where('request_type', 1)
+                    ->orderBy('request_approvers.sequence', 'asc')
+                    ->get();
+
+                    $cc_emails[] = $cc_email[1]->email;
+                    $cc_emails[] = $cc_email[2]->email;
+
+
+                    $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+                        ->select('tools_and_equipment.*')
+                        ->where('tools_and_equipment.status', 1)
+                        ->where('ps_transfer_request_items.item_status', 0)
+                        ->where('ps_transfer_request_id', $ps_transfer_request->id)
+                        ->get();
+
+                    foreach ($tools_approved as $tool) {
+                        array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
+                    }
+
+                    $mail_data = ['fullname' => $user->fullname, 'request_number' => $ps_transfer_request->request_number, 'items' => json_encode($mail_Items)];
+
+                    Mail::to($user->email)->cc($cc_emails)->send(new EmailRequestor($mail_data));
+
+
+
                     RttteLogs::create([
                         'page' => 'rftte',
                         'request_number' => $request->teisNum,
@@ -220,6 +264,7 @@ class FileUploadController extends Controller
                 ;
 
                 TersUploads::create([
+                    'teis' => $request->psInputedTersNum,
                     'pullout_number' => $request->tersNum, //lagyan ng palatandaan
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
