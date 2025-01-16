@@ -231,7 +231,7 @@
 
         <div class="page-body">
             <div class="py-3">
-                <div style="width:1000px; height: 1056px; position: relative" class="containerPrint containerPrintRfteis px-2 mx-auto">
+                <div style="width:1000px; min-height: 1056px; position: relative" class="containerPrint containerPrintRfteis px-2 mx-auto">
                     @if (Auth::user()->user_type_id == 2)   
                     <div class="stamp">Approved</div>
                     @endif
@@ -356,7 +356,7 @@
             </div> <!-- End page body-->
 
             <div class="py-3">
-                <div style="width: 1000px; height: 1056px;" class="containerPrint containerPrintDaf px-2 mx-auto">
+                <div style="width: 1000px; min-height: 1056px;" class="containerPrint containerPrintDaf px-2 mx-auto">
                     <h1 style="text-align:center">DAF</h1>
                     <div class="flex">
                         <img src="{{ asset('media/logo.png') }}" width="200px" alt="logo">
