@@ -946,10 +946,22 @@ class ViewFormsController extends Controller
             ->orderBy('sequence', 'asc')
             ->get();
 
+            // return $approvers;
+
         /// kunin yung info object ng naka login na user 
-        $loggedInApprover = $approvers->firstWhere(function ($approver) {
+        $loggedInApprover = $approvers->where(function ($approver) {
             return $approver->approver_id == Auth::id();
-        });
+        })->sortBy('id')->values();
+
+        if($loggedInApprover->count() > 1){
+            if($loggedInApprover[0]->approver_status == 1){
+                $ra_id = $loggedInApprover[1]->id;
+            }else{
+                $ra_id = $loggedInApprover[0]->id;
+            }
+        }else{
+            $ra_id = $loggedInApprover[0]->id;
+        }
 
 
         ///kunin kung sino ang nag request
@@ -964,16 +976,18 @@ class ViewFormsController extends Controller
         // return $picture->count();
 
         ///check if all the tools have uploaded picture of tool
-        if (count($tools) != $picture->count()) {
-            $picAllUploaded = "disabled";
+        if (Auth::id() == $request_tools->user_id) {
+            $picAllUploaded = "";
 
-        } else {
+        } else if(count($tools) != $picture->count()){
+            $picAllUploaded = "disabled";
+        }else {
             $picAllUploaded = "";
             /// para lang ma enable yung button kapag lahat na nalagyan
             $isAllUploaded = true;
         }
 
-        $action = '<button type="button" data-requestnumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
+        $action = '<button type="button" data-requestnumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $ra_id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
 
         $user_type = Auth::user()->user_type_id;
 
@@ -1007,7 +1021,7 @@ class ViewFormsController extends Controller
             $name_third = $approvers[2]->fullname;
             $date_approved_third = $approvers[2]->date_approved;
         } else if ($approvers[1]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer') {
-            $name_third = '<button id="peProceedBtn" data-requestnumber="'.$request_tools->request_number.'" type="button" ' . $picAllUploaded . ' data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $loggedInApprover->id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
+            $name_third = '<button id="peProceedBtn" data-requestnumber="'.$request_tools->request_number.'" type="button" ' . $picAllUploaded . ' data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $ra_id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
             $date_approved_third = '--';
         } else {
             $name_third = '<span class="text-warning">Pending</span>';

@@ -491,6 +491,8 @@ class TransferRequestController extends Controller
                     ->where('ps_transfer_request_items.request_number', $request->id)
                     ->get();
 
+                    // return $tools;
+
                 // if ($request->path == "pages/request_for_receiving") {
                 //     $tools = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
                 //         ->leftJoin('warehouses', 'tools_and_equipment.location', 'warehouses.id')
@@ -542,8 +544,8 @@ class TransferRequestController extends Controller
                         ->where('pstr_id', $row->r_number)
                         ->where('tool_id', $row->tool_id)
                         ->first();
-
-                    $uploads_file =
+                    if($picture){
+                        $uploads_file =
                         '<div class="row mx-auto">
                         <div class="animated fadeIn pictureContainer">
                             <a target="_blank" class="img-link-zoom-in" href="' . asset('uploads/tool_pictures') . '/' . $picture->name . '">
@@ -551,6 +553,10 @@ class TransferRequestController extends Controller
                             </a>
                         </div>
                     </div>';
+                    }else{
+                        $uploads_file = '';
+                    }
+                    
 
                     return $uploads_file;
                 }
@@ -2413,9 +2419,10 @@ class TransferRequestController extends Controller
         $tobeApproveTools = RequestApprover::where('status', 1)
             ->where('request_id', $request->requestId)
             ->where('request_type', 2)
-            // ->where('series', $request->series)
-            ->orderBy('sequence', 'desc')
-            ->first();
+            ->orderBy('sequence', 'asc')
+            ->get();
+
+        $last_approver = $tobeApproveTools->last();
 
 
         $tools = RequestApprover::find($request->id);
@@ -2426,7 +2433,7 @@ class TransferRequestController extends Controller
 
         $tools->update();
 
-        if ($tools->sequence == $tobeApproveTools->sequence) { 
+        if ($tools->sequence == $last_approver->sequence) { 
             $ps_transfer_request = PsTransferRequests::find($request->requestId);
             $ps_transfer_request->request_status = "approved";
             $ps_transfer_request->for_pricing = 1;
@@ -2948,7 +2955,8 @@ class TransferRequestController extends Controller
             ->where('request_approvers.approved_by', Auth::user()->id)
             ->where('approver_status', 1)
             ->where('request_type', 2)
-            ->get();
+            ->get()
+            ->unique('request_number');
 
 
         return DataTables::of($tool_approvers)

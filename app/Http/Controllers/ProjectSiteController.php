@@ -93,7 +93,7 @@ class ProjectSiteController extends Controller
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.wh_ps', 'ps')
                 ->where('project_sites.id', $request->projectSiteId)
-                ->whereNotIn('tools_and_equipment.id', $id)
+                // ->whereNotIn('tools_and_equipment.id', $id)
                 ->get();
         } else {
             $tools = ToolsAndEquipment::leftJoin('warehouses', 'warehouses.id', 'tools_and_equipment.location')
@@ -101,7 +101,7 @@ class ProjectSiteController extends Controller
                 ->select('tools_and_equipment.*', 'warehouses.warehouse_name', 'project_sites.project_location', 'project_sites.project_name')
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.wh_ps', 'ps')
-                ->whereNotIn('tools_and_equipment.id', $id)
+                // ->whereNotIn('tools_and_equipment.id', $id)
                 ->get();
         }
 

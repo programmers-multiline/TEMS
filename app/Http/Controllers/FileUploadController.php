@@ -151,16 +151,19 @@ class FileUploadController extends Controller
                     $user = User::where('status', 1)->where('id', $ps_transfer_request->user_id)->first();
 
                     $cc_email = RequestApprover::join('users', 'users.id', 'request_approvers.approver_id')
-                    ->select('fullname', 'email')
+                    ->select('email')
                     ->where('request_approvers.status', 1)
                     ->where('users.status', 1)
                     ->where('request_approvers.request_id', $ps_transfer_request->id)
-                    ->where('request_type', 1)
+                    ->where('request_type', 2)
                     ->orderBy('request_approvers.sequence', 'asc')
                     ->get();
 
-                    $cc_emails[] = $cc_email[1]->email;
-                    $cc_emails[] = $cc_email[2]->email;
+
+                    $cc_emails[] = $cc_email[0];
+                    $cc_emails[] = $cc_email[1];
+
+                    // return $cc_emails;
 
 
                     $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')

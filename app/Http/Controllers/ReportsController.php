@@ -64,7 +64,7 @@ class ReportsController extends Controller
         }
         
        
-
+        // return $pe_logs;
 
         return DataTables::of($pe_logs)
 
@@ -78,7 +78,7 @@ class ReportsController extends Controller
                     $teis_uploads = Uploads::where('status', 1)->where('id', $row->teis_upload_id)->first()->toArray();
                     $teis_num = TeisUploads::where('status', 1)->where('upload_id', $row->teis_upload_id)->value('teis');
     
-                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn pictureContainer">
                         <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $teis_uploads['name'] . '">
                         <span>'.$teis_num.'.pdf</span>
                         </a>
@@ -95,7 +95,7 @@ class ReportsController extends Controller
                 if($row->ters_upload_id){
                     $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
                     $teis_num = TersUploads::where('status', 1)->where('upload_id', $row->ters_upload_id)->value('teis');
-                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn pictureContainer">
                     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
                     <span>'.$teis_num.'.pdf</span>
                     </a>
