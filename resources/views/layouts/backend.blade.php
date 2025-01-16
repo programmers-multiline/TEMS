@@ -1,7 +1,7 @@
 @php
     /// para sa RFTEIS count - for approval
     if (
-        (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3) ||
+        (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 1) ||
         (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
     ) {
 
@@ -954,7 +954,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 3)
+                            @if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 1)
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/rfteis', 'pages/rfteis_approved') ? ' active' : '' }}"
                                         data-toggle="submenu" aria-haspopup="true" aria-expanded="true"
