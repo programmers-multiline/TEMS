@@ -61,8 +61,10 @@
                         @endforeach
                     </select>
                 </div>
+                @if (Auth::user()->user_type_id == 4)
                 <button type="button" id="requesToolstBtn" class="btn btn-primary d-block ms-auto col-12 col-lg-2"><i
                         class="fa fa-pen-to-square me-1"></i>Request Tools</button>
+                @endif
             </div>
         @endif
         <div id="tableContainer" class="block block-rounded">

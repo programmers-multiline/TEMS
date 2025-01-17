@@ -117,6 +117,7 @@ $("#psUploadTersForm").on("submit", function (e) {
     e.preventDefault();
 
     var routeUrl = $("#psUploadTersForm #routeUrl").val();
+    const psTersNum = $("#psInputedTersNum").val();
 
     var frm = document.getElementById("psUploadTersForm");
     var form_data = new FormData(frm);
@@ -125,6 +126,11 @@ $("#psUploadTersForm").on("submit", function (e) {
 
     if(!pondters[0]){
         showToast("warning", "Select ters file first");
+        return
+    }
+
+    if(psTersNum == ''){
+        showToast("warning", "Please input Ters Number");
         return
     }
 
