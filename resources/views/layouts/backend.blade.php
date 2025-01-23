@@ -428,7 +428,7 @@
         $not_serve_count = 0;
     }
     ///RFTEIS ACC
-    $rfteis_acc_count = App\Models\TransferRequest::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->count();
+    $rfteis_acc_count = App\Models\TransferRequest::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->where('request_status', '!=' ,'disapproved')->count();
 
     ///RFTEIS ACC
     $rttte_acc_count = App\Models\PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->count();
