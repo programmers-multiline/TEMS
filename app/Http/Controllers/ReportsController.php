@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PulloutRequest;
 use Carbon\Carbon;
 use App\Models\PeLogs;
 use App\Models\Uploads;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Http\Request;
+use App\Models\TransferRequest;
 use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
+use App\Models\PsTransferRequests;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ToolsAndEquipmentLogs;
 
@@ -151,4 +154,89 @@ class ReportsController extends Controller
              ->toJson();
  
      }
+
+
+
+     public function request_list(Request $request)
+    {
+
+        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
+            ->where('status', 1)
+            ->where('request_status', 'approved');
+
+        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress')
+            ->where('status', 1)
+            ->where('request_status', 'approved');
+
+        $pullout_request = PulloutRequest::select('pullout_number as teis_number', 'contact_number', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
+            ->where('status', 1)
+            ->where('request_status', 'approved');
+
+        // filter
+        if ($request->request_type == 'rfteis') {
+            $query = $request_tools;
+        } elseif ($request->request_type == 'rttte') {
+            $query = $ps_request_tools;
+        } elseif ($request->request_type == 'pullout') {
+            $query = $pullout_request;
+        } else {
+            // no filter
+            $query = $request_tools->union($ps_request_tools)->union($pullout_request);
+        }
+        
+
+        $unioned_tables = $query->get();
+
+        return DataTables::of($unioned_tables)
+
+            ->addColumn('view_tools', function ($row) {
+
+                return '<button data-id="' . $row->teis_number . '" data-transfertype="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-primary fs-6 d-block">View</button>';
+            })
+
+            ->addColumn('request_status', function ($row) {
+
+                if($row->progress === 'completed'){
+                    return '<span class="badge bg-success">' . $row->progress . '</span>';
+                }elseif($row->progress === 'partial'){
+                    return '<span class="badge bg-elegance">' . $row->progress . '</span>';
+                }else{
+                    return '<span class="badge bg-warning">' . $row->progress . '</span>';
+                }
+                
+            })
+
+            ->addColumn('request_type', function ($row) {
+
+                return strtoupper($row->tr_type);
+            })
+
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
+
+                $action = '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+            </div>
+            ';
+                return $action;
+            })
+
+            ->addColumn('subcon', function($row){
+                if(!$row->subcon){
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                }else{
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('customer_name', function($row){
+                if(!$row->customer_name){
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                }else{
+                    return $row->customer_name;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'request_status', 'request_type','customer_name','subcon'])
+            ->toJson();
+    }
 }

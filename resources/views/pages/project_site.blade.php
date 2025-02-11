@@ -2,6 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -30,13 +31,13 @@
             <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
                 data-bs-target="#rttteModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
         @endif
-        <select class="form-select col-12 col-sm-12 col-md-6 col-lg-4 mb-3" id="selectProjectSite" name="example-select">
+        <select class="col-12 col-md-6 col-lg-4" id="selectProjectSite" name="example-select">
             <option value="" disabled selected>Select Project Site</option>
             @foreach ($all_pg as $site)
                 <option value="{{ $site->id }}">{{ $site->project_name }}</option>
             @endforeach
         </select>
-        <div id="tableContainer" class="block block-rounded">
+        <div id="tableContainer" class="block block-rounded mt-3">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
                 <table id="table"
@@ -86,6 +87,7 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
+    <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
 
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
@@ -95,6 +97,12 @@
 
     <script>
         $(document).ready(function() {
+
+            $("#selectProjectSite").select2({
+                placeholder: "Select Project site",
+            });
+
+
             const userId = $("#userId").val()
             const table = $("#table").DataTable({
                 processing: true,
@@ -385,14 +393,14 @@
                         if(result == 1){
                             Swal.fire({
                                 title: "Cannot request!",
-                                text: "No assigned Project Manager to the selected project site, please contact your OM.",
+                                text: "No assigned Project Manager to the selected project site. Please contact your OM.",
                                 icon: "error"
                             });
                         return
                         }else if(result == 2){
                             Swal.fire({
                                 title: "Cannot request!",
-                                text: "ang hinihiraman mong project site ay walang naka assigned na pm",
+                                text: "The project site you are requesting from does not have an assigned project manager.",
                                 icon: "error"
                             });
                             return

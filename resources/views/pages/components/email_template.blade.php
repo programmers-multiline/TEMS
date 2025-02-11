@@ -48,7 +48,7 @@
                                 <!-- Details Table -->
                                 <tr>
                                     <td>
-                                        <h4 style="margin-top: 15px;">You have items to approve, Please review the details and provide your approval at your earliest convenience.</h4>
+                                        <h4 style="margin-top: 15px;">{{ isset($mail_data['message']) ? $mail_data['message'] : 'You have items to approve, Please review the details and provide your approval at your earliest convenience.' }} </h4>
                                         <table cellpadding="0" cellspacing="0"
                                             style="width: 100%; border: 1px solid #ededed">
                                             <tbody>
@@ -84,6 +84,9 @@
                                                 <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Asset Code</th>
                                                 <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Descriptiom</th>
                                                 <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Price</th>
+                                                @isset ($mail_data['message'])
+                                                    <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">End date</th>
+                                                @endisset
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -92,6 +95,9 @@
                                                     <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->asset_code}}</td>
                                                     <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_description}}</td>
                                                     <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->price}}</td>
+                                                    @isset ($mail_data['message'])
+                                                        <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->exp_date}}</td>
+                                                    @endisset
                                                 </tr>
                                                 @endforeach
                                             </tbody>

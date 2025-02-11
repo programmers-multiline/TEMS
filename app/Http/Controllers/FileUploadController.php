@@ -254,17 +254,19 @@ class FileUploadController extends Controller
                 $tool_ids = explode(',', $request->psToolId);
 
                 //! pwede idagdag pa ang pe_id or yung prev_tr_type sa parameter dito ispin mo ulit kung alin dyan sa dalawa para maging unique lang at di mapunta sa iba ang uploaded
-                foreach ($tool_ids as $tool_id) {
-                    PeLogs::where('status', 1)
-                        ->where('request_number', $request->prevReqNum)
-                        ->where('tool_id', $tool_id)
-                        ->where('pe', $request->prevPe)
-                        ->update([
-                            'ters_upload_id' => $uploads->id,
-                            'remarks' => "Project site"
-                        ]);
-                }
-                ;
+                // if($request->prevReqNum){
+                   foreach ($tool_ids as $tool_id) {
+                        PeLogs::where('status', 1)
+                            ->where('request_number', $request->prevReqNum)
+                            ->where('tool_id', $tool_id)
+                            ->where('pe', $request->prevPe)
+                            ->update([
+                                'ters_upload_id' => $uploads->id,
+                                'remarks' => "Project site"
+                            ]);
+                    }; 
+                // }
+                
 
                 TersUploads::create([
                     'teis' => $request->psInputedTersNum,

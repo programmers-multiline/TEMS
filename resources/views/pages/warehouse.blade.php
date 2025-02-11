@@ -681,7 +681,7 @@
                         }else if(result == 2){
                             Swal.fire({
                                 title: "Cannot request!",
-                                text: "walang naka assigned na cnc and whm sa setup approver.",
+                                text: "No assigned CNC and Warehouse manager approver. Please contact IT department.",
                                 icon: "error"
                             });
                             return

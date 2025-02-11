@@ -159,6 +159,7 @@
                                             <option value='5'>OM</option>
                                             <option value='6'>Approver</option>
                                             <option value='7'>Accounting</option>
+                                            <option value='8'>Viewer</option>
                                         </select>
                                     </div>
                                 </div>
@@ -183,6 +184,12 @@
                                         <input type="password" class="form-control" id="password" name="password"
                                             placeholder="Enter Password">
                                     </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label" for="area">Area <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="area" name="area"
+                                        placeholder="Enter Area">
                                 </div>
                             </div>
                         </form>

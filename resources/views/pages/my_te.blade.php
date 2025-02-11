@@ -2,6 +2,7 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -67,6 +68,7 @@
                             <th style="text-align: left;">Location</th>
                             <th style="text-align: left;">Status</th>
                             <th style="text-align: left;">Usage End Date</th>
+                            <th style="text-align: left;">Action</th>
                             {{-- <th style="text-align: left; font-size: 14px;"> Transfer State</th> --}}
                             {{-- <th style="text-align: left; font-size: 14px;">Action</th> --}}
                             {{-- <th style="width: 15%;">Access</th>
@@ -86,6 +88,50 @@
     @include('pages.modals.pullout_form_modal')
     @include('pages.modals.change_state_modal')
 
+
+    <div class="modal fade" id="requestforExtensionModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
+        aria-labelledby="modal-popin" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+            <div class="modal-content">
+                <div class="block block-rounded shadow-none mb-0">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">Request for Extension</h3>
+                        <div class="block-options">
+                            <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="block-content fs-sm">
+                        <h3></h3>
+                        <input type="hidden" value="{{ date('Y-m-d') }}" id="currentDate">
+                        <input type="hidden" id="rfePe">
+                        <input type="hidden" id="rfeToolId">
+                        <input type="hidden" id="rfeDate">
+                        <div class="col-12 mb-3">
+                            <label class="form-label" for="extensionDate">Extension Date <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="extensionDate" name="extensionDate"
+                                min="{{ date('Y-m-d') }}" placeholder="Enter Extension Date">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label" for="reasonInputed">Reason <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reasonInputed" name="reason" rows="3" placeholder="Enter your reason.."></textarea>
+                        </div>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm text-end border-top">
+                        <button type="button" id="closeModal" class="btn btn-alt-secondary" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <button id="extensionDateBtn" type="button" class="btn btn-alt-primary">
+                            Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 
@@ -99,6 +145,7 @@
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
     <script src="{{ asset('js/plugins/masked-inputs/jquery.maskedinput.min.js')}}"></script>
+    <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
   </script> --}}
@@ -113,6 +160,10 @@
             // if($("#changeStateBtn").is(':disabled') || $("#changeTransferStateModal").is(':disabled')){
             //     alert()
             // }
+
+            $("#selectProjectCode").select2({
+                placeholder: "Select Project site",
+            });
 
             const table = $("#table").DataTable({
                 processing: true,
@@ -160,9 +211,9 @@
                     {
                         data: 'usage_end_date'
                     },
-                    // {
-                    //     data: 'action'
-                    // },
+                    {
+                        data: 'action'
+                    },
                 ],
                 scrollX: true,
                 select: true,
@@ -513,6 +564,66 @@
                 $("#projectAddress").val(pAddress)
 
             });
+
+
+            $(document).on('click','.requestForExtensionBtn', function(){
+                pe = $(this).data('pe');
+                toolId = $(this).data('toolid');
+                endDate = $(this).data('enddate');
+
+
+                $("#rfePe").val(pe)
+                $("#rfeToolId").val(toolId)
+                $("#rfeDate").val(endDate)
+            });
+
+
+            $(document).on('click','#extensionDateBtn', function(){
+                const exDate = $("#extensionDate").val();
+                const reason = $("#reasonInputed").val();
+                const pe = $("#rfePe").val();
+                const toolId = $("#rfeToolId").val();
+                const origEndDate = $("#rfeDate").val();
+
+
+                if (!exDate || !reason) {
+                    showToast("info", "Please provide both the extension date and reason.");
+                    return;
+                }
+
+                if (!pe || !toolId) {
+                    showToast("error", "cannot retrieve other data!");
+                    return;
+                }
+
+
+                $.ajax({
+                    url: '{{ route('request_for_extension') }}',
+                    method: 'post',
+                    data: {
+                        origEndDate,
+                        exDate,
+                        reason,
+                        pe,
+                        toolId,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    beforeSend() {
+                        $("#loader").show();
+                        $("#requestforExtensionModal").modal('hide')
+                    },
+                    success(result) {
+                        $("#loader").hide();
+
+                        $("#table").DataTable().ajax.reload();
+                        $("#requestforExtensionModal").modal('hide')
+                        showToast("success", "Request Extension Successfully");
+
+                    }
+                })
+
+
+            })
 
 
         })

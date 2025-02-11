@@ -3162,6 +3162,66 @@ class TransferRequestController extends Controller
     }
 
 
+    public function acc_approved_request(){
+        $approved_request_rfteis = TransferRequest::where('status', 1)->where('for_pricing', 2)->get();
+        $approved_request_rttte = PsTransferRequests::where('status', 1)->where('for_pricing', 2)->get();
+
+
+        $approved_request = $approved_request_rfteis->merge($approved_request_rttte);
+
+        return DataTables::of($approved_request)
+
+            ->addColumn('view_tools', function ($row) {
+
+                $pe = $row->pe ? $row->pe : $row->user_id;
+                $request_number = $row->teis_number ? $row->teis_number : $row->request_number;
+
+                return '<button data-pe="'.$pe.'" data-trtype="'.$row->tr_type.'" data-trid="'.$row->id.'" data-id="' . $request_number . '" data-bs-toggle="modal" data-bs-target="#ongoingTeisRequestModal" class="teisNumber btn text-info fs-6 d-block">View</button>';
+            })
+            ->addColumn('action', function ($row) {
+                $user_type = Auth::user()->user_type_id;
+
+
+                if ($user_type == 7) {
+                    $action = '<button data-requestnum="' . $row->teis_number . '" type="button" class="approveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-check"></i></button>';
+                } else {
+                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                }
+                return $action;
+            })
+
+            ->addColumn('customer_name', function ($row) {
+                if (!$row->customer_name) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->customer_name;
+                }
+            })
+
+
+            ->addColumn('subcon', function ($row) {
+                if (!$row->subcon) {
+                    return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                } else {
+                    return $row->subcon;
+                }
+            })
+
+            ->addColumn('request_number', function($row){
+                if($row->teis_number){
+                    return $row->teis_number;
+                }else{
+                    return $row->request_number;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'action', 'uploads', 'subcon', 'customer_name'])
+            ->toJson();
+    }
+
+
+
+
     /// Projects Assignment--------------------------------------------------------------------------
     public function project_tagging(Request $request)
     {

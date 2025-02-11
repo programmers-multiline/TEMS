@@ -78,6 +78,9 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/report_pe_logs', 'pages.report_pe_logs');
     Route::view('/pages/report_te_logs', 'pages.report_te_logs');
     Route::view('/pages/rfteis_disapproved', 'pages.rfteis_disapproved');
+    Route::view('/pages/tool_extension_request', 'pages.tool_extension_request');
+    Route::view('/pages/acc_approved_request', 'pages.acc_approved_request');
+    Route::view('/pages/list_of_requests', 'pages.list_of_requests');
 
 
 
@@ -144,6 +147,8 @@ Route::middleware(['auth'])->group(function () {
 
 
         Route::post('disapprove_request', 'disapprove_request')->name('disapprove_request');
+        Route::get('acc_approved_request', 'acc_approved_request')->name('acc_approved_request');
+
 
     });
     
@@ -152,6 +157,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('my_te', 'fetch_my_te')->name('fetch_my_te');
         Route::post('pullout_tools', 'pullout_request')->name('pullout_request');
         Route::post('add_state', 'add_state')->name('add_state');
+        Route::post('request_for_extension', 'request_for_extension')->name('request_for_extension');
+        Route::get('daily', 'daily')->name('daily');
+
+        Route::get('fetch_request_for_extension', 'fetch_request_for_extension')->name('fetch_request_for_extension');
+        Route::post('approve_extension_tool', 'approve_extension_tool')->name('approve_extension_tool');
     });
     
     Route::controller(PullOutController::class)->group(function () {
@@ -195,6 +205,9 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(ReportsController::class)->group(function(){
         Route::get('report_pe_logs', 'report_pe_logs')->name('report_pe_logs');
         Route::get('report_te_logs', 'report_te_logs')->name('report_te_logs');
+
+        // viewer
+        Route::get('request_list', 'request_list')->name('request_list');
     });
     
     // Route::controller(FileUploadController::class)->group(function(){

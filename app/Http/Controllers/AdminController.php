@@ -258,6 +258,7 @@ class AdminController extends Controller
             'email' => $request->email,
             'username' => $request->username,
             'password' => $request->password,
+            'area' => $request->area,
         ]);
     }
 }

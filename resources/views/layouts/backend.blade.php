@@ -430,7 +430,7 @@
     ///RFTEIS ACC
     $rfteis_acc_count = App\Models\TransferRequest::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->where('request_status', '!=' ,'disapproved')->count();
 
-    ///RFTEIS ACC
+    ///RTTTE ACC
     $rttte_acc_count = App\Models\PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->count();
 @endphp
 
@@ -731,6 +731,17 @@
                                         </span>
                                     </a>
                                 </li>
+                                @if (Auth::user()->user_type_id == 5)
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link{{ request()->is('pages/tool_extension_request') ? ' active' : '' }}"
+                                            href="/pages/tool_extension_request">
+                                            <i class="nav-main-link-icon fa fa-toolbox"></i>
+                                            <span class="nav-main-link-name">
+                                                Tool Extension Request 
+                                            </span>
+                                        </a>
+                                    </li>
+                                @endif
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/pullout_ongoing', 'pages/pullout_completed') ? ' active' : '' }}"
                                         data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
@@ -1032,6 +1043,14 @@
                                             style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $rttte_acc_count }}</span>
                                     </span>
                                 </li>
+
+                                <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                    <a class="nav-main-link{{ request()->is('pages/acc_approved_request') ? ' active' : '' }}"
+                                        href="/pages/acc_approved_request">
+                                        <i class="nav-main-link-icon fa fa-file-circle-check"></i>
+                                        <span class="nav-main-link-name">Approved Request</span>
+                                    </a>
+                                </li>
                                 {{-- <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
                                         href="/pages/daf">
@@ -1039,6 +1058,19 @@
                                         <span class="nav-main-link-name">DAF</span>
                                     </a>
                                 </li> --}}
+                            @endif
+
+
+                            @if (Auth::user()->user_type_id == 8)
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('/pages/list_of_requests') ? ' active' : '' }}"
+                                        href="/pages/list_of_requests">
+                                        <i class="nav-main-link-icon fa fa-clipboard-list"></i>
+                                        <span class="nav-main-link-name">
+                                            List of Request
+                                        </span>
+                                    </a>
+                                </li>
                             @endif
 
 

