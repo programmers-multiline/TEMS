@@ -207,6 +207,9 @@
                                         data: 'asset_code'
                                     },
                                     {
+                                        data: 'item_code'
+                                    },
+                                    {
                                         data: 'teis_no_dr_ar'
                                     },
                                     {

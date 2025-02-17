@@ -55,6 +55,7 @@
                                     <th>company</th>
                                     <th>department</th>
                                     <th>position</th>
+                                    <th>Area</th>
                                     <th>status</th>
                                     <th>Action</th>
                                 </tr>
@@ -272,6 +273,9 @@
                     },
                     {
                         data: 'position'
+                    },
+                    {
+                        data: 'area'
                     },
                     {
                         data: 'user_status'

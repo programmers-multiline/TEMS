@@ -315,6 +315,9 @@
                                 style="border-bottom: none; position: relative; width: 7%; font-size: 12px"><span
                                     class="th-absolute">PRODUCT CODE</span></th>
                             <th class=""
+                            style="border-bottom: none; position: relative; width: 7%; font-size: 12px"><span
+                                class="th-absolute">ITEM CODE</span></th>
+                            <th class=""
                                 style=" border-bottom: none; position: relative; width: 7%; font-size: 12px">
                                 <span class="th-absolute">TEIS NO./ MTS/DR/AR</span>
                             </th>
@@ -347,6 +350,7 @@
                             @endif
                         </tr>
                         <tr style="font-size: 10px;" class="firstRow">
+                            <th></th>
                             <th></th>
                             <th></th>
                             <th></th>
