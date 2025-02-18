@@ -158,7 +158,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('pullout_tools', 'pullout_request')->name('pullout_request');
         Route::post('add_state', 'add_state')->name('add_state');
         Route::post('request_for_extension', 'request_for_extension')->name('request_for_extension');
-        Route::get('daily', 'daily')->name('daily');
 
         Route::get('fetch_request_for_extension', 'fetch_request_for_extension')->name('fetch_request_for_extension');
         Route::post('approve_extension_tool', 'approve_extension_tool')->name('approve_extension_tool');
@@ -223,6 +222,9 @@ Route::middleware(['auth'])->group(function () {
     
     Route::post('search', [SearchController::class, 'search'])->name('search');
 });
+
+// para sa checking daily kung meron na pa expired na tools
+Route::get('daily', [MyToolsAndEquipmentController::class, 'daily'])->name('daily');
 
 
 Route::post('/', [UserController::class, 'auth_login'])->name('login');
