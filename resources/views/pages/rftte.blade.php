@@ -290,6 +290,9 @@
                                         data: 'teis_no'
                                     },
                                     {
+                                        data: 'item_code'
+                                    },
+                                    {
                                         data: 'asset_code'
                                     },
                                     {

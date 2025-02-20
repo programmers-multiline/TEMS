@@ -263,7 +263,7 @@
                                 processing: true,
                                 serverSide: false,
                                 destroy: true,
-                                scrollX: true,
+                                // scrollX: true,
                                 ajax: {
                                     type: 'get',
                                     url: '{{ route('ps_ongoing_teis_request_modal') }}',
@@ -282,6 +282,9 @@
                                     },
                                     {
                                         data: 'teis_no'
+                                    },
+                                    {
+                                        data: 'item_code'
                                     },
                                     {
                                         data: 'asset_code'
