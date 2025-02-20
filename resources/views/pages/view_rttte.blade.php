@@ -302,6 +302,7 @@
                             <th class="">ITEM NO.</th>
                             <th class="">TEIS NO.</th>
                             <th class="">ITEM CODE</th>
+                            <th class="">ASSET CODE</th>
                             <th style="width: 150px;" class="">DESCRIPTION</th>
                             <th class="">SERIAL NUMBER</th>
                             <th class="">QTY</th>
