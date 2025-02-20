@@ -79,7 +79,7 @@ class PullOutController extends Controller
 
         if (Auth::user()->user_type_id == 4) {
 
-            $tool_approvers = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->get();
+            $tool_approvers = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->where('user_id', Auth::id())->get();
         }
 
 
