@@ -1183,7 +1183,7 @@ class ViewFormsController extends Controller
         if ($firstApprover) {
             $name_first = $approvers[0]->fullname;
             $date_approved_first = $approvers[0]->date_approved;
-        }else if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5 && $request->path == 'pages/pullout_ongoing') {
+        }else if (Auth::user()->user_type_id == 3 && $request->path == 'pages/pullout_ongoing') {
             $name_first = $action;
             $date_approved_first = '--';
         } else {
@@ -1195,7 +1195,7 @@ class ViewFormsController extends Controller
         if ($secondApprover) {
             $name_second = $approvers[1]->fullname;
             $date_approved_second = $approvers[1]->date_approved;
-        }else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/pullout_ongoing' && (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)) {
+        }else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 5) {
             $name_second = $action;
             $date_approved_second = '--';
         } else {
@@ -1251,7 +1251,7 @@ class ViewFormsController extends Controller
                 </div>
                 <div style="padding-inline: 3px; width: 100%">
                     <div class="d-flex justify-content-between">
-                        <h6 style="">pid manager</h6>
+                        <h6 style="">Operations manager</h6>
                         <div class="d-flex">
                             <h6 style="">' . $date_approved_second . '</h6>
                         </div>

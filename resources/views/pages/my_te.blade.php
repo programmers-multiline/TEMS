@@ -354,6 +354,15 @@
 
             $("#pulloutRequestBtn").click(function() {
 
+                // Swal.fire({
+                //     icon: "warning",
+                //     title: "System Maintenance",
+                //     text: "New requests are temporarily unavailable. Please proceed with a manual request.",
+                //     confirmButtonText: "OK",
+                //     allowOutsideClick: false
+                // });
+                // return
+
                 const sitesId = [];
 
                 const datas = table.rows({
@@ -411,7 +420,7 @@
                 for (var i = 0; i < data.length; i++) {
 
                     $("#tbodyPulloutModal").append(
-                        `<tr><td>${data[i].asset_code}</td><td>${data[i].item_code} <input type="hidden" class="ids" value="${data[i].id}"> <input type="hidden" class="prevReqNum" value="${data[i].prev_request_num}"></td><td class="d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="defective">Defective</option></select></td></tr>`
+                        `<tr><td>${data[i].asset_code}</td><td>${data[i].item_code} <input type="hidden" class="ids" value="${data[i].id}"> <input type="hidden" class="prevReqNum" value="${data[i].prev_request_num}"> <input type="hidden" class="teisRef" value="${data[i].teis_ref}"> </td><td class="d-sm-table-cell w-50">${data[i].item_description}</td><td><select class="form-select toolsStatus"><option value="" disabled selected>Select Status</option><option value="good">Good</option><option value="defective">Defective</option></select></td></tr>`
                     );
                     //<option value="dispose">Disposal</option>
                 }
@@ -444,6 +453,7 @@
                 /// kunin ang id ng tools and yung status na nilagay ng user
                 const id = $("#tbodyPulloutModal .ids").map((i, id) => id.value);
                 const prevReqNum = $("#tbodyPulloutModal .prevReqNum").map((i, reqNum) => reqNum.value);
+                const teisRef = $("#tbodyPulloutModal .teisRef").map((i, teisRef) => teisRef.value);
                 const toolsStatus = $(".toolsStatus").map((i, toolsStatus) => toolsStatus.value);
 
 
@@ -461,7 +471,8 @@
                     selectedItemId.push({
                         id: id[i],
                         prev_req_num: prevReqNum[i],
-                        tools_status: toolsStatus[i]
+                        tools_status: toolsStatus[i],
+                        teisRef: teisRef[i]
                     })
                 }
 

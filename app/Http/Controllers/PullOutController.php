@@ -66,6 +66,7 @@ class PullOutController extends Controller
                         ->where('request_approvers.status', 1)
                         ->where('request_approvers.approver_id', Auth::user()->id)
                         // ->where('series', $series)
+                        ->where('request_approvers.id', $approver->id)
                         ->where('approver_status', 0)
                         ->where('request_type', 3)
                         ->get();

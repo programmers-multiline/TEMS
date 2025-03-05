@@ -204,7 +204,7 @@ class ProjectSiteController extends Controller
 
     public function ps_request_tools(Request $request)
     {
-        // return $request->prevReqNum;
+        // return $request;
 
         $project_site_id = ProjectSites::where('status', 1)->where('project_code', $request->projectCode)->value('id');
         //?kapag pwede dalawang PM sa isang project baguhin mo ang query na ito ⬇
@@ -308,29 +308,53 @@ class ProjectSiteController extends Controller
         // $req = PsTransferRequests::where('status', 1)->orderBy('id', 'desc')->first();
 
 
-        $array_id = json_decode($request->idArray);
+        // $array_id = json_decode($request->idArray);
+        $tableData = json_decode($request->tableData, true);
 
-        $array_count = count($array_id);
-
-        for ($i = 0; $i < $array_count; $i++) {
+        foreach ($tableData as $item) {
             PsTransferRequestItems::create([
-                'tool_id' => $array_id[$i],
+                'tool_id' => $item['id'],
+                'teis_no' => $item['teisRef'],
                 'request_number' => $new_request_number,
                 'ps_transfer_request_id' => $req->id,
                 'user_id' => Auth::user()->id,
-                'prev_request_num' => $request->prevReqNum,
+                'prev_request_num' => $item['prev_req_num'],
                 'status' => 1,
             ]);
         }
 
-        for ($i = 0; $i < $array_count; $i++) {
+        foreach ($tableData as $item) {
             DafItems::create([
-                'tool_id' => $array_id[$i],
+                'tool_id' => $item['id'],
                 'daf_number' => $new_request_number,
                 'daf_id' => $req->id,
                 'user_id' => Auth::user()->id,
             ]);
         }
+
+
+        // ! hindi na kasama
+        // $array_count = count($array_id);
+
+        // for ($i = 0; $i < $array_count; $i++) {
+        //     PsTransferRequestItems::create([
+        //         'tool_id' => $array_id[$i],
+        //         'request_number' => $new_request_number,
+        //         'ps_transfer_request_id' => $req->id,
+        //         'user_id' => Auth::user()->id,
+        //         'prev_request_num' => $request->prevReqNum,
+        //         'status' => 1,
+        //     ]);
+        // }
+
+        // for ($i = 0; $i < $array_count; $i++) {
+        //     DafItems::create([
+        //         'tool_id' => $array_id[$i],
+        //         'daf_number' => $new_request_number,
+        //         'daf_id' => $req->id,
+        //         'user_id' => Auth::user()->id,
+        //     ]);
+        // }
 
         /// for logs
         RttteLogs::create([
@@ -343,7 +367,7 @@ class ProjectSiteController extends Controller
         ]);
 
 
-        ///dati to nung nasa nag rerequest pa ang pag upload kala ko ganun e
+        // ! dati to nung nasa nag rerequest pa ang pag upload kala ko ganun e
         // $files = $request->file('files'); 
         // $rowIds = $request->input('row_ids');
         

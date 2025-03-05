@@ -1,5 +1,7 @@
 @extends('layouts.backend')
-
+@php
+    $all_pg = App\Models\ProjectSites::select('id', 'project_name', 'project_code')->where('status', 1)->get();
+@endphp
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
     <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
@@ -31,10 +33,23 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
-        <select class="js-select2 form-select w-100 mb-3" id="selectTools">
-            <option disabled selected>Select Tools</option>
-                
-        </select>
+        <div class="d-flex flex-wrap mb-3">
+            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
+               <select class="js-select2 form-select w-100 mb-3" id="selectTools">
+                    <option disabled selected>Select Tools</option>
+            
+                </select>  
+            @endif
+           @if (Auth::user()->user_type_id == 7)
+              <select class="js-select2 form-select w-100 mb-3" id="selectProjectCode">
+                <option disabled selected>Select Project code</option>
+                    @foreach ($all_pg as $site)
+                        <option value="{{ $site->id }}">{{ $site->project_code .' - '. $site->project_name }}</option>
+                    @endforeach
+                </select> 
+           @endif
+            
+        </div>
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -83,6 +98,15 @@
     <script>
         $(document).ready(function() {
 
+            $("#selectTools").select2({
+                placeholder: "Select Tool",
+            });
+
+            $("#selectProjectCode").select2({
+                placeholder: "Select Project Site",
+            });
+
+
             const path = $("#path").val();
 
             const userId = {{ Auth::user()->user_type_id }}
@@ -97,6 +121,11 @@
                         "targets": [1],
                         "visible": userId == 5,
                         "searchable": userId == 5
+                    },
+                    {
+                        "targets": [-3],
+                        "visible": userId != 7,
+                        "searchable": userId != 7
                     }
                 ],
                 ajax: {
@@ -171,6 +200,11 @@
             $("#selectTools").change(function() {
                 const toolId = $(this).val();
                 table.ajax.url('{{ route('report_pe_logs') }}?toolId=' + toolId).load();
+            })
+
+            $("#selectProjectCode").change(function() {
+                const projectSiteId = $(this).val();
+                table.ajax.url('{{ route('report_pe_logs') }}?projectSiteId=' + projectSiteId).load();
             })
 
             $(document).on('click', '.teisNumber', function() {
