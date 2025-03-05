@@ -119,8 +119,8 @@
                 "aoColumnDefs": [
                     {
                         "targets": [1],
-                        "visible": userId == 5,
-                        "searchable": userId == 5
+                        "visible": [5, 7].includes(userId),
+                        "searchable": [5, 7].includes(userId)
                     },
                     {
                         "targets": [-3],
