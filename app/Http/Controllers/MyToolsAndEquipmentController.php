@@ -392,6 +392,7 @@ class MyToolsAndEquipmentController extends Controller
                 'user_id' => Auth::user()->id,
                 'tools_status' => $table_data['tools_status'],
                 'req_num' => $table_data['prev_req_num'],
+                'teis_no_dr_ar' => $table_data['teisRef'],
             ]);
 
             $te = ToolsAndEquipment::where('status', 1)->where('id', $table_data['id'])->first();
@@ -424,8 +425,8 @@ class MyToolsAndEquipmentController extends Controller
 
         foreach ($approvers as $approver) {
             $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
-
-            Mail::to($approver->email)->queue(new ApproverEmail($mail_data));
+            \Log::info("Sending email to: " . $approver->email);
+            Mail::to($approver->email)->send(new ApproverEmail($mail_data));
         }
 
         PulloutLogs::create([

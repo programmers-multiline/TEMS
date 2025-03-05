@@ -270,15 +270,60 @@
 
     // Pullout_ongoing
     if(Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5) {
-        $pullout_tools = App\Models\RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
-        ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
-        ->where('pullout_requests.status', 1)
-        ->where('request_approvers.status', 1)
-        ->where('request_approvers.approver_id', Auth::user()->id)
-        // ->where('series', $series)
-        ->where('approver_status', 0)
-        ->where('request_type', 3)
-        ->count();  
+        $approvers =  App\Models\RequestApprover::where('status', 1)
+            ->where('approver_id', Auth::user()->id)
+            ->where('approver_status', 0)
+            ->where('request_type', 3)
+            ->get();
+
+        if ($approvers->isEmpty()) {
+            $pullout_tools = 0;
+        }else{
+
+            $tool_approvers_pullout = collect();
+
+            foreach ($approvers as $approver) {
+                $current_approvers = collect();
+
+                if ($approver->sequence == 1) {
+                    $current_approvers =  App\Models\RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
+                        ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                        ->where('pullout_requests.status', 1)
+                        ->where('request_approvers.status', 1)
+                        ->where('request_approvers.approver_id', Auth::user()->id)
+                        // ->where('series', $series)
+                        ->where('approver_status', 0)
+                        ->where('request_type', 3)
+                        ->get();
+                } else {
+                    $prev_sequence = $approver->sequence - 1;
+
+                    $prev_approver =  App\Models\RequestApprover::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
+                        ->where('request_type', 3)
+                        ->first();
+
+                    if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers =  App\Models\RequestApprover::leftjoin('pullout_requests', 'pullout_requests.id', 'request_approvers.request_id')
+                            ->select('pullout_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series')
+                            ->where('pullout_requests.status', 1)
+                            ->where('request_approvers.status', 1)
+                            ->where('request_approvers.approver_id', Auth::user()->id)
+                            // ->where('series', $series)
+                            ->where('request_approvers.id', $approver->id)
+                            ->where('approver_status', 0)
+                            ->where('request_type', 3)
+                            ->get();
+                    }
+                }
+
+                // Merge the current approvers to the tool_approvers array
+                $tool_approvers_pullout = $tool_approvers_pullout->merge($current_approvers)->unique('request_id');
+
+                $pullout_tools = $tool_approvers_pullout->count();
+            }  
+        }
     }else {
         $pullout_tools = 0;
     }
@@ -1090,7 +1135,7 @@
                                 </a>
                             </li>
 
-                            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
+                            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5 || Auth::user()->user_type_id == 7)
                                 <li class="nav-main-heading">Reports</li>
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/report_pe_logs') ? ' active' : '' }}"
@@ -1099,8 +1144,15 @@
                                         <span class="nav-main-link-name">Item Logs</span>
                                     </a>
                                 </li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/report_te_logs') ? ' active' : '' }}"
+                                        href="/pages/report_te_logs">
+                                        <i class="nav-main-link-icon fa fa-address-book"></i>
+                                        <span class="nav-main-link-name">Tools & Equipment Logs</span>
+                                    </a>
+                                </li>
                             @endif
-                            @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 5)
+                            {{-- @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 5)
                             @if (Auth::user()->user_type_id == 7)
                                 <li class="nav-main-heading">Reports</li>
                             @endif
@@ -1111,7 +1163,7 @@
                                         <span class="nav-main-link-name">Tools & Equipment Logs</span>
                                     </a>
                                 </li>
-                            @endif
+                            @endif --}}
                         </ul>
                     </div>
                     <!-- END Side Navigation -->

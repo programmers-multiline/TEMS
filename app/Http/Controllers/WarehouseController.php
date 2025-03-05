@@ -96,7 +96,9 @@ class WarehouseController extends Controller
                 ->select('tools_and_equipment.*', 'warehouses.warehouse_name')
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.wh_ps', 'wh')
+                ->where('tools_and_equipment.tools_status', 'good')
                 ->where('location', $request->warehouseId)
+                // ->where('company_code', Auth::user()->company_code) //i helpers mo to kunin mo comp id sa auth tapos ibato mo sa companies table
                 ->get();
         } else {
             $tools = ToolsAndEquipment::leftJoin('warehouses', 'warehouses.id', 'tools_and_equipment.location')
@@ -104,10 +106,11 @@ class WarehouseController extends Controller
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.wh_ps', 'wh')
                 ->where('tools_and_equipment.tools_status', 'good')
+                // ->where('company_code', Auth::user()->company_code)
                 ->get();
         }
 
-
+        // return Auth::user()->company_code;
         return DataTables::of($tools)
 
 
@@ -121,6 +124,11 @@ class WarehouseController extends Controller
             // })
             ->setRowClass(function ($row) {
                 if (Auth::user()->user_type_id != 2) {
+
+                    if ($row->qty == 0) {
+                        return 'bg-pulse-light'; 
+                    }
+
                     $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
                         ->select('transfer_request_items.*')
                         ->where('transfer_requests.progress', 'ongoing')
@@ -128,8 +136,12 @@ class WarehouseController extends Controller
 
                     $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
 
-                    return in_array($row->id, $toolIds) ? 'bg-gray' : '';
+
+                    if (in_array($row->id, $toolIds)) {
+                        return 'bg-gray';
+                    }
                 }
+                return '';
             })
 
             ->addColumn('tools_status', function ($row) {

@@ -28,8 +28,7 @@
     <div class="content">
         <input type="hidden" id="userId" value="{{ Auth::user()->user_type_id }}">
         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4)
-            <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" data-bs-toggle="modal"
-                data-bs-target="#rttteModal" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
+            <button type="button" id="requesToolstBtn" class="btn btn-primary mb-3 d-block ms-auto" disabled><i class="fa fa-pen-to-square me-1"></i>Request Tools</button>
         @endif
         <select class="col-12 col-md-6 col-lg-4" id="selectProjectSite" name="example-select">
             <option value="" disabled selected>Select Project Site</option>
@@ -265,9 +264,36 @@
 
 
             $("#requesToolstBtn").click(function() {
+
+                // Swal.fire({
+                //     icon: "warning",
+                //     title: "System Maintenance",
+                //     text: "New requests are temporarily unavailable. Please proceed with a manual request.",
+                //     confirmButtonText: "OK",
+                //     allowOutsideClick: false
+                // });
+                // return
+
                 const data = table.rows({
                     selected: true
                 }).data();
+
+                const sitesId = [];
+
+                for (let i = 0; i < data.length; i++) {
+                    sitesId.push(data[i].current_site_id)
+                }
+                
+
+                const allsiteId = sitesId.every( data => data === sitesId[0])
+
+                if(!allsiteId){
+                    showToast('warning', 'Request of tools must be per project site')
+                    $("#rttteModal").modal('hide')
+                    return
+                }else{
+                    $("#rttteModal").modal('show')
+                }
 
                 // const arrItem = []
 
@@ -285,7 +311,7 @@
 
                     $("#tbodyModal").append(
                         `<tr>
-                            <td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> <input class="prevReqNum" type="hidden" value="${data[i].prev_request_num}"> </td>
+                            <td>${data[i].item_code} <input class="toolId" type="hidden" value="${data[i].id}"> <input class="currentSiteId" type="hidden" value="${data[i].current_site_id}"> <input class="currentPe" type="hidden" value="${data[i].current_pe}"> <input class="prevReqNum" type="hidden" value="${data[i].prev_request_num}"> <input class="teisRef" type="hidden" value="${data[i].teis_ref}"> </td>
                             <td class="d-sm-table-cell">${data[i].asset_code}</td>
                             <td class="d-sm-table-cell">${data[i].item_description}</td>
                             </tr>`
@@ -324,7 +350,11 @@
 
                 const currentPe = $("#tbodyModal .currentPe").val();
                 const currentSiteId = $("#tbodyModal .currentSiteId").val();
-                const prevReqNum = $("#tbodyModal .prevReqNum").val();
+                // const prevReqNum = $("#tbodyModal .prevReqNum").val();
+
+                const prevReqNum = $("#tbodyModal .prevReqNum").map((i, reqNum) => reqNum.value);
+                const teisRef = $("#tbodyModal .teisRef").map((i, teisRef) => teisRef.value);
+                
 
 
                 if(!projectName || !reason.trim()){
@@ -343,11 +373,18 @@
                 const selectedItemId = [];
 
                 for (var i = 0; i < id.length; i++) {
-                    selectedItemId.push(id[i])
+                    selectedItemId.push({
+                        id: id[i],
+                        prev_req_num: prevReqNum[i],
+                        teisRef: teisRef[i]
+                    })
                 }
 
-                const arrayToString = JSON.stringify(selectedItemId);
+                // for (var i = 0; i < id.length; i++) {
+                //     selectedItemId.push(id[i])
+                // }
 
+                
                 /// sa hinihiraman dapat ito kaya inalis
                 // if (Object.keys(files).length === 0) {
                 //     showToast('warning','No picture selected!');
@@ -355,28 +392,30 @@
                 // }
 
                 // if(Object.keys(files).length !== selectedItemId.length){
-                //     showToast('warning','Add picture to all selected tools!');
-                //     return;
-                // }
-
-
-                var formData = new FormData();
-
-                // Append each file and its corresponding row_id to FormData
-                Object.keys(files).forEach(function(rowId, index) {
-                    formData.append('files[]', files[rowId]);
-                    formData.append('row_ids[]', rowId);
-                });
-
+                    //     showToast('warning','Add picture to all selected tools!');
+                    //     return;
+                    // }
+                    
+                    
+                    var formData = new FormData();
+                    
+                    // Append each file and its corresponding row_id to FormData
+                    Object.keys(files).forEach(function(rowId, index) {
+                        formData.append('files[]', files[rowId]);
+                        formData.append('row_ids[]', rowId);
+                    });
+                    
                 formData.append('currentSiteId', currentSiteId);
                 formData.append('currentPe', currentPe);
-                formData.append('prevReqNum', prevReqNum);
+                // formData.append('prevReqNum', prevReqNum);
                 formData.append('projectName', projectName);
                 formData.append('projectCode', projectCode);
                 formData.append('projectAddress', projectAddress);
                 formData.append('reason', reason);
-                formData.append('idArray', arrayToString);
+                // formData.append('idArray', arrayToString);
                 formData.append('_token', $('input[name=_token]').val());
+                
+                formData.append('tableData', JSON.stringify(selectedItemId));
 
                 for (var pair of formData.entries()) {
                     console.log(pair[0] + ': ' + pair[1]);

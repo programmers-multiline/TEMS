@@ -1651,7 +1651,10 @@ class TransferRequestController extends Controller
 
                 $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
 
+                $teis_no = TeisUploads::where('status', 1)->where('teis_number', $scannedTools->request_number)->value('teis'); // kunin sa inupload palang na teis at ilagay sa tools
+
                 $tools->wh_ps = 'ps';
+                $tools->teis_ref = $teis_no;
                 $tools->current_pe = $scannedTools->user_id;
                 $tools->current_site_id = $project_site->id;
                 // $tools->transfer_state = 0;
@@ -1663,7 +1666,7 @@ class TransferRequestController extends Controller
                     'tool_id' => $scannedTools->tool_id,
                     'pe' => Auth::id(),
                     'tr_type' => $request->type,
-                    'remarks' => 'galing kay PE',
+                    'remarks' => 'From PE',
                 ]);
 
 
@@ -1801,7 +1804,10 @@ class TransferRequestController extends Controller
 
                 $tools = ToolsAndEquipment::where('status', 1)->where('id', $scannedTools->tool_id)->first();
 
+                $teis_no = TeisUploads::where('status', 1)->where('teis_number', $scannedTools->teis_number)->value('teis');
+
                 $tools->prev_request_num = $scannedTools->teis_number;
+                $tools->teis_ref = $teis_no;
                 $tools->usage_end_date = $scannedTools->duration_date;
                 $tools->wh_ps = 'ps';
                 $tools->current_pe = $scannedTools->pe;

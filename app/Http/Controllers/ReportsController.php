@@ -43,7 +43,33 @@ class ReportsController extends Controller
                ->where('pe_logs.status', 1)
                ->whereIn('pe_logs.pe', $PEs)
                ->get();
+           }else{
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number','pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('tools_and_equipment.id', $request->toolId)
+                ->where('pe_logs.status', 1)
+                ->whereNull('ters_upload_id')
+                ->get();
            }
+        }elseif($request->projectSiteId){
+
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->leftjoin('transfer_requests', 'pe_logs.request_number', 'transfer_requests.teis_number')
+                ->leftjoin('project_sites', 'project_sites.project_code', 'transfer_requests.project_code')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number','pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('pe_logs.status', 1)
+                ->where('tools_and_equipment.status', 1)
+                ->where('transfer_requests.status', 1)
+                ->where('project_sites.status', 1)
+                ->where('project_sites.progress', 'ongoing')
+                ->where('users.status', 1)
+                ->where('project_sites.id', $request->projectSiteId)
+                ->whereNull('ters_upload_id')
+                ->get();
         }else{
             if(Auth::user()->user_type_id == 4){
                 $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
@@ -63,6 +89,14 @@ class ReportsController extends Controller
                ->where('pe_logs.status', 1)
                ->whereIn('pe_logs.pe', $PEs)
                ->get();
+           }else{
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number','pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('pe_logs.status', 1)
+                ->whereNull('ters_upload_id')
+                ->get();
            }
         }
         
@@ -144,13 +178,43 @@ class ReportsController extends Controller
 
                 return $readableDate;
             })
- 
+
+
+            ->addColumn('attachment', function ($row) {
+                if($row->tr_type == 'rttte' || $row->tr_type == 'rfteis'){
+                    if($row->teis_upload_id){
+                    $teis_uploads = Uploads::where('status', 1)->where('id', $row->teis_upload_id)->first()->toArray();
+                    $teis_num = TeisUploads::where('status', 1)->where('upload_id', $row->teis_upload_id)->value('teis');
+    
+                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn pictureContainer">
+                        <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $teis_uploads['name'] . '">
+                        <span>'.$teis_num.'.pdf</span>
+                        </a>
+                    </div></div>';
+                    }else{
+                        return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                    }
+                }else{
+                    if($row->ters_upload_id){
+                        $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
+                        $teis_num = TersUploads::where('status', 1)->where('upload_id', $row->ters_upload_id)->value('teis');
+                        return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn pictureContainer">
+                        <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
+                        <span>'.$teis_num.'.pdf</span>
+                        </a>
+                    </div></div>';
+                    }else{
+                        return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                    }
+                }    
+
+            })
              ->addColumn('action', function(){
  
                  return'<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
              })
  
-             ->rawColumns([ 'action'])
+             ->rawColumns([ 'action', 'attachment'])
              ->toJson();
  
      }

@@ -413,6 +413,20 @@
                 }
             });
 
+
+            table.on('select', function(e, dt, type, indexes) {
+                if (type === 'row') {
+                    var rows = table.rows(indexes).nodes().to$();
+                    $.each(rows, function() {
+                        if ($(this).hasClass('bg-pulse-light')) {
+                            table.row($(this)).deselect();
+                            showToast("info",
+                                "Cannot select, No stock Available!");
+                        }
+                    })
+                }
+            });
+
             table.select.selector('td:first-child');
 
             // .replace(/_/g, " ")
@@ -540,6 +554,16 @@
 
 
             $("#requesToolstBtn").click(function() {
+
+                // Swal.fire({
+                //     icon: "warning",
+                //     title: "System Maintenance",
+                //     text: "New requests are temporarily unavailable. Please proceed with a manual request.",
+                //     confirmButtonText: "OK",
+                //     allowOutsideClick: false
+                // });
+                // return
+
                 const data = table.rows({
                     selected: true
                 }).data();

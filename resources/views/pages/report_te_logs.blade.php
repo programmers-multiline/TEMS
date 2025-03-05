@@ -53,6 +53,7 @@
                             <th>Item Code</th>
                             <th>Item Desc</th>
                             <th>Remarks</th>
+                            {{-- <th>Attachment</th> --}}
                         </tr>
                     </thead>
                     <tbody>
@@ -124,7 +125,10 @@
                         },
                         {
                             data: 'tr_type'
-                        }
+                        },
+                        // {
+                        //     data: 'attachment'
+                        // }
                     ],
                     drawCallback: function() {
                         $(".uploadTeisBtn").tooltip();
