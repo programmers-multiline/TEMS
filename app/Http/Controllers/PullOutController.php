@@ -627,14 +627,27 @@ class PullOutController extends Controller
 
     public function fetch_completed_pullout()
     {
-        $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
+        // if(Auth::user()->user_type_id == 4){
+            $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
             ->select('pullout_requests.*', 'request_approvers.date_approved')
             ->where('request_approvers.status', 1)
             ->where('pullout_requests.status', 1)
             ->where('request_approvers.request_type', 3)
             ->where('progress', 'completed')
+            ->where('user_id', Auth::id())
             ->distinct('request_id')
             ->get();
+        // }else{
+        //     $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
+        //     ->select('pullout_requests.*', 'request_approvers.date_approved')
+        //     ->where('request_approvers.status', 1)
+        //     ->where('pullout_requests.status', 1)
+        //     ->where('request_approvers.request_type', 3)
+        //     ->where('progress', 'completed')
+        //     ->distinct('request_id')
+        //     ->get();
+        // }
+        
 
         // return $pullout_tools;
 

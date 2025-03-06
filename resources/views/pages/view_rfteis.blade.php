@@ -306,18 +306,18 @@
                             <div style="display: flex;">
                                 <div style="padding-left: 20px; margin-top: 5px; margin-bottom: 5px;">
                                     <input class="form-check-input" type="radio" id="example-radios-inline1"
-                                        name="example-radios-inline" value="option1" disabled>
+                                        name="example-radios-inline" value="option1"  {{ strtolower($request_tools->wh_location) == 'dts warehouse' ? 'checked' : 'disabled' }}>
                                     <label class="form-check-label" style="font-size: 13px;"
                                         for="example-radios-inline1">Supplier to Project Site</label>
                                 </div>
                                 <div
                                     style="padding-left: 20px; margin-top: 5px; margin-bottom: 5px; position: relative;">
                                     <div class="text-pulse"
-                                        style="position: absolute; left: 40px; top: -8px; font-size: 10px; font-weight: bold; text-transform: uppercase">
+                                        style="position: absolute; {{ strtolower($request_tools->wh_location) != 'dts warehouse' ? '' : 'display: none;' }} left: 40px; top: -8px; font-size: 10px; font-weight: bold; text-transform: uppercase">
                                         {{ $request_tools->wh_location }}</div>
                                     <input class="form-check-input" type="radio" id="example-radios-inline2"
                                         name="example-radios-inline" value="option2"
-                                        @if ($request_tools->tr_type == 'rfteis') checked @endif>
+                                        {{ strtolower($request_tools->wh_location) != 'dts warehouse' ? 'checked' : 'disabled' }}>
                                     <label class="form-check-label" style="font-size: 13px;"
                                         for="example-radios-inline2">Warehouse to Project Site</label>
                                 </div>
