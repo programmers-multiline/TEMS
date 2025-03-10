@@ -284,7 +284,9 @@ class MyToolsAndEquipmentController extends Controller
             })
 
             ->addColumn('usage_end_date', function ($row) {
-                return Carbon::parse($row->usage_end_date)->format('M d, Y');
+                
+                return ($row->usage_end_date ? Carbon::parse($row->usage_end_date)->format('M d, Y') : '');
+               
             })
 
 

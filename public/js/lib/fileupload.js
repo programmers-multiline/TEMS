@@ -87,56 +87,68 @@ $("#formRequest").on("submit", function (e) {
 
 // TERS - PS
 
+// Initialize FilePond for multiple file uploads
 var psTersFormPond = FilePond.create(document.querySelector("#ps-ters-fileupload"), {
-    labelIdle: `Drag & Drop your TERS form here <span class="filepond--label-action">Browse</span>`,
-    imagePreviewHeight: 600,
-    imageCropAspectRatio: "1:1",
+    labelIdle: `Drag & Drop your TERS forms here <span class="filepond--label-action">Browse</span>`,
+    allowMultiple: true,
+    onaddfile: (error, file) => {
+        if (error) return;
+        
+        $("#tersNumbersContainer").append(`
+            <div class="ters-num-input mb-2" data-id="${file.id}">
+                <label class="form-label">TERS Number for ${file.filename}</label>
+                <input type="number" class="form-control ters-number" data-file-id="${file.id}">
+            </div>
+        `);
+    },
+    onremovefile: (error, file) => {
+        if (error) return;
+        $(`.ters-num-input[data-id="${file.id}"]`).remove();
+    },
 });
 
+// When clicking the Upload button, capture necessary data
 $(document).on("click", ".uploadTersBtn", function () {
-    const tersNum = $(this).data("num");
-    const trType = $(this).data("type");
-    const prevReqNum = $(this).data("prevreqnum");
-    const prevpe = $(this).data("prevpe");
-    const toolId = $(this).data("toolid");
-
-
-    $("#pstersNumModalhidden").val(tersNum);
-    $("#pstrTypeModalhidden").val(trType);
-    $("#prevReqNumModalhidden").val(prevReqNum);
-    $("#pstoolIdModalhidden").val(toolId);
-    $("#prevPeModalhidden").val(prevpe);
-
-
-    
+    $("#pstersNumModalhidden").val($(this).data("num"));
+    $("#pstrTypeModalhidden").val($(this).data("type"));
+    $("#prevReqNumModalhidden").val($(this).data("prevreqnum"));
+    $("#pstoolIdModalhidden").val($(this).data("toolid"));
+    $("#prevPeModalhidden").val($(this).data("prevpe"));
 });
 
-
-// SUBMIT FORM
+// Submit Form
 $("#psUploadTersForm").on("submit", function (e) {
     e.preventDefault();
 
     var routeUrl = $("#psUploadTersForm #routeUrl").val();
-    const psTersNum = $("#psInputedTersNum").val();
+    var form_data = new FormData(this);
+    var pondFiles = psTersFormPond.getFiles();
 
-    var frm = document.getElementById("psUploadTersForm");
-    var form_data = new FormData(frm);
-
-    pondters = psTersFormPond.getFiles();
-
-    if(!pondters[0]){
-        showToast("warning", "Select ters file first");
-        return
+    if (pondFiles.length === 0) {
+        showToast("warning", "Select TERS file(s) first");
+        return;
     }
 
-    if(psTersNum == ''){
-        showToast("warning", "Please input Ters Number");
-        return
-    }
+    let tersNumbers = [];
+    let valid = true;
 
-    for (var i = 0; i < pondters.length; i++) {
-        form_data.append("ters_upload[]", pondters[i].file);
-    }
+    pondFiles.forEach((file, index) => {
+        let tersNum = $(`.ters-number[data-file-id="${file.id}"]`).val();
+        if (!tersNum) {
+            showToast("warning", `Please input TERS Number for ${file.filename}`);
+            valid = false;
+            return false;
+        }
+        tersNumbers.push({ file: file.file, tersNum });
+    });
+
+    if (!valid) return;
+
+    tersNumbers.forEach((item, index) => {
+        form_data.append(`ters_upload[${index}]`, item.file);
+        form_data.append(`ters_numbers[${index}]`, item.tersNum);
+    });
+
     const table = $("#table").DataTable();
 
     $.ajax({
@@ -149,10 +161,87 @@ $("#psUploadTersForm").on("submit", function (e) {
         success: function (response) {
             $("#uploadTers").modal("hide");
             table.ajax.reload();
-            showToast("success", "TERS Uploaded");
+            showToast("success", "TERS Uploaded Successfully");
         },
     });
 });
+
+
+
+
+
+
+
+
+
+
+
+// var psTersFormPond = FilePond.create(document.querySelector("#ps-ters-fileupload"), {
+//     labelIdle: `Drag & Drop your TERS form here <span class="filepond--label-action">Browse</span>`,
+//     imagePreviewHeight: 600,
+//     imageCropAspectRatio: "1:1",
+// });
+
+// $(document).on("click", ".uploadTersBtn", function () {
+//     const tersNum = $(this).data("num");
+//     const trType = $(this).data("type");
+//     const prevReqNum = $(this).data("prevreqnum");
+//     const prevpe = $(this).data("prevpe");
+//     const toolId = $(this).data("toolid");
+
+
+//     $("#pstersNumModalhidden").val(tersNum);
+//     $("#pstrTypeModalhidden").val(trType);
+//     $("#prevReqNumModalhidden").val(prevReqNum);
+//     $("#pstoolIdModalhidden").val(toolId);
+//     $("#prevPeModalhidden").val(prevpe);
+
+
+    
+// });
+
+
+// // SUBMIT FORM
+// $("#psUploadTersForm").on("submit", function (e) {
+//     e.preventDefault();
+
+//     var routeUrl = $("#psUploadTersForm #routeUrl").val();
+//     const psTersNum = $("#psInputedTersNum").val();
+
+//     var frm = document.getElementById("psUploadTersForm");
+//     var form_data = new FormData(frm);
+
+//     pondters = psTersFormPond.getFiles();
+
+//     if(!pondters[0]){
+//         showToast("warning", "Select ters file first");
+//         return
+//     }
+
+//     if(psTersNum == ''){
+//         showToast("warning", "Please input Ters Number");
+//         return
+//     }
+
+//     for (var i = 0; i < pondters.length; i++) {
+//         form_data.append("ters_upload[]", pondters[i].file);
+//     }
+//     const table = $("#table").DataTable();
+
+//     $.ajax({
+//         type: "POST",
+//         url: routeUrl,
+//         processData: false,
+//         contentType: false,
+//         cache: false,
+//         data: form_data,
+//         success: function (response) {
+//             $("#uploadTers").modal("hide");
+//             table.ajax.reload();
+//             showToast("success", "TERS Uploaded");
+//         },
+//     });
+// });
 
 
 
@@ -163,6 +252,7 @@ var tersFormPond = FilePond.create(document.querySelector("#ters-fileupload"), {
     labelIdle: `Drag & Drop your TERS form here <span class="filepond--label-action">Browse</span>`,
     imagePreviewHeight: 600,
     imageCropAspectRatio: "1:1",
+    allowMultiple: true, // Allow multiple file uploads
 });
 
 $(document).on("click", ".uploadTersBtn", function () {
@@ -185,34 +275,48 @@ $(document).on("click", ".uploadTersBtn", function () {
     $("#trTypeModalhidden").val(trType);
 });
 
-// SUBMIT FORM
+// Handle File Selection and Generate Corresponding Inputs
+tersFormPond.on("addfile", (error, file) => {
+    if (error) return;
+    const fileId = file.id;
+    $("#ters-numbers-container").append(`
+        <div class="mb-2 ters-number-input" data-file-id="${fileId}">
+            <label for="ters-number-${fileId}">SAP TERS Number for ${file.filename}</label>
+            <input class="form-control w-50" type="number" name="ters_numbers[]" id="ters-number-${fileId}" required>
+        </div>
+    `);
+});
+
+// Remove Input Field When File is Removed
+tersFormPond.on("removefile", (error, file) => {
+    if (error) return;
+    $(`.ters-number-input[data-file-id="${file.id}"]`).remove();
+});
+
+// Submit Form
 $("#uploadTersForm").on("submit", function (e) {
     e.preventDefault();
 
     const prevCount = parseInt($("#notServeCount").text());
     var routeUrl = $("#uploadTersForm #routeUrl").val();
+    var form_data = new FormData(this);
+    let files = tersFormPond.getFiles();
 
-    var frm = document.getElementById("uploadTersForm");
-    var form_data = new FormData(frm);
-
-    pondters = tersFormPond.getFiles();
-
-    const pulloutNumber = $('#inputedTersNum').val();
-
-    if(!pulloutNumber){
-        showToast("warning", "Please input TERS Number");
-        return
+    if (files.length === 0) {
+        showToast("warning", "Select at least one TERS file");
+        return;
     }
 
-    if(!pondters[0]){
-        showToast("warning", "Select TERS file first");
-        return
-    }
+    let tersNumbers = [];
 
-    for (var i = 0; i < pondters.length; i++) {
-        form_data.append("ters_upload[]", pondters[i].file);
-    }
-    
+    files.forEach((file, index) => {
+        form_data.append("ters_upload[]", file.file);
+        let tersNumber = $(`#ters-number-${file.id}`).val();
+        tersNumbers.push(tersNumber);
+    });
+
+    form_data.append("ters_numbers", JSON.stringify(tersNumbers));
+
     const table = $("#table").DataTable();
 
     $.ajax({
@@ -222,11 +326,11 @@ $("#uploadTersForm").on("submit", function (e) {
         contentType: false,
         cache: false,
         data: form_data,
-        beforeSend(){
-            $("#loader").show()
+        beforeSend() {
+            $("#loader").show();
         },
-        success: function (response) {
-            $("#loader").hide()
+        success(response) {
+            $("#loader").hide();
             $("#uploadTers").modal("hide");
             table.ajax.reload();
             showToast("success", "TERS Uploaded");
@@ -240,6 +344,93 @@ $("#uploadTersForm").on("submit", function (e) {
         },
     });
 });
+
+
+
+
+
+
+// var tersFormPond = FilePond.create(document.querySelector("#ters-fileupload"), {
+//     labelIdle: `Drag & Drop your TERS form here <span class="filepond--label-action">Browse</span>`,
+//     imagePreviewHeight: 600,
+//     imageCropAspectRatio: "1:1",
+// });
+
+// $(document).on("click", ".uploadTersBtn", function () {
+
+//     if(path == 'pages/not_serve_items'){
+//         const rfteisNum = $(this).data("num");
+//         $("#tersNumModalhidden").val(rfteisNum);
+//     }else{
+//         const pulloutnum = $(this).data("pulloutnum");
+//         const prevReqData = $(this).data("prevreqdata");
+
+//         const prevReqDataString = JSON.stringify(prevReqData) 
+
+//         $("#tersNumModalhidden").val(pulloutnum);
+//         $("#prevReqDataModalhidden").val(prevReqDataString);
+//         console.log(prevReqDataString)
+//     }
+
+//     const trType = $(this).data("type");
+//     $("#trTypeModalhidden").val(trType);
+// });
+
+// // SUBMIT FORM
+// $("#uploadTersForm").on("submit", function (e) {
+//     e.preventDefault();
+
+//     const prevCount = parseInt($("#notServeCount").text());
+//     var routeUrl = $("#uploadTersForm #routeUrl").val();
+
+//     var frm = document.getElementById("uploadTersForm");
+//     var form_data = new FormData(frm);
+
+//     pondters = tersFormPond.getFiles();
+
+//     const pulloutNumber = $('#inputedTersNum').val();
+
+//     if(!pulloutNumber){
+//         showToast("warning", "Please input TERS Number");
+//         return
+//     }
+
+//     if(!pondters[0]){
+//         showToast("warning", "Select TERS file first");
+//         return
+//     }
+
+//     for (var i = 0; i < pondters.length; i++) {
+//         form_data.append("ters_upload[]", pondters[i].file);
+//     }
+    
+//     const table = $("#table").DataTable();
+
+//     $.ajax({
+//         type: "POST",
+//         url: routeUrl,
+//         processData: false,
+//         contentType: false,
+//         cache: false,
+//         data: form_data,
+//         beforeSend(){
+//             $("#loader").show()
+//         },
+//         success: function (response) {
+//             $("#loader").hide()
+//             $("#uploadTers").modal("hide");
+//             table.ajax.reload();
+//             showToast("success", "TERS Uploaded");
+//             if(path == 'pages/not_serve_items'){
+//                 if (prevCount == 1) {
+//                     $(".countContainer").addClass("d-none")
+//                 } else {
+//                     $("#notServeCount").text(prevCount - 1);
+//                 }
+//             }
+//         },
+//     });
+// });
 
 
 

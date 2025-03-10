@@ -128,18 +128,82 @@ class ReportsController extends Controller
             })
 
             ->addColumn('ters', function ($row) {
+
+
+                if ($row->ters_upload_id) {
+                    $upload_ids = explode(',', $row->ters_upload_id); // Convert string to array
+                    $ters_uploads = Uploads::where('status', 1)->whereIn('id', $upload_ids)->get();
                 
-                if($row->ters_upload_id){
-                    $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
-                    $teis_num = TersUploads::where('status', 1)->where('upload_id', $row->ters_upload_id)->value('teis');
-                    return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn pictureContainer">
-                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
-                    <span>'.$teis_num.'.pdf</span>
-                    </a>
-                </div></div>';
-                }else{
+                    if (count($ters_uploads) === 1) {
+                        // If only one file, display it directly
+                        $upload = $ters_uploads->first();
+                        $teis_num = TersUploads::where('status', 1)->where('upload_id', $upload->id)->value('teis');
+                
+                        return '<a target="_blank" class="text-primary" href="' . asset('uploads/ters_form/' . $upload->name) . '">' . $teis_num . '.pdf</a>';
+                    } else {
+                        // If multiple files, show dropdown
+                        $dropdown_id = 'dropdownTers' . $row->id; // Unique dropdown ID
+                
+                        $output = '<div class="dropdown">
+                            <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="' . $dropdown_id . '" data-bs-toggle="dropdown" aria-expanded="false">
+                                View Files
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="' . $dropdown_id . '">';
+                
+                        foreach ($ters_uploads as $upload) {
+                            $teis_num = TersUploads::where('status', 1)->where('upload_id', $upload->id)->value('teis');
+                
+                            $output .= '<li><a class="dropdown-item" target="_blank" href="' . asset('uploads/ters_form/' . $upload->name) . '">' . $teis_num . '.pdf</a></li>';
+                        }
+                
+                        $output .= '</ul></div>';
+                
+                        return $output;
+                    }
+                } else {
                     return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
                 }
+                
+
+                /// old viewing for multiple file
+                // if ($row->ters_upload_id) {
+                //     $upload_ids = explode(',', $row->ters_upload_id); // Convert string to array
+                //     $ters_uploads = Uploads::where('status', 1)->whereIn('id', $upload_ids)->get();
+                
+                //     $dropdown_id = 'dropdownTers' . $row->id; // Unique dropdown ID
+                
+                //     $output = '<div class="dropdown">
+                //         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="' . $dropdown_id . '" data-bs-toggle="dropdown" aria-expanded="false">
+                //             View Files
+                //         </button>
+                //         <ul class="dropdown-menu" aria-labelledby="' . $dropdown_id . '">';
+                
+                //     foreach ($ters_uploads as $upload) {
+                //         $teis_num = TersUploads::where('status', 1)->where('upload_id', $upload->id)->value('teis');
+                
+                //         $output .= '<li><a class="dropdown-item" target="_blank" href="' . asset('uploads/ters_form/' . $upload->name) . '">' . $teis_num . '.pdf</a></li>';
+                //     }
+                
+                //     $output .= '</ul></div>';
+                
+                //     return $output;
+                // } else {
+                //     return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                // }
+                
+                
+                /// old view for only one file
+                // if($row->ters_upload_id){
+                //     $ters_uploads = Uploads::where('status', 1)->where('id', $row->ters_upload_id)->first();
+                //     $teis_num = TersUploads::where('status', 1)->where('upload_id', $row->ters_upload_id)->value('teis');
+                //     return '<div class="row mx-auto"><div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn pictureContainer">
+                //     <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/ters_form') . '/' . $ters_uploads['name'] . '">
+                //     <span>'.$teis_num.'.pdf</span>
+                //     </a>
+                // </div></div>';
+                // }else{
+                //     return '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">--</span>';
+                // }
 
                 
             })
