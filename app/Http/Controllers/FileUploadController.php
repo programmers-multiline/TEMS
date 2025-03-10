@@ -236,40 +236,32 @@ class FileUploadController extends Controller
     // RTTTE - TERS
     public function ps_upload_process_ters(Request $request)
     {
+
         if ($request->hasFile('ters_upload')) {
 
-            $ters_form = $request->ters_upload;
+            $upload_ids = [];
 
-            foreach ($ters_form as $ters) {
+            foreach ($request->file('ters_upload') as $index => $ters) {
+                $ters_number = $request->ters_numbers[$index]; // Get corresponding TERS number
+        
+                // Generate unique file name
                 $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
+        
+                // Save file details in the database
                 $uploads = Uploads::create([
                     'name' => $ters_name,
                     'original_name' => $ters->getClientOriginalName(),
                     'extension' => $ters->getClientOriginalExtension(),
                 ]);
+        
+                // Move file to the uploads directory
                 $ters->move('uploads/ters_form/', $ters_name);
 
-                // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
-
-                $tool_ids = explode(',', $request->psToolId);
-
-                //! pwede idagdag pa ang pe_id or yung prev_tr_type sa parameter dito ispin mo ulit kung alin dyan sa dalawa para maging unique lang at di mapunta sa iba ang uploaded
-                // if($request->prevReqNum){
-                   foreach ($tool_ids as $tool_id) {
-                        PeLogs::where('status', 1)
-                            ->where('request_number', $request->prevReqNum)
-                            ->where('tool_id', $tool_id)
-                            ->where('pe', $request->prevPe)
-                            ->update([
-                                'ters_upload_id' => $uploads->id,
-                                'remarks' => "Project site"
-                            ]);
-                    }; 
-                // }
-                
-
+                $upload_ids[] = $uploads->id;
+        
+                // Store TERS Upload details
                 TersUploads::create([
-                    'teis' => $request->psInputedTersNum,
+                    'teis' => $ters_number,
                     'pullout_number' => $request->tersNum, //lagyan ng palatandaan
                     'upload_id' => $uploads->id,
                     'tr_type' => $request->trType,
@@ -290,108 +282,303 @@ class FileUploadController extends Controller
                     'approver_name' => Auth::user()->fullname,
                 ]);
             }
+
+            // return $upload_ids;
+
+            $tool_ids = explode(',', $request->psToolId);
+
+            //para maging ganto ang array -- 1,2,3
+            $upload_ids_string = implode(',', $upload_ids);
+
+            //! pwede idagdag pa ang pe_id or yung prev_tr_type sa parameter dito ispin mo ulit kung alin dyan sa dalawa para maging unique lang at di mapunta sa iba ang uploaded
+            foreach ($tool_ids as $tool_id) {
+                PeLogs::where('status', 1)
+                    ->where('request_number', $request->prevReqNum)
+                    ->where('tool_id', $tool_id)
+                    ->where('pe', $request->prevPe)
+                    ->update([
+                        'ters_upload_id' => $upload_ids_string,
+                        'remarks' => "Project site"
+                    ]);
+            }; 
         }
+        
+
+
+
+        // if ($request->hasFile('ters_upload')) {
+
+        //     $ters_form = $request->ters_upload;
+
+        //     foreach ($ters_form as $ters) {
+        //         $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
+        //         $uploads = Uploads::create([
+        //             'name' => $ters_name,
+        //             'original_name' => $ters->getClientOriginalName(),
+        //             'extension' => $ters->getClientOriginalExtension(),
+        //         ]);
+        //         $ters->move('uploads/ters_form/', $ters_name);
+
+        //         // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+
+        //         $tool_ids = explode(',', $request->psToolId);
+
+        //         //! pwede idagdag pa ang pe_id or yung prev_tr_type sa parameter dito ispin mo ulit kung alin dyan sa dalawa para maging unique lang at di mapunta sa iba ang uploaded
+        //         // if($request->prevReqNum){
+        //            foreach ($tool_ids as $tool_id) {
+        //                 PeLogs::where('status', 1)
+        //                     ->where('request_number', $request->prevReqNum)
+        //                     ->where('tool_id', $tool_id)
+        //                     ->where('pe', $request->prevPe)
+        //                     ->update([
+        //                         'ters_upload_id' => $uploads->id,
+        //                         'remarks' => "Project site"
+        //                     ]);
+        //             }; 
+        //         // }
+                
+
+        //         TersUploads::create([
+        //             'teis' => $request->psInputedTersNum,
+        //             'pullout_number' => $request->tersNum, //lagyan ng palatandaan
+        //             'upload_id' => $uploads->id,
+        //             'tr_type' => $request->trType,
+        //             'prev_req_num' => $request->prevReqNum,
+        //         ]);
+
+
+        //         /// for logs
+        //         RttteLogs::create([
+        //             'page' => 'rftte',
+        //             'request_number' => $request->tersNum,
+        //             'title' => 'Upload TERS',
+        //             'message' => Auth::user()->fullname . ' ' . 'upload TERS.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+        //                 $ters_name . '">
+        //                 <span>View</span>
+        //                 </a>',
+        //             'action' => 4,
+        //             'approver_name' => Auth::user()->fullname,
+        //         ]);
+        //     }
+        // }
 
     }
 
 
     /// TERS - RFTEIS
+
+        
+
+
+
     public function upload_process_ters(Request $request)
     {
+        $ters_files = $request->file('ters_upload');
+        $ters_numbers = json_decode($request->input('ters_numbers'), true);
+
         //  dd($request->all());
         $prev_req_data = json_decode($request->prevreqdata, true);
 
         $not_serve_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->pluck('tool_id')->toArray();
 
         $pullout_tools = PulloutRequestItems::where('status', 1)->where('pullout_number', $request->tersNum)->where('item_status', 1)->pluck('tool_id')->toArray();
-        if ($request->hasFile('ters_upload')) {
+        
+        $upload_ids = [];
 
-            $ters_form = $request->ters_upload;
+        if (!$ters_files || count($ters_files) === 0) {
+            return response()->json(['error' => 'No files uploaded'], 400);
+        }
+    
+        foreach ($ters_files as $index => $ters) {
+            $ters_number = $ters_numbers[$index] ?? null;
+    
+            if (!$ters_number) {
+                continue; // Skip if no TERS number is provided
+            }
+    
+            $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
+            
+            // Save file information in the database
+            $uploads = Uploads::create([
+                'name' => $ters_name,
+                'original_name' => $ters->getClientOriginalName(),
+                'extension' => $ters->getClientOriginalExtension(),
+            ]);
 
-            $image_id = mt_rand(111111, 999999) . date('YmdHms');
-            foreach ($ters_form as $ters) {
-                $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
-                $uploads = Uploads::create([
-                    'name' => $ters_name,
-                    'original_name' => $ters->getClientOriginalName(),
-                    'extension' => $ters->getClientOriginalExtension(),
+            $upload_ids[] = $uploads->id;
+            
+            $ters->move('uploads/ters_form/', $ters_name);
+
+            // Store TERS upload details
+            TersUploads::create([
+                'teis' => $ters_number,
+                'pullout_number' => $request->tersNum,
+                'upload_id' => $uploads->id,
+                'tr_type' => $request->trType,
+            ]);
+
+            
+        }
+
+        if ($request->path == 'pages/not_serve_items') {
+            ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
+            TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
+                'clear' => 1
+            ]);
+
+            $tr_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->whereNull('is_remove')->pluck('clear');
+            ///tignan kung ang bawat row is 1 lahat
+            $is_all_clear = collect($tr_tools)->every(function ($value) {
+                return $value === 1;
+            });
+
+            if ($is_all_clear) {
+                TransferRequest::where('status', 1)->where('teis_number', $request->tersNum)->update([
+                    'progress' => 'completed'
                 ]);
-                $ters->move('uploads/ters_form/', $ters_name);
-
-                // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
-
-                TersUploads::create([
-                    'teis' => $request->inputedTersNum,
-                    'pullout_number' => $request->tersNum,
-                    'upload_id' => $uploads->id,
-                    'tr_type' => $request->trType,
-                ]);
-
-                if ($request->path == 'pages/not_serve_items') {
-                    ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
-                    TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
-                        'clear' => 1
-                    ]);
-
-                    $tr_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->whereNull('is_remove')->pluck('clear');
-                    ///tignan kung ang bawat row is 1 lahat
-                    $is_all_clear = collect($tr_tools)->every(function ($value) {
-                        return $value === 1;
-                    });
-
-                    if ($is_all_clear) {
-                        TransferRequest::where('status', 1)->where('teis_number', $request->tersNum)->update([
-                            'progress' => 'completed'
-                        ]);
-                    }
-                }
-
-
-
-                /// for logs
-
-                if ($request->path == 'pages/pullout_for_receiving') {
-
-                    foreach ($prev_req_data as $tool_id => $request_number) {
-                        PeLogs::where('status', 1)
-                            ->where('request_number', $request_number)
-                            ->where('tool_id', $tool_id)
-                            ->update([
-                                'ters_upload_id' => $uploads->id,
-                                'remarks' => "Pullout tool",
-                            ]);
-                    }
-                } else {
-                    foreach ($not_serve_tools as $tool_id) {
-                        PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
-                            'ters_upload_id' => $uploads->id,
-                            'remarks' => "Not serve tool",
-                        ]);
-                    }
-
-                    RfteisLogs::create([
-                        'page' => 'not_serve_items',
-                        'request_number' => $request->tersNum,
-                        'title' => 'Upload TERS',
-                        'message' => Auth::user()->fullname . ' ' . 'upload TERS due to "Not served" tool redelivery unavailable.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
-                            $ters_name . '">
-                            <span>View</span>
-                            </a>',
-                        'action' => 11,
-                        'approver_name' => Auth::user()->fullname,
-                    ]);
-                }
-
-
-                ///para lang kasi ito sa pullout
-                if ($request->path != 'pages/not_serve_items') {
-                    PulloutRequest::where('status', 1)->where('pullout_number', $request->tersNum)->update([
-                        'progress' => 'completed',
-                    ]);
-                }
-
             }
         }
+
+
+
+        /// for logs
+
+        //para maging ganto ang array -- 1,2,3
+        $upload_ids_string = implode(',', $upload_ids);
+
+        if ($request->path == 'pages/pullout_for_receiving') {
+
+            foreach ($prev_req_data as $tool_id => $request_number) {
+                PeLogs::where('status', 1)
+                    ->where('request_number', $request_number)
+                    ->where('tool_id', $tool_id)
+                    ->update([
+                        'ters_upload_id' => $upload_ids_string,
+                        'remarks' => "Pullout tool",
+                    ]);
+            }
+        } else {
+            foreach ($not_serve_tools as $tool_id) {
+                PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
+                    'ters_upload_id' => $upload_ids[0],
+                    'remarks' => "Not serve tool",
+                ]);
+            }
+
+            RfteisLogs::create([
+                'page' => 'not_serve_items',
+                'request_number' => $request->tersNum,
+                'title' => 'Upload TERS',
+                'message' => Auth::user()->fullname . ' ' . 'upload TERS due to "Not served" tool redelivery unavailable.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+                    $ters_name . '">
+                    <span>View</span>
+                    </a>',
+                'action' => 11,
+                'approver_name' => Auth::user()->fullname,
+            ]);
+        }
+
+
+        ///para lang kasi ito sa pullout
+        if ($request->path != 'pages/not_serve_items') {
+            PulloutRequest::where('status', 1)->where('pullout_number', $request->tersNum)->update([
+                'progress' => 'completed',
+            ]);
+        }
+
+    
+        
+        
+        
+        /// one file only
+        // if ($request->hasFile('ters_upload')) {
+
+        //     $ters_form = $request->ters_upload;
+
+        //     $image_id = mt_rand(111111, 999999) . date('YmdHms');
+        //     foreach ($ters_form as $ters) {
+        //         $ters_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $ters->getClientOriginalExtension();
+        //         $uploads = Uploads::create([
+        //             'name' => $ters_name,
+        //             'original_name' => $ters->getClientOriginalName(),
+        //             'extension' => $ters->getClientOriginalExtension(),
+        //         ]);
+        //         $ters->move('uploads/ters_form/', $ters_name);
+
+        //         // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+
+        //         TersUploads::create([
+        //             'teis' => $request->inputedTersNum,
+        //             'pullout_number' => $request->tersNum,
+        //             'upload_id' => $uploads->id,
+        //             'tr_type' => $request->trType,
+        //         ]);
+
+        //         if ($request->path == 'pages/not_serve_items') {
+        //             ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
+        //             TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
+        //                 'clear' => 1
+        //             ]);
+
+        //             $tr_tools = TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->whereNull('is_remove')->pluck('clear');
+        //             ///tignan kung ang bawat row is 1 lahat
+        //             $is_all_clear = collect($tr_tools)->every(function ($value) {
+        //                 return $value === 1;
+        //             });
+
+        //             if ($is_all_clear) {
+        //                 TransferRequest::where('status', 1)->where('teis_number', $request->tersNum)->update([
+        //                     'progress' => 'completed'
+        //                 ]);
+        //             }
+        //         }
+
+
+
+        //         /// for logs
+
+        //         if ($request->path == 'pages/pullout_for_receiving') {
+
+        //             foreach ($prev_req_data as $tool_id => $request_number) {
+        //                 PeLogs::where('status', 1)
+        //                     ->where('request_number', $request_number)
+        //                     ->where('tool_id', $tool_id)
+        //                     ->update([
+        //                         'ters_upload_id' => $uploads->id,
+        //                         'remarks' => "Pullout tool",
+        //                     ]);
+        //             }
+        //         } else {
+        //             foreach ($not_serve_tools as $tool_id) {
+        //                 PeLogs::where('status', 1)->where('request_number', $request->tersNum)->where('tool_id', $tool_id)->update([
+        //                     'ters_upload_id' => $uploads->id,
+        //                     'remarks' => "Not serve tool",
+        //                 ]);
+        //             }
+
+        //             RfteisLogs::create([
+        //                 'page' => 'not_serve_items',
+        //                 'request_number' => $request->tersNum,
+        //                 'title' => 'Upload TERS',
+        //                 'message' => Auth::user()->fullname . ' ' . 'upload TERS due to "Not served" tool redelivery unavailable.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+        //                     $ters_name . '">
+        //                     <span>View</span>
+        //                     </a>',
+        //                 'action' => 11,
+        //                 'approver_name' => Auth::user()->fullname,
+        //             ]);
+        //         }
+
+
+        //         ///para lang kasi ito sa pullout
+        //         if ($request->path != 'pages/not_serve_items') {
+        //             PulloutRequest::where('status', 1)->where('pullout_number', $request->tersNum)->update([
+        //                 'progress' => 'completed',
+        //             ]);
+        //         }
+
+        //     }
+        // }
 
     }
 
