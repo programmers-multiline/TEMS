@@ -1144,13 +1144,16 @@
                                         <span class="nav-main-link-name">Item Logs</span>
                                     </a>
                                 </li>
-                                <li class="nav-main-item">
-                                    <a class="nav-main-link{{ request()->is('pages/report_te_logs') ? ' active' : '' }}"
-                                        href="/pages/report_te_logs">
-                                        <i class="nav-main-link-icon fa fa-address-book"></i>
-                                        <span class="nav-main-link-name">Tools & Equipment Logs</span>
-                                    </a>
-                                </li>
+                                @if (Auth::user()->user_type_id != 4)
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link{{ request()->is('pages/report_te_logs') ? ' active' : '' }}"
+                                            href="/pages/report_te_logs">
+                                            <i class="nav-main-link-icon fa fa-address-book"></i>
+                                            <span class="nav-main-link-name">Tools & Equipment Logs</span>
+                                        </a>
+                                    </li>
+                                @endif
+                                
                             @endif
                             {{-- @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 5)
                             @if (Auth::user()->user_type_id == 7)

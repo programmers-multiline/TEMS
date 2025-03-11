@@ -427,6 +427,20 @@
                 }
             });
 
+
+            table.on('select', function(e, dt, type, indexes) {
+                if (type === 'row') {
+                    var rows = table.rows(indexes).nodes().to$();
+                    $.each(rows, function() {
+                        if ($(this).hasClass('bg-warning')) {
+                            table.row($(this)).deselect();
+                            showToast("info",
+                                "Cannot select, Direct to site tools!");
+                        }
+                    })
+                }
+            });
+
             table.select.selector('td:first-child');
 
             // .replace(/_/g, " ")

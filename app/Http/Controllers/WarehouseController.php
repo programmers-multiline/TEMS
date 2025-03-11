@@ -129,6 +129,15 @@ class WarehouseController extends Controller
                         return 'bg-pulse-light'; 
                     }
 
+                    if ($row->tagged_to) {
+                        if($row->tagged_to != Auth::id()){
+                            return 'bg-warning'; 
+                        }else{
+                            return ''; 
+                        }
+                        
+                    }
+
                     $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
                         ->select('transfer_request_items.*')
                         ->where('transfer_requests.progress', 'ongoing')
