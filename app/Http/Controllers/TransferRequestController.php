@@ -1983,6 +1983,8 @@ class TransferRequestController extends Controller
                 $tools->wh_ps = 'ps';
                 $tools->current_pe = $scannedTools->pe;
                 $tools->current_site_id = $project_site->id;
+                $tools->location = '1';
+                $tools->tagged_to = NULL;
                 $tools->transfer_state = 0;
 
                 $tools->update();
