@@ -328,7 +328,7 @@
                             {{-- <th colspan="5" class="" style="width: 15%; font-size: 12px">PM/TL/PE
                                 RECOMMENDATION ACTION</th> --}}
                             <th class=""
-                                style="border-bottom: none; position: relative; width: 13%; font-size: 12px">
+                                style="border-bottom: none; position: relative; width: 13%; font-size: 11px">
                                 <span class="th-absolute">REASON FOR TRANSFER</span></th>
 
                             @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)

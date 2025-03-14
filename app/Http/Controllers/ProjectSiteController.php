@@ -21,6 +21,7 @@ use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PsTransferRequests;
 use App\Models\PulloutRequestItems;
+use App\Models\Scopes\CompanyScope;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use App\Models\PsTransferRequestItems;
@@ -228,7 +229,7 @@ class ProjectSiteController extends Controller
         $currentYearMonth = Carbon::now()->format('Ym');
 
         // Fetch the latest request for the same type, year, and month
-        $lastRequest = PsTransferRequests::where('request_number', 'like', "{$type}-{$currentYearMonth}-%")
+        $lastRequest = PsTransferRequests::withoutGlobalScope(CompanyScope::class)->where('request_number', 'like', "{$type}-{$currentYearMonth}-%")
             ->orderBy('request_number', 'desc')
             ->first();
 
@@ -265,6 +266,7 @@ class ProjectSiteController extends Controller
 
         $req = PsTransferRequests::create([
             'request_number' => $new_request_number,
+            'company_id' => Auth::user()->comp_id,
             'user_id' => Auth::user()->id,
             'project_name' => $request->projectName,
             'project_code' => $request->projectCode,
@@ -292,6 +294,7 @@ class ProjectSiteController extends Controller
         foreach ($approvers as $key => $approver) {
             RequestApprover::create([
                 'request_id' => $req->id,
+                'company_id' => Auth::user()->comp_id,
                 'approver_id' => $approver,
                 'sequence' => $key + 1,
                 'request_type' => 2,
@@ -300,6 +303,7 @@ class ProjectSiteController extends Controller
 
         Daf::create([
             'daf_number' => $new_request_number,
+            'company_id' => Auth::user()->comp_id,
             'user_id' => Auth::user()->id,
             'date_requested' => Carbon::now(),
             'tr_type' => 'rttte',
@@ -314,7 +318,7 @@ class ProjectSiteController extends Controller
         foreach ($tableData as $item) {
             PsTransferRequestItems::create([
                 'tool_id' => $item['id'],
-                'teis_no' => $item['teisRef'],
+                'teis_no' => $item['teisRef'] ?? null,
                 'request_number' => $new_request_number,
                 'ps_transfer_request_id' => $req->id,
                 'user_id' => Auth::user()->id,

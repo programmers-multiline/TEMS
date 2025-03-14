@@ -17,6 +17,7 @@ use App\Models\TransferRequest;
 use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
+use App\Models\Scopes\CompanyScope;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -261,7 +262,7 @@ class WarehouseController extends Controller
         $currentYearMonth = Carbon::now()->format('Ym');
 
         // Fetch the latest request for the same type, year, and month
-        $lastRequest = TransferRequest::where('teis_number', 'like', "{$type}-{$currentYearMonth}-%")
+        $lastRequest = TransferRequest::withoutGlobalScope(CompanyScope::class)->where('teis_number', 'like', "{$type}-{$currentYearMonth}-%")
             ->orderBy('teis_number', 'desc')
             ->first();
 
@@ -289,6 +290,7 @@ class WarehouseController extends Controller
 
         $req = TransferRequest::create([
             'teis_number' => $new_teis_number,
+            'company_id' => Auth::user()->comp_id,
             'pe' => Auth::user()->id,
             'subcon' => $request->subcon,
             'customer_name' => $request->customerName,
@@ -325,6 +327,7 @@ class WarehouseController extends Controller
         foreach ($approvers as $key => $approver) {
             RequestApprover::create([
                 'request_id' => $req->id,
+                'company_id' => Auth::user()->comp_id,
                 'approver_id' => $approver,
                 'sequence' => $key + 1,
                 'request_type' => 1,
@@ -336,6 +339,7 @@ class WarehouseController extends Controller
         Daf::create([
             'daf_number' => $new_teis_number,
             'user_id' => Auth::user()->id,
+            'company_id' => Auth::user()->comp_id,
             'date_requested' => Carbon::now(),
             'tr_type' => 'rfteis',
         ]);

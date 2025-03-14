@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $total_tools = ToolsAndEquipment::where('status', 1)->count();
         $issued = TransferRequest::where('status', 1)->where('progress', 'completed')->count();
         $pending_rttte = PsTransferRequests::where('status', 1)->where('request_status', 'pending')->count();
-        $rttte_approval = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->count();
+        $rttte_approval = PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('user_id', Auth::user()->id)->count();
 
 
         // requestor
@@ -44,8 +44,8 @@ class DashboardController extends Controller
         }
 
         if(Auth::user()->user_type_id == 2){
-            $pending_teis = TransferRequest::where('status', 1)->where('progress', 'ongoing')->count();
-            $pending_pullout = PulloutRequest::where('status', 1)->where('progress', 'ongoing')->count();
+            $pending_teis = TransferRequest::where('status', 1)->where('request_status', 'approved')->where('progress', 'ongoing')->count();
+            $pending_pullout = PulloutRequest::where('status', 1)->where('request_status', 'approved')->where('progress', 'ongoing')->count();
         }
 
 

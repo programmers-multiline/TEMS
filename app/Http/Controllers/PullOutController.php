@@ -448,14 +448,28 @@ class PullOutController extends Controller
                 ->get();
 
         } else {
-            $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+            if(Auth::user()->emp_id == 239){
+                $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
                 ->select('pullout_requests.*', 'users.fullname')
                 ->where('pullout_requests.status', 1)
                 ->where('users.status', 1)
                 ->where('progress', 'ongoing')
+                ->where('company_id', '3')
                 ->where('request_status', 'approved')
                 ->whereNull('is_deliver')
                 ->get();
+            }else{
+                $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+                ->select('pullout_requests.*', 'users.fullname')
+                ->where('pullout_requests.status', 1)
+                ->where('users.status', 1)
+                ->where('progress', 'ongoing')
+                ->where('company_id', '2')
+                ->where('request_status', 'approved')
+                ->whereNull('is_deliver')
+                ->get();
+            }
+            
         }
         // $request_tools = App\Models\TransferRequest::leftjoin('teis_uploads','teis_uploads.teis_number','transfer_requests.teis_number')
         // ->select('transfer_requests.teis_number','daf_status','request_status','subcon','customer_name','project_name','project_code','project_address', 'date_requested', 'transfer_requests.tr_type')
@@ -648,6 +662,7 @@ class PullOutController extends Controller
 
         PulloutLogs::create([
             'page' => 'pullout_ongoing',
+            'company_id' => Auth::user()->comp_id,
             'request_number' => $request_number,
             'title' => 'Approve Request',
             'message' => $sequence . Auth::user()->fullname . ' ' . 'approved the request.',
@@ -816,6 +831,7 @@ class PullOutController extends Controller
 
         PulloutLogs::create([
             'page' => 'pullout_warehouse',
+            'company_id' => Auth::user()->comp_id,
             'request_number' => $request->pulloutNum,
             'title' => 'Schedule',
             'message' => Auth::user()->fullname . ' ' . 'created a schedule for your tools delivery.',
@@ -926,6 +942,7 @@ class PullOutController extends Controller
             /// for logs
             PulloutLogs::create([
                 'page' => 'pullout_for_receiving',
+                'company_id' => Auth::user()->comp_id,
                 'request_number' => $received_tools->pullout_number,
                 'title' => 'Received Tool',
                 'message' => 'Warehouse received ' . $tools->item_description,
@@ -978,6 +995,7 @@ class PullOutController extends Controller
 
         PulloutLogs::create([
             'page' => 'pullout_for_receiving',
+            'company_id' => Auth::user()->comp_id,
             'request_number' => $received_tools->pullout_number,
             'title' => 'Not Received Tool',
             'message' => 'Warehouse did not received the' . $tool_name,

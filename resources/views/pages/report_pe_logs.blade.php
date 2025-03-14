@@ -1,6 +1,28 @@
 @extends('layouts.backend')
 @php
     $all_pg = App\Models\ProjectSites::select('id', 'project_name', 'project_code')->where('status', 1)->get();
+
+    if(Auth::user()->user_type_id == 3){
+        $projectIds = App\Models\AssignedProjects::where('status', 1)
+            ->where('user_id', Auth::id())
+            ->where('pos', 'pm')
+            ->pluck('project_id'); 
+
+        // Get PE user IDs associated with those project IDs
+        $peUserIds = App\Models\AssignedProjects::where('status', 1)
+            ->whereIn('project_id', $projectIds)
+            ->where('pos', 'pe')
+            ->pluck('user_id');
+
+        $PEs = App\Models\User::select('id', 'fullname')->where('status', 1)->whereIn('id', $peUserIds)->get();
+    }elseif(Auth::user()->user_type_id == 5){
+        $get_pe = App\Models\AssignedProjects::where('status', 1)->where('assigned_by', Auth::id())->where('pos', 'pe')->pluck('user_id')->toArray();
+
+        $PEs = App\Models\User::select('id', 'fullname')->where('status', 1)->whereIn('id', $get_pe)->get();
+    }else{
+        $PEs = App\Models\User::select('id', 'fullname')->where('status', 1)->where('user_type_id', 4)->get();
+    }
+   
 @endphp
 @section('css')
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
@@ -34,12 +56,21 @@
     <!-- Page Content -->
     <div class="content">
         <div class="d-flex flex-wrap mb-3">
-            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
-               <select class="js-select2 form-select w-100 mb-3" id="selectTools">
+            @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5)
+               <select class="js-select2 form-select w-100 mb-2" id="selectTools">
                     <option disabled selected>Select Tools</option>
             
-                </select>  
+                </select>
             @endif
+            @if (Auth::user()->user_type_id != 4 || Auth::user()->user_type_id == 7)
+                <select class="js-select2 form-select w-100 mb-2 ms-3" id="selectPe">
+                    <option disabled selected>Select PE</option>
+                    @foreach ($PEs as $pe)
+                        <option value="{{ $pe->id }}">{{ $pe->fullname }}</option>
+                    @endforeach
+                </select>
+            @endif
+        
            @if (Auth::user()->user_type_id == 7)
               <select class="js-select2 form-select w-100 mb-3" id="selectProjectCode">
                 <option disabled selected>Select Project code</option>
@@ -100,6 +131,10 @@
 
             $("#selectTools").select2({
                 placeholder: "Select Tool",
+            });
+
+            $("#selectPe").select2({
+                placeholder: "Select PE",
             });
 
             $("#selectProjectCode").select2({
@@ -196,10 +231,15 @@
                     $(".uploadTersBtn").tooltip();
                 }
             });
-
+            //? filter sa Tools
             $("#selectTools").change(function() {
                 const toolId = $(this).val();
                 table.ajax.url('{{ route('report_pe_logs') }}?toolId=' + toolId).load();
+            })
+            //? filter sa PE
+            $("#selectPe").change(function() {
+                const PeId = $(this).val();
+                table.ajax.url('{{ route('report_pe_logs') }}?PeId=' + PeId).load();
             })
 
             $("#selectProjectCode").change(function() {

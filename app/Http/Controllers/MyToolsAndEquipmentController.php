@@ -18,6 +18,7 @@ use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PulloutRequestItems;
+use App\Models\Scopes\CompanyScope;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -313,7 +314,7 @@ class MyToolsAndEquipmentController extends Controller
         $currentYearMonth = Carbon::now()->format('Ym');
 
         // Fetch the latest request for the same type, year, and month
-        $lastRequest = PulloutRequest::where('pullout_number', 'like', "{$type}-{$currentYearMonth}-%")
+        $lastRequest = PulloutRequest::withoutGlobalScope(CompanyScope::class)->where('pullout_number', 'like', "{$type}-{$currentYearMonth}-%")
             ->orderBy('pullout_number', 'desc')
             ->first();
 
@@ -343,6 +344,7 @@ class MyToolsAndEquipmentController extends Controller
 
         $req = PulloutRequest::create([
             'pullout_number' => $new_pullout_number,
+            'company_id' => Auth::user()->comp_id,
             'user_id' => Auth::user()->id,
             'client' => $request->client,
             'subcon' => $request->subcon,
@@ -365,6 +367,7 @@ class MyToolsAndEquipmentController extends Controller
         foreach ($approvers as $key => $approver) {
             RequestApprover::create([
                 'request_id' => $req->id,
+                'company_id' => Auth::user()->comp_id,
                 'approver_id' => $approver,
                 'sequence' => $key + 1,
                 'request_type' => 3,
@@ -433,6 +436,7 @@ class MyToolsAndEquipmentController extends Controller
 
         PulloutLogs::create([
             'approver_name' => Auth::user()->fullname,
+            'company_id' => Auth::user()->comp_id,
             'page' => 'my_te',
             'request_number' => $new_pullout_number,
             'title' => 'Request' . ' ' . '#' . $new_pullout_number,
@@ -467,6 +471,7 @@ class MyToolsAndEquipmentController extends Controller
 
         RequestForToolsExtensions::create([
             'tool_id' => $request->toolId,
+            'company_id' => Auth::user()->comp_id,
             'pe' => $request->pe,
             'orig_end_date' => $request->origEndDate,
             'extension_date' => $request->exDate,
