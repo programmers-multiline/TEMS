@@ -177,6 +177,7 @@
                         },
                         success(result) {
                             $("#requestFormLayout").html(result)
+                            $('.disapprovedLabel').popover({ trigger: 'hover' })
 
                             const modalTable = $("#modalTable").DataTable({
                                 paging: false,

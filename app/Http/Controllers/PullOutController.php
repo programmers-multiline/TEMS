@@ -431,12 +431,13 @@ class PullOutController extends Controller
             // })
             // ->where('request_status', 'approved')
             // ->get();
-
-            $request_tools = PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+            if(Auth::user()->emp_id == 239){
+                $request_tools = PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
                 ->leftJoin('ters_uploads', 'ters_uploads.pullout_number', '=', 'pullout_requests.pullout_number')
                 ->select('pullout_requests.*', 'users.fullname')
                 ->where('pullout_requests.status', 1)
                 ->where('users.status', 1)
+                ->where('pullout_requests.company_id', '3')
                 ->where('request_status', 'approved')
                 ->where(function ($query) {
                     $query->where('progress', 'ongoing')
@@ -446,6 +447,23 @@ class PullOutController extends Controller
                 ->orderBy('ters_uploads.created_at', 'desc')
                 ->whereNotNull('is_deliver')
                 ->get();
+            }else{
+                $request_tools = PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+                ->leftJoin('ters_uploads', 'ters_uploads.pullout_number', '=', 'pullout_requests.pullout_number')
+                ->select('pullout_requests.*', 'users.fullname')
+                ->where('pullout_requests.status', 1)
+                ->where('users.status', 1)
+                ->where('pullout_requests.company_id', '2')
+                ->where('request_status', 'approved')
+                ->where(function ($query) {
+                    $query->where('progress', 'ongoing')
+                        ->orWhereNull('ters_uploads.pullout_number');
+                })
+                ->distinct()
+                ->orderBy('ters_uploads.created_at', 'desc')
+                ->whereNotNull('is_deliver')
+                ->get();
+            } 
 
         } else {
             if(Auth::user()->emp_id == 239){
@@ -687,14 +705,30 @@ class PullOutController extends Controller
             ->distinct('request_id')
             ->get();
         }else{
-            $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
-            ->select('pullout_requests.*', 'request_approvers.date_approved')
-            ->where('request_approvers.status', 1)
-            ->where('pullout_requests.status', 1)
-            ->where('request_approvers.request_type', 3)
-            ->where('progress', 'completed')
-            ->distinct('request_id')
-            ->get();
+            if(Auth::user()->emp_id == 239){
+                $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
+                    ->select('pullout_requests.*', 'request_approvers.date_approved')
+                    ->where('request_approvers.status', 1)
+                    ->where('request_approvers.company_id', '3')
+                    ->where('pullout_requests.company_id', '3')
+                    ->where('pullout_requests.status', 1)
+                    ->where('request_approvers.request_type', 3)
+                    ->where('progress', 'completed')
+                    ->distinct('request_id')
+                    ->get();
+            }else{
+                $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
+                    ->select('pullout_requests.*', 'request_approvers.date_approved')
+                    ->where('request_approvers.status', 1)
+                    ->where('request_approvers.company_id', '2')
+                    ->where('pullout_requests.company_id', '2')
+                    ->where('pullout_requests.status', 1)
+                    ->where('request_approvers.request_type', 3)
+                    ->where('progress', 'completed')
+                    ->distinct('request_id')
+                    ->get();
+            }
+            
         }
         
 
@@ -788,10 +822,25 @@ class PullOutController extends Controller
 
     public function fetch_sched_date()
     {
-        $pullout_request = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+        if(Auth::user()->emp_id == 239){
+            $pullout_request = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.pullout_number', 'pullout_requests.project_address', 'pullout_requests.approved_sched_date', 'pullout_requests.contact_number', 'users.fullname', 'pullout_requests.project_name', 'pullout_requests.client')
-            ->where('pullout_requests.status', 1)->whereNotNull('approved_sched_date')->get();
-        return $pullout_request;
+            ->where('company_id', '3')
+            ->where('pullout_requests.status', 1)
+            ->whereNotNull('approved_sched_date')
+            ->get();
+        }else{
+            $pullout_request = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.pullout_number', 'pullout_requests.project_address', 'pullout_requests.approved_sched_date', 'pullout_requests.contact_number', 'users.fullname', 'pullout_requests.project_name', 'pullout_requests.client')
+            ->where('company_id', '2')
+            ->where('pullout_requests.status', 1)
+            ->whereNotNull('approved_sched_date')
+            ->get();
+        }
+        
+        
+        
+            return $pullout_request;
     }
 
     public function add_schedule(Request $request)
