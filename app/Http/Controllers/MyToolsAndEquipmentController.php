@@ -436,7 +436,6 @@ class MyToolsAndEquipmentController extends Controller
 
         PulloutLogs::create([
             'approver_name' => Auth::user()->fullname,
-            'company_id' => Auth::user()->comp_id,
             'page' => 'my_te',
             'request_number' => $new_pullout_number,
             'title' => 'Request' . ' ' . '#' . $new_pullout_number,
