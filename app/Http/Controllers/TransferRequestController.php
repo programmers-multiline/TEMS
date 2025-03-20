@@ -820,49 +820,107 @@ class TransferRequestController extends Controller
 
     public function fetch_teis_request(Request $request)
     {
-
-        if($request->path == 'pages/rftte_signed_form_proof'){
-            $request_tools = TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-                ->where('status', 1)
-                ->where('progress', 'completed')
-                ->whereNull('is_proof_upload');
-
-
-            $ps_request_tools = PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-                ->where('status', 1)
-                ->where('progress', 'completed')
-                ->whereNull('is_proof_upload');
-
-        }else if($request->path == 'pages/not_serve_items'){
-            $request_tools = TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
-                ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-                ->where('transfer_request_items.status', 1)
-                ->where('progress', 'partial')
-                ->where('transfer_requests.status', 1);
-
-
-            $ps_request_tools = PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
-                ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-                ->where('ps_transfer_request_items.item_status', 2)
-                ->where('ps_transfer_request_items.status', 1)
-                ->where('progress', 'completed')
-                ->where('ps_transfer_requests.status', 1);
-        }else{
-            $request_tools = TransferRequest::select('progress', 'teis_number', 'pe', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'for_pricing as current_pe')
-            ->where('status', 1)
-            ->where('progress', 'ongoing')
-            ->where('request_status', 'approved')
-            ->whereNull('is_deliver');
-
-            $ps_request_tools = PsTransferRequests::select('progress', 'request_number as teis_number', 'user_id as pe', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'current_pe')
+        
+        if(Auth::user()->emp_id == 239){
+            if($request->path == 'pages/rftte_signed_form_proof'){
+                $request_tools = TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('status', 1)
+                    ->where('progress', 'completed')
+                    ->where('company_id', '3')
+                    ->whereNull('is_proof_upload');
+    
+    
+                $ps_request_tools = PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('status', 1)
+                    ->where('progress', 'completed')
+                    ->where('company_id', '3')
+                    ->whereNull('is_proof_upload');
+    
+            }else if($request->path == 'pages/not_serve_items'){
+                $request_tools = TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                    ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('transfer_request_items.status', 1)
+                    ->where('progress', 'partial')
+                    ->where('company_id', '3')
+                    ->where('transfer_requests.status', 1);
+    
+    
+                $ps_request_tools = PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
+                    ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('ps_transfer_request_items.item_status', 2)
+                    ->where('ps_transfer_request_items.status', 1)
+                    ->where('progress', 'completed')
+                    ->where('company_id', '3')
+                    ->where('ps_transfer_requests.status', 1);
+            }else{
+                $request_tools = TransferRequest::select('progress', 'teis_number', 'pe', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'for_pricing as current_pe')
                 ->where('status', 1)
                 ->where('progress', 'ongoing')
+                ->where('company_id', '3')
                 ->where('request_status', 'approved')
-                ///dahil inalis ko yung inputing of price sa acc
-                ->where('for_pricing', 2)
                 ->whereNull('is_deliver');
-
-         }
+    
+                $ps_request_tools = PsTransferRequests::select('progress', 'request_number as teis_number', 'user_id as pe', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'current_pe')
+                    ->where('status', 1)
+                    ->where('progress', 'ongoing')
+                    ->where('company_id', '3')
+                    ->where('request_status', 'approved')
+                    ///dahil inalis ko yung inputing of price sa acc
+                    ->where('for_pricing', 2)
+                    ->whereNull('is_deliver');
+    
+             }
+        }else{
+            if($request->path == 'pages/rftte_signed_form_proof'){
+                $request_tools = TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('status', 1)
+                    ->where('progress', 'completed')
+                    ->where('company_id', '2')
+                    ->whereNull('is_proof_upload');
+    
+    
+                $ps_request_tools = PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('status', 1)
+                    ->where('progress', 'completed')
+                    ->where('company_id', '2')
+                    ->whereNull('is_proof_upload');
+    
+            }else if($request->path == 'pages/not_serve_items'){
+                $request_tools = TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                    ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('transfer_request_items.status', 1)
+                    ->where('progress', 'partial')
+                    ->where('company_id', '2')
+                    ->where('transfer_requests.status', 1);
+    
+    
+                $ps_request_tools = PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
+                    ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                    ->where('ps_transfer_request_items.item_status', 2)
+                    ->where('ps_transfer_request_items.status', 1)
+                    ->where('progress', 'completed')
+                    ->where('company_id', '2')
+                    ->where('ps_transfer_requests.status', 1);
+            }else{
+                $request_tools = TransferRequest::select('progress', 'teis_number', 'pe', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'for_pricing as current_pe')
+                ->where('status', 1)
+                ->where('progress', 'ongoing')
+                ->where('company_id', '2')
+                ->where('request_status', 'approved')
+                ->whereNull('is_deliver');
+    
+                $ps_request_tools = PsTransferRequests::select('progress', 'request_number as teis_number', 'user_id as pe', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'current_pe')
+                    ->where('status', 1)
+                    ->where('progress', 'ongoing')
+                    ->where('company_id', '2')
+                    ->where('request_status', 'approved')
+                    ///dahil inalis ko yung inputing of price sa acc
+                    ->where('for_pricing', 2)
+                    ->whereNull('is_deliver');
+    
+             }
+        }
+        
             
             $transfer_requests = $request_tools->union($ps_request_tools)->get();
 
@@ -1121,19 +1179,38 @@ class TransferRequestController extends Controller
 
     public function fetch_teis_request_completed()
     {
-
-        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+        if(Auth::user()->emp_id == 239){
+            $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'completed')
+            ->where('company_id', '3')
             ->whereNotNull('is_proof_upload');
 
 
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '3')
+                ///inalis na kasi ang acc sa process
+                // ->whereNotNull('acc')
+                ->whereNotNull('is_proof_upload');
+        }else{
+            $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'completed')
-            ///inalis na kasi ang acc sa process
-            // ->whereNotNull('acc')
+            ->where('company_id', '2')
             ->whereNotNull('is_proof_upload');
+
+
+            $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '2')
+                ///inalis na kasi ang acc sa process
+                // ->whereNotNull('acc')
+                ->whereNotNull('is_proof_upload');
+        }
+        
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
 
@@ -1598,7 +1675,11 @@ class TransferRequestController extends Controller
                 array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
             }
 
-            $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->first();
+            if($tools->company_id == 3){
+                $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 239)->first();
+            }else{
+                $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 170)->first();
+            }
 
 
             // $mail_data = ['fullname' => $user->fullname, 'request_number' => $transfer_request->teis_number, 'items' => json_encode($mail_Items)];
@@ -1638,7 +1719,7 @@ class TransferRequestController extends Controller
 
                 if($nextSec == 2){
                     //? para sa accounting email : dapat sa request palang nag eemail na ito e pero dito ko muna nilagay kasi nagmamadaliako
-                    $user = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 7)->first();
+                    $user = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 7)->where('comp_id', $tools->company_id)->first();
 
                     $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $user->fullname, 'items' => json_encode($mail_Items)];
             
@@ -2727,6 +2808,7 @@ class TransferRequestController extends Controller
             /// for logs
             PulloutLogs::create([
                 'page' => 'pullout_ongoing',
+                'company_id' => Auth::user()->comp_id,
                 'request_number' => $request->requestNum,
                 'title' => 'Pullout',
                 'message' => 'tools are on the way to warehouse!',
@@ -3484,9 +3566,15 @@ class TransferRequestController extends Controller
         ->whereIn('users.user_type_id', [3, 4])
         ->get();
 
-        $project_sites = ProjectSites::where('status', 1)
-        ->select('id', 'project_name')
-        ->where('area', Auth::user()->area)->get();
+        if(Auth::user()->comp_id == 3){
+            $project_sites = ProjectSites::where('status', 1)
+            ->select('id', 'project_name')
+            ->where('area', Auth::user()->area)->get();
+        }else{
+            $project_sites = ProjectSites::where('status', 1)
+            ->select('id', 'project_name')->get();
+        }
+        
 
 
         return view('/pages/project_assignment', compact('users', 'project_sites'));

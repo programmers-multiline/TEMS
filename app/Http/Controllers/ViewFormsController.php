@@ -739,7 +739,7 @@ class ViewFormsController extends Controller
     public function rfteis_approvers_view(Request $request)
     {
 
-        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by', 'wh_location')
+        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by', 'disapproved_date', 'disapproved_reason', 'wh_location')
             ->where('status', 1)
             // ->where('progress', 'ongoing')
             ->where('teis_number', $request->id)
@@ -796,7 +796,7 @@ class ViewFormsController extends Controller
         if($request->path == 'pages/rfteis_disapproved'){
             // $disapproved_by = User::where('status', 1)->where('id', $request_tools->disapproved_by)->value('fullname')
 
-            $action = '<span class="mx-auto fw-bold text-pulse" style="font-size: 14px;">Disapproved</span>';
+            $action = '<span class="mx-auto fw-bold text-pulse disapprovedLabel" style="font-size: 14px;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$request_tools->disapproved_reason.'" data-bs-content="'.$request_tools->disapproved_date.'">Disapproved</span>';
         }
 
         //WAREHOUSE MANAGER    
@@ -837,7 +837,7 @@ class ViewFormsController extends Controller
         if ($fourthApprover) {
             $name_fourth = $approvers[3]->fullname;
             $date_approved_fourth = $approvers[3]->date_approved;
-        } else if ($approvers[2]->approver_status == 1 && $request->path == 'pages/rfteis') {
+        } else if ($approvers[2]->approver_status == 1 && ($request->path == 'pages/rfteis' || $request->path == 'pages/rfteis_disapproved')) {
             $name_fourth = $action;
             $date_approved_fourth = '--';
         } else {

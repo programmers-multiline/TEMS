@@ -22,6 +22,23 @@ class ReportsController extends Controller
     public function report_pe_logs(Request $request)
     {
         // return $request;
+        
+        /// under ng PM
+        $projectIds = AssignedProjects::where('status', 1)
+            ->where('user_id', Auth::id())
+            ->where('pos', 'pm')
+            ->pluck('project_id');
+
+        // Get PE user IDs associated with those project IDs
+        $peUserIds = AssignedProjects::where('status', 1)
+            ->whereIn('project_id', $projectIds)
+            ->where('pos', 'pe')
+            ->pluck('user_id');
+
+        /// kay sir benjo yung mga else
+        /// user_type_id == 4 PE
+        /// user_type_id == 3 PM
+        /// user_type_id == 5 OM
         if($request->toolId){
             if(Auth::user()->user_type_id == 4){
                 $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
@@ -32,7 +49,16 @@ class ReportsController extends Controller
                ->where('pe_logs.status', 1)
                ->where('pe_logs.pe', Auth::user()->id)
                ->get();
-           }elseif(Auth::user()->user_type_id == 5){
+           }elseif(Auth::user()->user_type_id == 3){
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number', 'pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('tools_and_equipment.id', $request->toolId)
+                ->where('pe_logs.status', 1)
+                ->whereIn('pe_logs.pe', $peUserIds)
+                ->get();
+            }elseif(Auth::user()->user_type_id == 5){
                $PEs = AssignedProjects::where('status', 1)->where('assigned_by', Auth::id())->pluck('user_id')->toArray();
    
                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
@@ -49,6 +75,33 @@ class ReportsController extends Controller
                 ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number','pe_logs.tr_type', 'users.fullname')
                 ->where('tools_and_equipment.status', 1)
                 ->where('tools_and_equipment.id', $request->toolId)
+                ->where('pe_logs.status', 1)
+                ->whereNull('ters_upload_id')
+                ->get();
+           }
+        }elseif($request->PeId){
+            if(Auth::user()->user_type_id == 3){
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number', 'pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('pe_logs.status', 1)
+                ->where('pe_logs.pe', $request->PeId)
+                ->get();
+            }elseif(Auth::user()->user_type_id == 5){
+               $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+               ->leftjoin('users', 'users.id', 'pe_logs.pe')
+               ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number','pe_logs.tr_type', 'users.fullname')
+               ->where('tools_and_equipment.status', 1)
+               ->where('pe_logs.status', 1)
+               ->where('pe_logs.pe', $request->PeId)
+               ->get();
+           }else{
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number','pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('pe_logs.pe', $request->PeId)
                 ->where('pe_logs.status', 1)
                 ->whereNull('ters_upload_id')
                 ->get();
@@ -79,7 +132,15 @@ class ReportsController extends Controller
                ->where('pe_logs.status', 1)
                ->where('pe_logs.pe', Auth::user()->id)
                ->get();
-           }elseif(Auth::user()->user_type_id == 5){
+           }elseif(Auth::user()->user_type_id == 3){
+                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')
+                ->leftjoin('users', 'users.id', 'pe_logs.pe')
+                ->select('tools_and_equipment.po_number', 'tools_and_equipment.id', 'tools_and_equipment.asset_code', 'tools_and_equipment.item_code', 'tools_and_equipment.item_description', 'pe_logs.teis_upload_id', 'pe_logs.ters_upload_id', 'pe_logs.remarks', 'pe_logs.request_number', 'pe_logs.tr_type', 'users.fullname')
+                ->where('tools_and_equipment.status', 1)
+                ->where('pe_logs.status', 1)
+                ->whereIn('pe_logs.pe', $peUserIds)
+                ->get();
+            }elseif(Auth::user()->user_type_id == 5){
                $PEs = AssignedProjects::where('status', 1)->where('assigned_by', Auth::id())->pluck('user_id')->toArray();
    
                $pe_logs = PeLogs::leftjoin('tools_and_equipment', 'tools_and_equipment.id', 'pe_logs.tool_id')

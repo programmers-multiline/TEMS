@@ -346,20 +346,40 @@
     // ->whereNotNull('acc')
     // ->whereNull('is_deliver');
 
-
-    $request_tools = App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+    if(Auth::user()->emp_id == 239){
+        $request_tools = App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'ongoing')
+            ->where('company_id', '3')
             ->where('request_status', 'approved')
             ->whereNull('is_deliver');
 
-    $ps_request_tools_wh = App\Models\PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-        ->where('status', 1)
-        ->where('progress', 'ongoing')
-        ->where('request_status', 'approved')
-        ///dahil inalis ko yung inputing of price sa acc
-        ->where('for_pricing', 2)
-        ->whereNull('is_deliver');
+        $ps_request_tools_wh = App\Models\PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('company_id', '3')
+            ->where('request_status', 'approved')
+            ///dahil inalis ko yung inputing of price sa acc
+            ->where('for_pricing', 2)
+            ->whereNull('is_deliver');
+    }else{
+        $request_tools = App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('company_id', '2')
+            ->where('request_status', 'approved')
+            ->whereNull('is_deliver');
+
+        $ps_request_tools_wh = App\Models\PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            ->where('status', 1)
+            ->where('progress', 'ongoing')
+            ->where('company_id', '2')
+            ->where('request_status', 'approved')
+            ///dahil inalis ko yung inputing of price sa acc
+            ->where('for_pricing', 2)
+            ->whereNull('is_deliver');
+    }
+    
 
     $unioned_tables = $request_tools->union($ps_request_tools_wh)->count();
 
@@ -404,44 +424,90 @@
 
     // pullout-out schedule - warehouse
     if(Auth::user()->user_type_id == 2){
-        $pullout_for_schedule = App\Models\PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+        if(Auth::user()->emp_id == 239){
+            $pullout_for_schedule = App\Models\PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)
             ->where('users.status', 1)
             ->where('progress', 'ongoing')
+            ->where('company_id', '3')
             ->where('request_status', 'approved')
             ->whereNull('approved_sched_date')
             ->count();
+        }else{
+            $pullout_for_schedule = App\Models\PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('progress', 'ongoing')
+            ->where('company_id', '2')
+            ->where('request_status', 'approved')
+            ->whereNull('approved_sched_date')
+            ->count();
+        }
+        
     }else{
         $pullout_for_schedule = 0;
     }
 
     // pullout for receiving warehouse
     if(Auth::user()->user_type_id == 2){
-        $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+        if(Auth::user()->emp_id == 239){
+            $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)
             ->where('users.status', 1)
+            ->where('company_id', '3')
             ->where('request_status', 'approved')
             ->where('progress', 'ongoing')
             ->whereNotNull('is_deliver')
             ->count();
+        }else{
+            $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('company_id', '2')
+            ->where('request_status', 'approved')
+            ->where('progress', 'ongoing')
+            ->whereNotNull('is_deliver')
+            ->count();
+        }
+        
     }else{
         $pullout_for_receiving = 0;
     }
 
     /// rftte_signed_form_proof
     if(Auth::user()->user_type_id == 2){
-        $request_tools = App\Models\TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-            ->where('status', 1)
-            ->where('progress', 'completed')
-            ->whereNull('is_proof_upload');
+        if(Auth::user()->emp_id == 239){
+            $request_tools = App\Models\TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '3')
+                ->whereNull('is_proof_upload');
 
 
-        $ps_request_tools = App\Models\PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-            ->where('status', 1)
-            ->where('progress', 'completed')
-            ->whereNull('is_proof_upload');
+            $ps_request_tools = App\Models\PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '3')
+                ->whereNull('is_proof_upload');
+        }else{
+            $request_tools = App\Models\TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '2')
+                ->whereNull('is_proof_upload');
+
+
+            $ps_request_tools = App\Models\PsTransferRequests::select('progress', 'request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '2')
+                ->whereNull('is_proof_upload');
+        }
+        
 
         $transfer_requests = $request_tools->union($ps_request_tools)->get();
 
@@ -452,19 +518,40 @@
 
     /// Not Serve Count
     if(Auth::user()->user_type_id == 2){
-        $request_tools = App\Models\TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+        if(Auth::user()->emp_id == 239){
+            $request_tools = App\Models\TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
                 ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                 ->where('transfer_request_items.status', 1)
                 ->where('progress', 'partial')
+                ->where('company_id', '3')
                 ->where('transfer_requests.status', 1);
 
 
-        $ps_request_tools = App\Models\PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
-            ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
-            ->where('ps_transfer_request_items.item_status', 2)
-            ->where('ps_transfer_request_items.status', 1)
-            ->where('progress', 'completed')
-            ->where('ps_transfer_requests.status', 1);
+            $ps_request_tools = App\Models\PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
+                ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('ps_transfer_request_items.item_status', 2)
+                ->where('ps_transfer_request_items.status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '3')
+                ->where('ps_transfer_requests.status', 1);
+        }else{
+            $request_tools = App\Models\TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
+                ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('transfer_request_items.status', 1)
+                ->where('progress', 'partial')
+                ->where('company_id', '2')
+                ->where('transfer_requests.status', 1);
+
+
+            $ps_request_tools = App\Models\PsTransferRequests::join('ps_transfer_request_items', 'ps_transfer_request_items.ps_transfer_request_id', 'ps_transfer_requests.id')
+                ->select('progress', 'ps_transfer_requests.request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('ps_transfer_request_items.item_status', 2)
+                ->where('ps_transfer_request_items.status', 1)
+                ->where('progress', 'completed')
+                ->where('company_id', '2')
+                ->where('ps_transfer_requests.status', 1);
+        }
+        
 
         $transfer_requests = $request_tools->union($ps_request_tools)->get();
 
@@ -1135,7 +1222,7 @@
                                 </a>
                             </li>
 
-                            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5 || Auth::user()->user_type_id == 7)
+                            @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5 || Auth::user()->user_type_id == 7)
                                 <li class="nav-main-heading">Reports</li>
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/report_pe_logs') ? ' active' : '' }}"
@@ -1144,7 +1231,7 @@
                                         <span class="nav-main-link-name">Item Logs</span>
                                     </a>
                                 </li>
-                                @if (Auth::user()->user_type_id != 4)
+                                @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 7)
                                     <li class="nav-main-item">
                                         <a class="nav-main-link{{ request()->is('pages/report_te_logs') ? ' active' : '' }}"
                                             href="/pages/report_te_logs">

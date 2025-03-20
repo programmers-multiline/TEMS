@@ -55,11 +55,13 @@ class FileUploadController extends Controller
 
                 $tool_ids = explode(',', $request->toolId);
 
+                $comp = Auth::user()->emp_id == 239 ? 3 : 2;
 
                 foreach ($tool_ids as $tool_id) {
                     PeLogs::create([
                         'request_number' => $request->teisNum,
                         'tool_id' => $tool_id,
+                        'company_id' => $comp,
                         'teis_upload_id' => $uploads->id,
                         'pe' => $request->pe,
                         'tr_type' => $request->trType,
