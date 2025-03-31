@@ -35,10 +35,10 @@ Route::view('/', 'login');
 
 
 
-Route::middleware(['auth'])->group(function () {   
+Route::middleware(['auth'])->group(function () {
     // Route::prefix('/admin')->group(function () {
     //    Route::get('/test', function () { return 'test'; });
-    // }); 
+    // });
     Route::get('/dashboard_PM', function(){
         return view('pages.dashboard_PM');
     });
@@ -99,7 +99,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('delete_warehouse_tools', 'delete_tools')->name('delete_tools');
         Route::post('request', 'request_tools')->name('request_tools');
     });
-    
+
     Route::controller(ProjectSiteController::class)->group(function () {
         Route::get('view_project_site/{search?}/{desc?}', 'view_project_site')->name('view_project_site');
         Route::get('fetch_tools_ps', 'fetch_tools_ps')->name('fetch_tools_ps');
@@ -107,9 +107,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('ps_teis_request', 'fetch_teis_request_ps')->name('fetch_teis_request_ps');
         Route::get('ps_teis_request_modal', 'ps_ongoing_teis_request_modal')->name('ps_ongoing_teis_request_modal');
         Route::post('add_price', 'add_price_acc')->name('add_price_acc');
-        
+
     });
-    
+
     Route::controller(TransferRequestController::class)->group(function () {
         Route::get('ongoing_teis_request', 'ongoing_teis_request')->name('ongoing_teis_request');
         Route::get('ps_ongoing_teis_request', 'ps_ongoing_teis_request')->name('ps_ongoing_teis_request');
@@ -137,9 +137,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('rfteis_acc_proceed', 'rfteis_acc_proceed')->name('rfteis_acc_proceed');
 
         Route::post('remove_tool', 'remove_tool')->name('remove_tool');
-        
+
         Route::post('redelivery_status', 'redelivery_status')->name('redelivery_status');
-        
+
         Route::get('project_tagging', 'project_tagging')->name('project_tagging');
         Route::get('fetch_assigned_personnel', 'fetch_assigned_personnel')->name('fetch_assigned_personnel');
         Route::post('assign_personnel', 'assign_personnel')->name('assign_personnel');
@@ -151,7 +151,7 @@ Route::middleware(['auth'])->group(function () {
 
 
     });
-    
+
     Route::controller(MyToolsAndEquipmentController::class)->group(function () {
         Route::get('view_my_te', 'view_my_te')->name('view_my_te');
         Route::get('my_te', 'fetch_my_te')->name('fetch_my_te');
@@ -162,7 +162,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('fetch_request_for_extension', 'fetch_request_for_extension')->name('fetch_request_for_extension');
         Route::post('approve_extension_tool', 'approve_extension_tool')->name('approve_extension_tool');
     });
-    
+
     Route::controller(PullOutController::class)->group(function () {
         Route::get('ongoing_pullout', 'fetch_ongoing_pullout')->name('fetch_ongoing_pullout');
         Route::get('ongoing_pullout_request', 'ongoing_pullout_request_modal')->name('ongoing_pullout_request_modal');
@@ -175,9 +175,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('received_pullout_tools', 'received_pullout_tools')->name('received_pullout_tools');
         Route::post('fetch_current_site', 'fetch_current_site')->name('fetch_current_site');
         Route::post('pullout_not_received', 'pullout_not_received')->name('pullout_not_received');
-        
+
     });
-    
+
     Route::controller(AdminController::class)->group(function(){
         Route::get('approvers_setup','approvers_setup')->name('approvers_setup');
         Route::get('fetch_approvers','fetch_approvers')->name('fetch_approvers');
@@ -208,9 +208,9 @@ Route::middleware(['auth'])->group(function () {
         // viewer
         Route::get('request_list', 'request_list')->name('request_list');
     });
-    
+
     // Route::controller(FileUploadController::class)->group(function(){
-        
+
     // });
     Route::post('upload_process', [FileUploadController::class, 'upload_process'])->name('upload_process');
     Route::post('ps_upload_process_ters', [FileUploadController::class, 'ps_upload_process_ters'])->name('ps_upload_process_ters');
@@ -218,8 +218,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('upload_tools_pic', [FileUploadController::class, 'upload_tools_pic'])->name('upload_tools_pic');
     Route::post('upload_proof_of_receiving', [FileUploadController::class, 'upload_proof_of_receiving'])->name('upload_proof_of_receiving');
     Route::post('upload_photo_for_pullout', [FileUploadController::class, 'upload_photo_for_pullout'])->name('upload_photo_for_pullout');
-    
-    
+
+
     Route::post('search', [SearchController::class, 'search'])->name('search');
 });
 
@@ -229,3 +229,6 @@ Route::get('daily', [MyToolsAndEquipmentController::class, 'daily'])->name('dail
 
 Route::post('/', [UserController::class, 'auth_login'])->name('login');
 Route::post('/logout', [UserController::class, 'auth_logout'])->name('logout');
+
+Route::middleware(['verify.api.token'])->post('/login-via-oms', [UserController::class, 'loginViaOMS']);
+Route::get('/login-with-token', [UserController::class, 'authViaOMS'])->name('login.with.token');
