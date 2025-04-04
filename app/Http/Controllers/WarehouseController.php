@@ -133,7 +133,9 @@ class WarehouseController extends Controller
                     $tool_id = TransferRequestItems::leftjoin('transfer_requests', 'transfer_requests.id', 'transfer_request_items.transfer_request_id')
                         ->select('transfer_request_items.*')
                         ->where('transfer_requests.progress', 'ongoing')
-                        ->where('transfer_requests.status', 1)->get();
+                        ->where('transfer_requests.status', 1)
+                        ->where('transfer_request_items.status', 1)
+                        ->get();
 
                     $toolIds = collect($tool_id)->pluck('tool_id')->toArray();
 

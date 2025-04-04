@@ -431,7 +431,7 @@ class PullOutController extends Controller
             // })
             // ->where('request_status', 'approved')
             // ->get();
-            if(Auth::user()->emp_id == 239){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
                 $request_tools = PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
                 ->leftJoin('ters_uploads', 'ters_uploads.pullout_number', '=', 'pullout_requests.pullout_number')
                 ->select('pullout_requests.*', 'users.fullname')
@@ -466,7 +466,7 @@ class PullOutController extends Controller
             } 
 
         } else {
-            if(Auth::user()->emp_id == 239){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
                 $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
                 ->select('pullout_requests.*', 'users.fullname')
                 ->where('pullout_requests.status', 1)
@@ -704,7 +704,7 @@ class PullOutController extends Controller
             ->distinct('request_id')
             ->get();
         }else{
-            if(Auth::user()->emp_id == 239){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
                 $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
                     ->select('pullout_requests.*', 'request_approvers.date_approved')
                     ->where('request_approvers.status', 1)
@@ -821,7 +821,7 @@ class PullOutController extends Controller
 
     public function fetch_sched_date()
     {
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $pullout_request = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.pullout_number', 'pullout_requests.project_address', 'pullout_requests.approved_sched_date', 'pullout_requests.contact_number', 'users.fullname', 'pullout_requests.project_name', 'pullout_requests.client')
             ->where('company_id', '3')

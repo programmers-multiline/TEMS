@@ -346,7 +346,7 @@
     // ->whereNotNull('acc')
     // ->whereNull('is_deliver');
 
-    if(Auth::user()->emp_id == 239){
+    if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
         $request_tools = App\Models\TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'ongoing')
@@ -424,7 +424,7 @@
 
     // pullout-out schedule - warehouse
     if(Auth::user()->user_type_id == 2){
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $pullout_for_schedule = App\Models\PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)
@@ -452,7 +452,7 @@
 
     // pullout for receiving warehouse
     if(Auth::user()->user_type_id == 2){
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)
@@ -480,7 +480,7 @@
 
     /// rftte_signed_form_proof
     if(Auth::user()->user_type_id == 2){
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $request_tools = App\Models\TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                 ->where('status', 1)
                 ->where('progress', 'completed')
@@ -518,7 +518,7 @@
 
     /// Not Serve Count
     if(Auth::user()->user_type_id == 2){
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $request_tools = App\Models\TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
                 ->select('progress','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                 ->where('transfer_request_items.status', 1)
@@ -1241,6 +1241,26 @@
                                     </li>
                                 @endif
                                 
+                            @endif
+
+                            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 7)
+                                <li class="nav-main-heading">Other</li>
+                                @if (Auth::user()->user_type_id == 4)
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link{{ request()->is('pages/upload_tools') ? ' active' : '' }}"
+                                            href="/pages/upload_tools">
+                                            <i class="nav-main-link-icon fa fa-upload"></i>
+                                            <span class="nav-main-link-name">Upload Tools</span>
+                                        </a>
+                                    </li>
+                                @endif
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/list_of_upload_tools') ? ' active' : '' }}"
+                                        href="/pages/list_of_upload_tools">
+                                        <i class="nav-main-link-icon fa fa-list"></i>
+                                        <span class="nav-main-link-name">List of Upload Tools</span>
+                                    </a>
+                                </li>
                             @endif
                             {{-- @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 5)
                             @if (Auth::user()->user_type_id == 7)

@@ -821,7 +821,7 @@ class TransferRequestController extends Controller
     public function fetch_teis_request(Request $request)
     {
         
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             if($request->path == 'pages/rftte_signed_form_proof'){
                 $request_tools = TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                     ->where('status', 1)
@@ -1179,7 +1179,7 @@ class TransferRequestController extends Controller
 
     public function fetch_teis_request_completed()
     {
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'completed')
@@ -1669,6 +1669,7 @@ class TransferRequestController extends Controller
                 ->where('tools_and_equipment.status', 1)
                 ->where('transfer_request_items.item_status', 0)
                 ->where('transfer_request_id', $transfer_request->id)
+                ->whereNull('is_remove')
                 ->get();
 
             foreach ($tools_approved as $tool) {
@@ -3476,6 +3477,7 @@ class TransferRequestController extends Controller
         ->where('tools_and_equipment.status', 1)
         ->where('transfer_request_items.item_status', 0)
         ->where('transfer_request_id', $transfer_request->id)
+        ->whereNull('is_remove')
         ->get();
 
         $mail_Items = [];

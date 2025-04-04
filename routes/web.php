@@ -1,14 +1,15 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ReportsController;
-use App\Http\Controllers\ViewFormsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PullOutController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ViewFormsController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ProjectSiteController;
@@ -81,6 +82,8 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/tool_extension_request', 'pages.tool_extension_request');
     Route::view('/pages/acc_approved_request', 'pages.acc_approved_request');
     Route::view('/pages/list_of_requests', 'pages.list_of_requests');
+    Route::view('/pages/upload_tools', 'pages.upload_tools');
+    Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools');
 
 
 
@@ -221,6 +224,15 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::post('search', [SearchController::class, 'search'])->name('search');
+
+
+    Route::post('import_preview', [ImportController::class, 'previewImport'])->name('import_preview');
+    Route::post('import_excel', [ImportController::class, 'confirmImport'])->name('import_excel');
+    Route::get('fetch_upload_tools', [ImportController::class, 'fetch_upload_tools'])->name('fetch_upload_tools');
+    Route::post('import_tools_details', [ImportController::class, 'import_tools_details'])->name('import_tools_details');
+    Route::post('import_tool_add_price', [ImportController::class, 'import_tool_add_price'])->name('import_tool_add_price');
+
+    Route::get('/download_excel_template', [ImportController::class, 'downloadTemplate'])->name('download_excel_template');
 });
 
 // para sa checking daily kung meron na pa expired na tools

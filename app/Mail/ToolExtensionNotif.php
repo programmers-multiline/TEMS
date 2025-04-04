@@ -31,6 +31,8 @@ class ToolExtensionNotif extends Mailable
             $return->subject('Tool Extension Approved');
         }elseif($this->data['type'] == 'notif'){
             $return->subject('Expiring Tools Notice: Request Extension if Needed.');
+        }elseif($this->data['type'] == 'notif_acct'){
+            $return->subject('New Tools Uploaded - Cost Required');
         }else{
             $return->subject('Tool Extension');
         }
