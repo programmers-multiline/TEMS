@@ -1193,7 +1193,7 @@
                             @endif
 
 
-                            @if (Auth::user()->user_type_id == 8)
+                            @if (Auth::user()->user_type_id == 8 || Auth::user()->user_type_id == 1)
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('/pages/list_of_requests') ? ' active' : '' }}"
                                         href="/pages/list_of_requests">
@@ -1222,7 +1222,7 @@
                                 </a>
                             </li>
 
-                            @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5 || Auth::user()->user_type_id == 7)
+                            @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 5 || Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 1)
                                 <li class="nav-main-heading">Reports</li>
                                 <li class="nav-main-item">
                                     <a class="nav-main-link{{ request()->is('pages/report_pe_logs') ? ' active' : '' }}"
@@ -1243,9 +1243,9 @@
                                 
                             @endif
 
-                            @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 7)
+                            @if (Auth::user()->user_type_id == 4 && Auth::user()->comp_id == 3 || Auth::user()->user_type_id == 7 && Auth::user()->comp_id == 3 || Auth::user()->user_type_id == 1)
                                 <li class="nav-main-heading">Other</li>
-                                @if (Auth::user()->user_type_id == 4)
+                                @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 1)
                                     <li class="nav-main-item">
                                         <a class="nav-main-link{{ request()->is('pages/upload_tools') ? ' active' : '' }}"
                                             href="/pages/upload_tools">

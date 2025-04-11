@@ -13,6 +13,7 @@ use App\Http\Controllers\ViewFormsController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ProjectSiteController;
+use App\Http\Middleware\ActionLoggerMiddleware;
 use App\Http\Controllers\TransferRequestController;
 use App\Http\Controllers\MyToolsAndEquipmentController;
 
@@ -47,55 +48,55 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     });
 
-    Route::get('/dashboard', [DashboardController::class, 'dashboard']);
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(ActionLoggerMiddleware::class);
 
     // Route::view('/pages/warehouse', 'pages.warehouse');
     // Route::view('/pages/project_site', 'pages.project_site');
     // Route::view('/pages/approvers_setup', 'pages.approvers_setup');
-    Route::view('/pages/request_ongoing', 'pages.request_ongoing');
-    Route::view('/pages/request_for_receiving', 'pages.request_for_receiving');
-    Route::view('/pages/ps_request_for_receiving', 'pages.ps_request_for_receiving');
-    Route::view('/pages/request_completed', 'pages.request_completed');
-    // Route::view('/pages/my_te', 'pages.my_te');
-    Route::view('/pages/pullout_ongoing', 'pages.pullout_ongoing');
-    Route::view('/pages/rftte', 'pages.rftte');
-    Route::view('/pages/rftte_completed', 'pages.rftte_completed');
-    Route::view('/pages/rfteis_approved', 'pages.rfteis_approved');
-    Route::view('/pages/pullout_warehouse', 'pages.pullout_warehouse');
-    Route::view('/pages/rfteis', 'pages.rfteis');
-    Route::view('/pages/barcode_scanner', 'pages.barcode_scanner');
-    Route::view('/pages/rttte_acc', 'pages.rttte_acc');
-    Route::view('/pages/rfteis_acc', 'pages.rfteis_acc');
-    Route::view('/pages/daf', 'pages.daf');
-    Route::view('/pages/site_to_site_transfer', 'pages.site_to_site_transfer');
-    Route::view('/pages/pullout_completed', 'pages.pullout_completed');
-    Route::view('/pages/approved_pullout', 'pages.approved_pullout');
-    Route::view('/pages/pullout_for_receiving', 'pages.pullout_for_receiving');
-    Route::view('/pages/site_to_site_approved', 'pages.site_to_site_approved');
-    Route::view('/pages/sts_request_completed', 'pages.sts_request_completed');
-    Route::view('/pages/users_management', 'pages.users_management');
-    Route::view('/pages/rftte_signed_form_proof', 'pages.rftte_signed_form_proof');
-    Route::view('/pages/not_serve_items', 'pages.not_serve_items');
-    Route::view('/pages/report_pe_logs', 'pages.report_pe_logs');
-    Route::view('/pages/report_te_logs', 'pages.report_te_logs');
-    Route::view('/pages/rfteis_disapproved', 'pages.rfteis_disapproved');
-    Route::view('/pages/tool_extension_request', 'pages.tool_extension_request');
-    Route::view('/pages/acc_approved_request', 'pages.acc_approved_request');
-    Route::view('/pages/list_of_requests', 'pages.list_of_requests');
-    Route::view('/pages/upload_tools', 'pages.upload_tools');
-    Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools');
+    Route::view('/pages/request_ongoing', 'pages.request_ongoing')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/request_for_receiving', 'pages.request_for_receiving')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/ps_request_for_receiving', 'pages.ps_request_for_receiving')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/request_completed', 'pages.request_completed')->middleware(ActionLoggerMiddleware::class);
+    // Route::view('/pages/my_te', 'pages.my_te')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/pullout_ongoing', 'pages.pullout_ongoing')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rftte', 'pages.rftte')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rftte_completed', 'pages.rftte_completed')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rfteis_approved', 'pages.rfteis_approved')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/pullout_warehouse', 'pages.pullout_warehouse')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rfteis', 'pages.rfteis')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/barcode_scanner', 'pages.barcode_scanner')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rttte_acc', 'pages.rttte_acc')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rfteis_acc', 'pages.rfteis_acc')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/daf', 'pages.daf')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/site_to_site_transfer', 'pages.site_to_site_transfer')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/pullout_completed', 'pages.pullout_completed')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/approved_pullout', 'pages.approved_pullout')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/pullout_for_receiving', 'pages.pullout_for_receiving')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/site_to_site_approved', 'pages.site_to_site_approved')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/sts_request_completed', 'pages.sts_request_completed')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/users_management', 'pages.users_management')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rftte_signed_form_proof', 'pages.rftte_signed_form_proof')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/not_serve_items', 'pages.not_serve_items')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/report_pe_logs', 'pages.report_pe_logs')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/report_te_logs', 'pages.report_te_logs')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/rfteis_disapproved', 'pages.rfteis_disapproved')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/tool_extension_request', 'pages.tool_extension_request')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/acc_approved_request', 'pages.acc_approved_request')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/list_of_requests', 'pages.list_of_requests')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/upload_tools', 'pages.upload_tools')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools')->middleware(ActionLoggerMiddleware::class);
 
 
 
-    Route::view('/pages/qrcode_scanner', 'pages.qrcode_scanner');
-    Route::view('/pages/qrcode_generator', 'pages.qrcode_generator');
+    Route::view('/pages/qrcode_scanner', 'pages.qrcode_scanner')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/qrcode_generator', 'pages.qrcode_generator')->middleware(ActionLoggerMiddleware::class);
 
 
-    Route::view('/pages/pullout_receiving', 'pages.pullout_receiving');
-    Route::view('/pages/pullout_completed_warehouse', 'pages.pullout_completed_warehouse');
+    Route::view('/pages/pullout_receiving', 'pages.pullout_receiving')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/pullout_completed_warehouse', 'pages.pullout_completed_warehouse')->middleware(ActionLoggerMiddleware::class);
 
     Route::controller(WarehouseController::class)->group(function () {
-        Route::get('view_warehouse/{search?}/{desc?}', 'view_warehouse')->name('view_warehouse');
+        Route::get('view_warehouse/{search?}/{desc?}', 'view_warehouse')->name('view_warehouse')->middleware(ActionLoggerMiddleware::class);
         Route::post('add_warehouse_tools', 'add_tools')->name('add_tools');
         Route::get('fetch_tools', 'fetch_tools')->name('fetch_tools');
         Route::post('edit_warehouse_tools', 'edit_tools')->name('edit_tools');
@@ -104,7 +105,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::controller(ProjectSiteController::class)->group(function () {
-        Route::get('view_project_site/{search?}/{desc?}', 'view_project_site')->name('view_project_site');
+        Route::get('view_project_site/{search?}/{desc?}', 'view_project_site')->name('view_project_site')->middleware(ActionLoggerMiddleware::class);
         Route::get('fetch_tools_ps', 'fetch_tools_ps')->name('fetch_tools_ps');
         Route::post('ps_request', 'ps_request_tools')->name('ps_request_tools');
         Route::get('ps_teis_request', 'fetch_teis_request_ps')->name('fetch_teis_request_ps');
@@ -143,7 +144,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('redelivery_status', 'redelivery_status')->name('redelivery_status');
 
-        Route::get('project_tagging', 'project_tagging')->name('project_tagging');
+        Route::get('project_tagging', 'project_tagging')->name('project_tagging')->middleware(ActionLoggerMiddleware::class);
         Route::get('fetch_assigned_personnel', 'fetch_assigned_personnel')->name('fetch_assigned_personnel');
         Route::post('assign_personnel', 'assign_personnel')->name('assign_personnel');
         Route::post('delete_personnel', 'delete_personnel')->name('delete_personnel');
@@ -152,11 +153,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('disapprove_request', 'disapprove_request')->name('disapprove_request');
         Route::get('acc_approved_request', 'acc_approved_request')->name('acc_approved_request');
 
+        Route::post('cancel_request', 'cancel_request')->name('cancel_request');
 
     });
 
     Route::controller(MyToolsAndEquipmentController::class)->group(function () {
-        Route::get('view_my_te', 'view_my_te')->name('view_my_te');
+        Route::get('view_my_te', 'view_my_te')->name('view_my_te')->middleware(ActionLoggerMiddleware::class);;
         Route::get('my_te', 'fetch_my_te')->name('fetch_my_te');
         Route::post('pullout_tools', 'pullout_request')->name('pullout_request');
         Route::post('add_state', 'add_state')->name('add_state');

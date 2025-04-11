@@ -28,6 +28,15 @@ class ToolsAndEquipment extends Model
                     ->lockForUpdate()
                     ->first();
 
+                // If no record is found, search in "tools_and_equipment"
+                if (!$latest) {
+                    $latest = DB::table('tools_and_equipment')
+                        ->where('asset_code', 'LIKE', 'OLDTE-%')
+                        ->orderByRaw("CAST(SUBSTRING(asset_code, 7) AS UNSIGNED) DESC")
+                        ->lockForUpdate()
+                        ->first();
+                }
+
                 // Determine next asset number
                 $nextNumber = $latest ? ((int) substr($latest->asset_code, 6)) + 1 : 1;
                 $newAssetCode = 'OLDTE-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);

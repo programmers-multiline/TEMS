@@ -687,6 +687,11 @@
 
                 const arrayToString = JSON.stringify(selectedItemId);
 
+                var $btn = $(this); // Get the clicked button
+                if ($btn.prop('disabled')) return; // Prevent multiple clicks
+
+                $btn.prop('disabled', true).text('Processing...');
+
                 $.ajax({
                     url: '{{ route('request_tools') }}',
                     method: 'post',
@@ -735,6 +740,9 @@
                         $("#projectAddress").val('');
                         $('#inputCheck').prop('checked', false);
                         $("#tbodyModal").empty()
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Request');
                     }
                 })
 

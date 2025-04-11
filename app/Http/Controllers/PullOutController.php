@@ -110,6 +110,13 @@ class PullOutController extends Controller
 
             ->addColumn('action', function ($row) {
 
+                $tools = PulloutRequestItems::where('status', 1)->where('pullout_request_id', $row->id)->pluck('tool_id')->toArray();
+                $is_approved_by_first_approver = RequestApprover::where('status', 1)->where('request_id', $row->id)->where('sequence', 1)->where('request_type', 2)->value('approved_by');
+
+                $display = $is_approved_by_first_approver ? 'd-none' : 'd-block';
+                
+                $items = json_encode($tools);
+
                 // $tool = PulloutRequest::where('status', 1)
                 //     ->where('pullout_requests.request_status', 'approved')
                 //     ->get();
@@ -135,6 +142,7 @@ class PullOutController extends Controller
                     $action = '<div class="d-flex gap-2">
                 <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                 <button ' . $have_sched . ' data-num="' . $row->pullout_number . '" data-type="' . $row->tr_type . '" '.$atr.' type="button" class="deliverBtn ' . $have_sched2 . ' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
+                <button data-bs-toggle="modal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->pullout_number . '" data-toolid="' . $items . '" type="button" class="cancelBtn '.$display.' btn btn-sm btn-danger mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Cancel" data-bs-original-title="Cancel"><i class="fa fa-xmark"></i></button>
                 </div>';
                 } else if ($user_type == 3 || $user_type == 5) {
                 //     $action = '<div class="d-flex">

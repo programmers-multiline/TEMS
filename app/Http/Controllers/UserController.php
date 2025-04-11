@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use App\Models\ActionLogs;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -50,12 +51,24 @@ class UserController extends Controller
         // Log the user in
         Auth::login($user);
 
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' login successfully on TEMS',
+            'ip_address' => request()->ip(),
+        ]);
+
         return redirect()->intended('dashboard');
     }
 
 
     public function auth_logout(Request $request)
     {
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' logout successfully on TEMS',
+            'ip_address' => request()->ip(),
+        ]);
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -114,6 +127,12 @@ class UserController extends Controller
             $user->save();
             //Generate Session
             $request->session()->regenerate();
+
+            ActionLogs::create([
+                'user_id' => Auth::id(),
+                'action' => Auth::user()->fullname . ' login successfully on TEMS',
+                'ip_address' => request()->ip(),
+            ]);
 
             return redirect()->intended('dashboard');
         }

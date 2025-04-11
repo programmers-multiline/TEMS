@@ -100,7 +100,7 @@
                         Close
                     </button>
                     <button id="requestPulloutModalBtn" type="button" class="btn btn-alt-primary">
-                        Save
+                        Request
                     </button>
                 </div>
             </div>

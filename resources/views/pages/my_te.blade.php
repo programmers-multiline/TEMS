@@ -485,6 +485,11 @@
 
                 finalData.tableData = selectedItemId
 
+                var $btn = $(this); // Get the clicked button
+                if ($btn.prop('disabled')) return; // Prevent multiple clicks
+
+                $btn.prop('disabled', true).text('Processing...');
+
 
                 $.ajax({
                     url: '{{ route('pullout_request') }}',
@@ -508,6 +513,9 @@
                         table.ajax.reload();
                         showToast("success", "Request Pullout Successfully");
 
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Request');
                     }
                 })
 

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Uploads;
 use App\Models\Companies;
+use App\Models\ActionLogs;
 use App\Models\UploadTools;
 use App\Models\ProjectSites;
 use Illuminate\Http\Request;
@@ -27,45 +28,65 @@ class ImportController extends Controller
 {
     public $uploads;
 
+
     public function previewImport(Request $request)
     {
+
+        // List of restricted item codes
+        // $restrictedItems = [
+        //     "TN12XBK-01",
+        //     "TN12XRD-01",
+        //     "TL50009-00",
+        //     "RC314BK-02",
+        //     "RC012BK-02",
+        //     "RC010BK-03",
+        //     "RC010BK-02-PF",
+        //     "RC010BK-00",
+        //     "10-WRC10-2C",
+        //     "05-10-WRC10-2C"
+        // ];
+
+        $expectedHeaders = ["Item Code", "Description", "Qty.", "TEIS Reference"];
+
         $data = Excel::toCollection(new PreviewImport, $request->file('file'))->first();
 
-        // Remove header if necessary
+        if (!$data || $data->isEmpty()) {
+            return response()->json(['error' => 'Uploaded file is empty or invalid.'], 422);
+        }
+
+        // Validate headers (Ensure columns are in correct order)
+        $fileHeaders = $data->first()->toArray();
+        if ($fileHeaders !== $expectedHeaders) {
+            return response()->json(['error' => 'Invalid file format. Columns should be in order: ' . implode(', ', $expectedHeaders)], 422);
+        }
+
+        // Remove headers row from data
         $data = $data->slice(1)->values();
 
-
-         // List of restricted item codes
-            // $restrictedItems = [
-            //     "TN12XBK-01",
-            //     "TN12XRD-01",
-            //     "TL50009-00",
-            //     "RC314BK-02",
-            //     "RC012BK-02",
-            //     "RC010BK-03",
-            //     "RC010BK-02-PF",
-            //     "RC010BK-00",
-            //     "10-WRC10-2C",
-            //     "05-10-WRC10-2C"
-            // ];
-
-
-        // Check for empty cells
+        // Validate each row
         foreach ($data as $rowIndex => $row) {
             foreach ($row as $colIndex => $cell) {
-                if (empty($cell) && $cell !== '0') { // Allow '0' but reject empty values
+                // Check for empty cells (except '0')
+                if (empty($cell) && $cell !== '0') {
                     return response()->json([
                         'error' => "Empty cell found at row " . ($rowIndex + 2) . ", column " . ($colIndex + 1)
                     ], 422);
                 }
+
+                // Check if the first column (index 0) contains a restricted item code
+                // if (isset($row[0]) && in_array(trim($row[0]), $restrictedItems)) {
+                //     return response()->json([
+                //         'error' => "Item code '{$row[0]}' found at row " . ($rowIndex + 2) . " is measured in meters and cannot be uploaded because the system will itemize it into multiple rows. Please remove this item from the file and try again. Contact IT for the removed Tools to upload manually."
+                //     ], 422);
+                // }
             }
 
-            // Check if the first column (index 0) contains a restricted item code
-            // if (isset($row[0]) && in_array(trim($row[0]), $restrictedItems)) {
-            //     return response()->json([
-            //         'error' => "Item code '{$row[0]}' found at row " . ($rowIndex + 2) . " is measured in meters and cannot be uploaded because the system will itemize it into multiple rows. Please remove this item from the file and try again. Contact IT for the removed Tools to upload manually."
-            //     ], 422);
-            // }
+            // Validate that Column C (index 2) contains only numbers
+            if (!isset($row[2]) || !is_numeric($row[2])) {
+                return response()->json([
+                    'error' => "Invalid value in 'Qty.' at row " . ($rowIndex + 2) . ". It should only contain numbers."
+                ], 422);
+            }
         }
 
         $file = $request->file('file');
@@ -82,9 +103,6 @@ class ImportController extends Controller
             'upload_id' => $uploads->id,
         ]);
     }
-
-
-    // Step 2: Confirm & Save Import
     public function confirmImport(Request $request)
     {
         $data = $request->input('data');
@@ -126,7 +144,7 @@ class ImportController extends Controller
                 $quantity = (int) $row[2];
                 $teis_ref = $row[3];
 
-                
+
                 // Check if item is restricted
                 if (in_array($item_code, $restrictedItems)) {
                     $entryCount = max(1, floor($quantity / 75)); // 1 entry for ≤ 75, additional per 75 units
@@ -151,7 +169,7 @@ class ImportController extends Controller
             }
         });
 
-        if($comp_id == 3){
+        if ($comp_id == 3) {
             $CA = User::where('status', 1)->where('comp_id', $comp_id)->where('pos_id', 12)->first();
         }
 
@@ -164,53 +182,105 @@ class ImportController extends Controller
         // Send an email notification
         Mail::to($CA->email)->send(new ToolExtensionNotif($mail_data));
 
+        $ps = ProjectSites::where('status', 1)->where('id', $request->psite)->value('project_name');
+
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' uploaded Tools for ' . $ps . '( uid: ' . $upload_id . ')',
+            'ip_address' => request()->ip(),
+        ]);
+
         return response()->json(['success' => 'Data imported successfully']);
     }
 
     public function fetch_upload_tools(Request $request)
     {
-
-        // filter
-        if($request->projectSiteId && $request->status){
-            $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
-                ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
-                ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
-                ->where('ps.status', 1)
-                ->where('u.status', 1)
-                ->where('upload_tools.status', 1)
-                ->where('upload_tools.project_id', $request->projectSiteId)
-                ->where('upload_tools.progress', $request->status)
-                ->get();
-        }elseif($request->status){
-            $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
-                ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
-                ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
-                ->where('ps.status', 1)
-                ->where('u.status', 1)
-                ->where('upload_tools.status', 1)
-                ->where('upload_tools.progress', $request->status)
-                ->get();
-            
-        }elseif($request->projectSiteId){
-            $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
-                ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
-                ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
-                ->where('ps.status', 1)
-                ->where('u.status', 1)
-                ->where('upload_tools.status', 1)
-                ->where('upload_tools.project_id', $request->projectSiteId)
-                ->get();
+        if(Auth::user()->user_type_id == 7){
+            if ($request->projectSiteId && $request->status) {
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.project_id', $request->projectSiteId)
+                    ->where('upload_tools.progress', $request->status)
+                    ->get();
+            } elseif ($request->status) {
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.progress', $request->status)
+                    ->get();
+    
+            } elseif ($request->projectSiteId) {
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.project_id', $request->projectSiteId)
+                    ->get();
+            } else {
+                // no filter
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->get();
+            }
         }else{
-            // no filter
-            $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
-                ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
-                ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
-                ->where('ps.status', 1)
-                ->where('u.status', 1)
-                ->where('upload_tools.status', 1)
-                ->get();
-        }
+            // filter
+            if ($request->projectSiteId && $request->status) {
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.project_id', $request->projectSiteId)
+                    ->where('upload_tools.progress', $request->status)
+                    ->where('upload_tools.uploader_id', Auth::id())
+                    ->get();
+            } elseif ($request->status) {
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.progress', $request->status)
+                    ->where('upload_tools.uploader_id', Auth::id())
+                    ->get();
 
+            } elseif ($request->projectSiteId) {
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.project_id', $request->projectSiteId)
+                    ->where('upload_tools.uploader_id', Auth::id())
+                    ->get();
+            } else {
+                // no filter
+                $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
+                    ->leftJoin('users as u', 'u.id', 'upload_tools.uploader_id')
+                    ->select('upload_tools.*', 'ps.project_code', 'ps.project_name', 'u.fullname')
+                    ->where('ps.status', 1)
+                    ->where('u.status', 1)
+                    ->where('upload_tools.status', 1)
+                    ->where('upload_tools.uploader_id', Auth::id())
+                    ->get();
+            }
+        }
 
         return DataTables::of($upload_tools)
 
@@ -330,38 +400,39 @@ class ImportController extends Controller
         }
     }
 
-    public function downloadTemplate(){
+    public function downloadTemplate()
+    {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-    
+
         // Set headers
         $headers = ["Item Code", "Description", "Qty.", "TEIS Reference"];
         $sampleData = ["sample item code", "Hard Hat", "2", "12345"];
-    
+
         foreach ($headers as $index => $header) {
             $columnLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $sheet->setCellValueByColumnAndRow($index + 1, 1, $header);
             $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
         }
-    
+
         // Add sample row
         foreach ($sampleData as $index => $value) {
             $columnLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
             $sheet->setCellValueByColumnAndRow($index + 1, 2, $value);
             $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
         }
-    
+
         // Set the file to download
         $writer = new Xlsx($spreadsheet);
         $response = new StreamedResponse(function () use ($writer) {
             $writer->save('php://output');
         });
-    
+
         $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $response->headers->set('Content-Disposition', 'attachment;filename="tools_template.xlsx"');
         $response->headers->set('Cache-Control', 'max-age=0');
-    
+
         return $response;
     }
-    
+
 }

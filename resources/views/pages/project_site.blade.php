@@ -421,6 +421,11 @@
                     console.log(pair[0] + ': ' + pair[1]);
                 }
 
+                var $btn = $(this); // Get the clicked button
+                if ($btn.prop('disabled')) return; // Prevent multiple clicks
+
+                $btn.prop('disabled', true).text('Processing...');
+
 
                 $.ajax({
                     url: '{{ route('ps_request_tools') }}',
@@ -447,6 +452,9 @@
                         showToast('success', 'Request Successful')
                         $("#rttteModal").modal('hide')
                         table.ajax.reload();
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Request');
                     }
                 })
 
