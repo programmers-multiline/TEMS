@@ -1262,6 +1262,16 @@
                                     </a>
                                 </li>
                             @endif
+                            @if (Auth::user()->user_type_id == 1)
+                                <li class="nav-main-heading">Reports</li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/view_logs') ? ' active' : '' }}"
+                                        href="/pages/view_logs">
+                                        <i class="nav-main-link-icon fa fa-list-check"></i>
+                                        <span class="nav-main-link-name">System Logs</span>
+                                    </a>
+                                </li>
+                            @endif
                             {{-- @if (Auth::user()->user_type_id == 7 || Auth::user()->user_type_id == 5)
                             @if (Auth::user()->user_type_id == 7)
                                 <li class="nav-main-heading">Reports</li>

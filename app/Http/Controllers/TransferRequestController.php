@@ -23,6 +23,7 @@ use App\Mail\EmailRequestor;
 use App\Models\ProjectSites;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
+use App\Helpers\ActionLogger;
 use App\Mail\RemoveToolNotif;
 use App\Models\PulloutRequest;
 use App\Models\ReceivingProof;
@@ -3830,6 +3831,8 @@ class TransferRequestController extends Controller
                 ]);
             }
 
+            ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
+
         }elseif($request->trType == 'rttte'){
             PsTransferRequests::where('status', 1)->where('request_number', $request->requestNumber)->update([
                 'status' => 0
@@ -3840,6 +3843,9 @@ class TransferRequestController extends Controller
                     'status' => 0
                 ]);
             }
+
+            ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
+
         }else{
             PulloutRequest::where('status', 1)->where('pullout_number', $request->requestNumber)->update([
                 'status' => 0
@@ -3850,6 +3856,8 @@ class TransferRequestController extends Controller
                     'status' => 0
                 ]);
             }
+
+            ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
         }
 
     }

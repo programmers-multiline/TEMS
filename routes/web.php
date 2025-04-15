@@ -85,6 +85,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/list_of_requests', 'pages.list_of_requests')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/upload_tools', 'pages.upload_tools')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/view_logs', 'pages.view_logs')->middleware(ActionLoggerMiddleware::class);
 
 
 
@@ -212,6 +213,8 @@ Route::middleware(['auth'])->group(function () {
 
         // viewer
         Route::get('request_list', 'request_list')->name('request_list');
+        //log
+        Route::get('fetch_logs', 'fetch_logs')->name('fetch_logs');
     });
 
     // Route::controller(FileUploadController::class)->group(function(){

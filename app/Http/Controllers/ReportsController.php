@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActionLogs;
 use App\Models\PulloutRequest;
 use Carbon\Carbon;
 use App\Models\PeLogs;
@@ -427,5 +428,53 @@ class ReportsController extends Controller
 
             ->rawColumns(['view_tools', 'request_status', 'request_type','customer_name','subcon'])
             ->toJson();
+    }
+
+    public function fetch_logs(Request $request)
+    {
+
+        $logs = ActionLogs::leftJoin('users as u', 'u.id', 'action_logs.user_id')
+        ->leftJoin('companies as c', 'c.id', 'u.comp_id')
+        ->leftJoin('positions as p', 'p.id' , 'u.pos_id')
+        ->select('u.fullname', 'u.emp_id', 'u.username', 'u.fullname', 'p.position', 'c.code', 'action_logs.created_at', 'action_logs.action')
+        ->where('u.status', 1)
+        ->where('p.status', 1)
+        ->where('c.status', 1)
+        ->get();
+
+        // $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress')
+        //     ->where('status', 1)
+        //     ->where('request_status', 'approved');
+
+        // $pullout_request = PulloutRequest::select('pullout_number as teis_number', 'contact_number', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
+        //     ->where('status', 1)
+        //     ->where('request_status', 'approved');
+
+        // // filter
+        // if ($request->request_type == 'rfteis') {
+        //     $query = $request_tools;
+        // } elseif ($request->request_type == 'rttte') {
+        //     $query = $ps_request_tools;
+        // } elseif ($request->request_type == 'pullout') {
+        //     $query = $pullout_request;
+        // } else {
+        //     // no filter
+        //     $query = $request_tools->union($ps_request_tools)->union($pullout_request);
+        // }
+        
+
+        // $unioned_tables = $query->get();
+
+        return DataTables::of($logs)
+        
+        ->addColumn('date', function($row){
+    
+            $carbonDate = Carbon::parse($row->created_at); 
+            $readableDate = $carbonDate->format('M j, Y g:i A');
+
+            return $readableDate;
+        })
+
+        ->toJson();
     }
 }
