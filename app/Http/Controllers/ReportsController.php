@@ -440,6 +440,7 @@ class ReportsController extends Controller
         ->where('u.status', 1)
         ->where('p.status', 1)
         ->where('c.status', 1)
+        ->orderBy('created_at', 'desc')
         ->get();
 
         // $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress')

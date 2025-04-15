@@ -176,6 +176,7 @@ if(Auth::user()->user_type_id == 4){
                     type: 'get',
                     url: '{{ route('fetch_logs') }}'
                 },
+                order: [],
                 columns: [{
                         data: 'date'
                     },
