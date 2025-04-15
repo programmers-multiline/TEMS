@@ -7,6 +7,7 @@ use App\Models\Daf;
 use App\Models\Uploads;
 use App\Models\DafItems;
 use App\Models\RttteLogs;
+use App\Models\ActionLogs;
 use App\Models\RfteisLogs;
 use App\Models\PmGroupings;
 use App\Models\TeisUploads;
@@ -601,6 +602,14 @@ class ProjectSiteController extends Controller
                 'action' => 99,
             ]);
         }
+
+        $tools = ToolsAndEquipment::where('status', 1)->where('id', $request->id)->value('item_description');
+
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' added/changed the cost of ' . $tools . ' to ' . $request->price,
+            'ip_address' => request()->ip(),
+        ]);
 
 
       

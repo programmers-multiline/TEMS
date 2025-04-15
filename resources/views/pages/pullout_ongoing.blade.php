@@ -697,6 +697,56 @@
                 });
             });
 
+
+            $(document).on('click', '.cancelBtn', function(){
+                const trType = $(this).data('trtype');
+                const requestNumber = $(this).data('requestnumber');
+                const toolId = $(this).data('toolid');
+
+                const confirm = Swal.mixin({
+                    customClass: {
+                        confirmButton: "btn btn-success me-2",
+                        cancelButton: "btn btn-danger"
+                    },
+                    buttonsStyling: false
+                });
+
+                confirm.fire({
+                    title: "Cancel?",
+                    text: "Are you sure you want to cancel this request?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes!",
+                    cancelButtonText: "Back",
+                    reverseButtons: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url: '{{ route('cancel_request') }}',
+                            method: 'post',
+                            data: {
+                                toolId,
+                                requestNumber,
+                                trType,
+                                _token: '{{ csrf_token() }}',
+                            },
+                            success(result) {
+                                showToast("success","Request Cancel");
+                                $("#table").DataTable().ajax.reload();
+
+                            }
+                        })
+
+                    } else if (
+                        /* Read more about handling dismissals below */
+                        result.dismiss === Swal.DismissReason.cancel
+                    ) {
+
+                    }
+                });
+            })
+
         })
     </script>
 @endsection

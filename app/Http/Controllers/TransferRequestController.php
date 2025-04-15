@@ -11,6 +11,7 @@ use App\Models\Uploads;
 use App\Models\DafItems;
 use App\Models\RttteLogs;
 use App\Models\Warehouse;
+use App\Models\ActionLogs;
 use App\Models\RfteisLogs;
 use App\Mail\ApproverEmail;
 use App\Models\PulloutLogs;
@@ -22,6 +23,7 @@ use App\Mail\EmailRequestor;
 use App\Models\ProjectSites;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
+use App\Helpers\ActionLogger;
 use App\Mail\RemoveToolNotif;
 use App\Models\PulloutRequest;
 use App\Models\ReceivingProof;
@@ -32,6 +34,7 @@ use Yajra\DataTables\DataTables;
 use App\Models\ToolsAndEquipment;
 use App\Models\PsTransferRequests;
 use Illuminate\Support\Facades\DB;
+use App\Models\PulloutRequestItems;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\WarehouseDocsClerkNotif;
@@ -47,7 +50,7 @@ class TransferRequestController extends Controller
     {
 
 
-        $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress', 'disapproved_by')
+        $request_tools = TransferRequest::select('id','teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress', 'disapproved_by')
             ->where('status', 1)
             ->where(function($query) {
                 $query->where('progress', 'ongoing')
@@ -56,7 +59,7 @@ class TransferRequestController extends Controller
             ->whereNull('disapproved_by')
             ->where('pe', Auth::user()->id);
 
-        $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress', 'wh')
+        $ps_request_tools = PsTransferRequests::select('id','request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress', 'wh')
             ->where('status', 1)
             ->where(function($query) {
                 $query->where('progress', 'ongoing')
@@ -67,7 +70,7 @@ class TransferRequestController extends Controller
 
         if ($request->path == 'pages/request_for_receiving') {
             $request_tools = TransferRequest::join('transfer_request_items', 'transfer_request_items.transfer_request_id', 'transfer_requests.id')
-                ->select('transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+                ->select('transfer_requests.id','transfer_requests.teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
                 ->where('transfer_requests.status', 1)
                 ->where('transfer_request_items.status', 1)
                 ->whereNull('transfer_request_items.is_remove')
@@ -88,7 +91,7 @@ class TransferRequestController extends Controller
                 // dd($request_tools->toSql(), $request_tools->getBindings());
 
 
-            $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
+            $ps_request_tools = PsTransferRequests::select('id','request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'is_deliver', 'progress')
                 ->where('status', 1)
                 ->where('progress', 'ongoing')
                 ->where('request_status', 'approved')
@@ -125,7 +128,21 @@ class TransferRequestController extends Controller
             ->addColumn('action', function ($row) {
                 $user_type = Auth::user()->user_type_id;
 
-                $action = '<div class="d-flex gap-1"><button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                if($row->tr_type == 'rfteis'){
+                    $tools = TransferRequestItems::where('status', 1)->where('transfer_request_id', $row->id)->pluck('tool_id')->toArray();
+                    $is_approved_by_first_approver = RequestApprover::where('status', 1)->where('request_id', $row->id)->where('sequence', 1)->where('request_type', 1)->value('approved_by');
+                }else{
+                    $tools = PsTransferRequestItems::where('status', 1)->where('ps_transfer_request_id', $row->id)->pluck('tool_id')->toArray();
+                    $is_approved_by_first_approver = RequestApprover::where('status', 1)->where('request_id', $row->id)->where('sequence', 1)->where('request_type', 2)->value('approved_by');
+                }
+
+                $display = $is_approved_by_first_approver ? 'd-none' : 'd-block';
+                
+                $items = json_encode($tools);
+
+                $action = '<div class="d-flex gap-1">
+                <button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                <button data-bs-toggle="modal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" data-toolid="' . $items . '" type="button" class="cancelBtn '.$display.' btn btn-sm btn-danger mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Cancel" data-bs-original-title="Cancel"><i class="fa fa-xmark"></i></button>
             </div>
             ';
                 // <button data-bs-toggle="modal" data-bs-target="#" type="button" class="btn btn-sm btn-alt-danger d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Scan to received" data-bs-original-title="Scan to received"><i class="fa fa-barcode"></i></button>
@@ -821,7 +838,7 @@ class TransferRequestController extends Controller
     public function fetch_teis_request(Request $request)
     {
         
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             if($request->path == 'pages/rftte_signed_form_proof'){
                 $request_tools = TransferRequest::select('progress', 'teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                     ->where('status', 1)
@@ -1179,7 +1196,7 @@ class TransferRequestController extends Controller
 
     public function fetch_teis_request_completed()
     {
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $request_tools = TransferRequest::select('teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             ->where('progress', 'completed')
@@ -1669,6 +1686,7 @@ class TransferRequestController extends Controller
                 ->where('tools_and_equipment.status', 1)
                 ->where('transfer_request_items.item_status', 0)
                 ->where('transfer_request_id', $transfer_request->id)
+                ->whereNull('is_remove')
                 ->get();
 
             foreach ($tools_approved as $tool) {
@@ -3476,6 +3494,7 @@ class TransferRequestController extends Controller
         ->where('tools_and_equipment.status', 1)
         ->where('transfer_request_items.item_status', 0)
         ->where('transfer_request_id', $transfer_request->id)
+        ->whereNull('is_remove')
         ->get();
 
         $mail_Items = [];
@@ -3638,10 +3657,12 @@ class TransferRequestController extends Controller
             //     $sequence = $fetch_approver_count + 1;
             // }
 
+            $fullnames = [];
+
 
             foreach ($personnels as $personnel) {
                 $data = User::join('positions', 'positions.id', 'users.pos_id')
-                ->select('positions.code', 'users.id')
+                ->select('positions.code', 'users.id', 'users.fullname')
                 ->where('users.status', 1)
                 ->where('positions.status', 1)
                 ->where('emp_id', $personnel)
@@ -3655,19 +3676,43 @@ class TransferRequestController extends Controller
                     'pos' => $data->code
 
                 ]);
+                /// para lang sa logs
+                $fullnames[] = $data->fullname;
             }
         }
 
+        // Convert the fullnames array into a human-readable string
+        $names = count($fullnames) > 1 
+        ? implode(', ', array_slice($fullnames, 0, -1)) . ' and ' . end($fullnames) 
+        : $fullnames[0];
 
+        $project_name = ProjectSites::where('status', 1)->where('id', $request->selectedProjectSite)->value('project_name');
+
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' Tagged ' . $project_name . ' to ' . $names,
+            'ip_address' => request()->ip(),
+        ]);
 
 
     }
 
     public function delete_personnel(Request $request)
     {
-        AssignedProjects::find($request->personnelId)->update(
-            ['status' => 0]
-        );
+        // AssignedProjects::find($request->personnelId)->update(
+        //     ['status' => 0]
+        // );
+
+        $ap = AssignedProjects::where('status', 1)->where('id', $request->personnelId)->first();
+
+        $user_name = User::where('status', 1)->where('id', $ap->user_id)->value('fullname');
+        $project_name = ProjectSites::where('status', 1)->where('id', $ap->project_id)->value('project_name');
+
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' untagged ' . $user_name . ' in ' . $project_name,
+            'ip_address' => request()->ip(),
+        ]);
 
     }
 
@@ -3770,6 +3815,51 @@ class TransferRequestController extends Controller
         $mail_data = ['fullname' => $disapproved_by, 'requestor' => $requestor_info->fullname, 'remarks' => $request->remarks, 'request_number' => $request->requestNumber, 'date' => Carbon::today()->format('m/d/Y')];
 
         Mail::to($requestor_info->email)->send(new DisapproveMail($mail_data));
+    }
+
+
+    public function cancel_request(Request $request){
+
+        if($request->trType == 'rfteis'){
+            TransferRequest::where('status', 1)->where('teis_number', $request->requestNumber)->update([
+                'status' => 0
+            ]);
+
+            foreach($request->toolId as $id){
+                TransferRequestItems::where('status', 1)->where('tool_id', $id)->where('teis_number', $request->requestNumber)->update([
+                    'status' => 0
+                ]);
+            }
+
+            ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
+
+        }elseif($request->trType == 'rttte'){
+            PsTransferRequests::where('status', 1)->where('request_number', $request->requestNumber)->update([
+                'status' => 0
+            ]);
+
+            foreach($request->toolId as $id){
+                PsTransferRequestItems::where('status', 1)->where('tool_id', $id)->where('request_number', $request->requestNumber)->update([
+                    'status' => 0
+                ]);
+            }
+
+            ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
+
+        }else{
+            PulloutRequest::where('status', 1)->where('pullout_number', $request->requestNumber)->update([
+                'status' => 0
+            ]);
+
+            foreach($request->toolId as $id){
+                PulloutRequestItems::where('status', 1)->where('tool_id', $id)->where('pullout_number', $request->requestNumber)->update([
+                    'status' => 0
+                ]);
+            }
+
+            ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
+        }
+
     }
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
@@ -87,7 +88,7 @@ class ViewFormsController extends Controller
     //         $firstApprover = $approvers[0]->approver_status;
     //         if($firstApprover){
     //             $name_first = $approvers[0]->fullname;
-    //             $date_approved_first = $approvers[0]->date_approved;
+    //             $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
     //         }else{
     //             $name_first = '<span class="text-warning">Pending</span>';
     //             $date_approved_first = '--';
@@ -96,7 +97,7 @@ class ViewFormsController extends Controller
     //         $secondApprover = $approvers[1]->approver_status;
     //         if($secondApprover){
     //             $name_second = $approvers[1]->fullname;
-    //             $date_approved_second = $approvers[1]->date_approved;
+    //             $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
     //         }else{
     //             $name_second = '<span class="text-warning">Pending</span>';
     //             $date_approved_second = '--';
@@ -105,7 +106,7 @@ class ViewFormsController extends Controller
     //         $thirdApprover = $approvers[2]->approver_status;
     //         if($thirdApprover){
     //             $name_third = $approvers[2]->fullname;
-    //             $date_approved_third = $approvers[2]->date_approved;
+    //             $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
     //         }else{
     //             $name_third = '<span class="text-warning">Pending</span>';
     //             $date_approved_third = '--';
@@ -114,7 +115,7 @@ class ViewFormsController extends Controller
     //         $fourthApprover = $approvers[3]->approver_status;
     //         if($fourthApprover){
     //             $name_fourth = $approvers[3]->fullname;
-    //             $date_approved_fourth = $approvers[3]->date_approved;
+    //             $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
     //         }else{
     //             $name_fourth = '<span class="text-warning">Pending</span>';
     //             $date_approved_fourth = '--';
@@ -179,7 +180,7 @@ class ViewFormsController extends Controller
     //          $firstApprover = $approvers[0]->approver_status;
     //          if($firstApprover){
     //              $name_first = $approvers[0]->fullname;
-    //              $date_approved_first = $approvers[0]->date_approved;
+    //              $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
     //          }else{
     //              $name_first = '<span class="text-warning">Pending</span>';
     //              $date_approved_first = '--';
@@ -188,7 +189,7 @@ class ViewFormsController extends Controller
     //          $secondApprover = $approvers[1]->approver_status;
     //          if($secondApprover){
     //              $name_second = $approvers[1]->fullname;
-    //              $date_approved_second = $approvers[1]->date_approved;
+    //              $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
     //          }else{
     //              $name_second = '<span class="text-warning">Pending</span>';
     //              $date_approved_second = '--';
@@ -197,7 +198,7 @@ class ViewFormsController extends Controller
     //          $thirdApprover = $approvers[2]->approver_status;
     //          if($thirdApprover){
     //              $name_third = $approvers[2]->fullname;
-    //              $date_approved_third = $approvers[2]->date_approved;
+    //              $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
     //          }else{
     //              $name_third = '<span class="text-warning">Pending</span>';
     //              $date_approved_third = '--';
@@ -206,7 +207,7 @@ class ViewFormsController extends Controller
     //          $fourthApprover = $approvers[3]->approver_status;
     //          if($fourthApprover){
     //              $name_fourth = $approvers[3]->fullname;
-    //              $date_approved_fourth = $approvers[3]->date_approved;
+    //              $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
     //          }else{
     //              $name_fourth = '<span class="text-warning">Pending</span>';
     //              $date_approved_fourth = '--';
@@ -215,7 +216,7 @@ class ViewFormsController extends Controller
     //          $fifthApprover = $approvers[4]->approver_status;
     //          if($fifthApprover){
     //              $name_fifth = $approvers[4]->fullname;
-    //              $date_approved_fifth = $approvers[4]->date_approved;
+    //              $date_approved_fifth =$this->format_datetime($approvers[4]->updated_at);
     //          }else{
     //              $name_fifth = '<span class="text-warning">Pending</span>';
     //              $date_approved_fifth = '--';
@@ -379,7 +380,7 @@ class ViewFormsController extends Controller
             $tools_owner = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
                 ->leftJoin('project_sites', 'project_sites.id', 'tools_and_equipment.current_site_id')
                 ->leftJoin('users', 'users.id', 'tools_and_equipment.current_pe')
-                ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name')
+                ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name',  'project_sites.project_code')
                 ->where('tools_and_equipment.status', 1)
                 ->where('ps_transfer_request_items.status', 1)
                 ->where('project_sites.status', 1)
@@ -449,7 +450,7 @@ class ViewFormsController extends Controller
             $firstApprover = $approvers[0]->approver_status;
             if ($firstApprover) {
                 $name_first = $approvers[0]->fullname;
-                $date_approved_first = $approvers[0]->date_approved;
+                $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
             } else {
                 $name_first = '<span class="text-warning">Pending</span>';
                 $date_approved_first = '--';
@@ -458,7 +459,7 @@ class ViewFormsController extends Controller
             $secondApprover = $approvers[1]->approver_status;
             if ($secondApprover) {
                 $name_second = $approvers[1]->fullname;
-                $date_approved_second = $approvers[1]->date_approved;
+                $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
             } else {
                 $name_second = '<span class="text-warning">Pending</span>';
                 $date_approved_second = '--';
@@ -467,7 +468,7 @@ class ViewFormsController extends Controller
             $thirdApprover = $approvers[2]->approver_status;
             if ($thirdApprover) {
                 $name_third = $approvers[2]->fullname;
-                $date_approved_third = $approvers[2]->date_approved;
+                $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
             } else {
                 $name_third = '<span class="text-warning">Pending</span>';
                 $date_approved_third = '--';
@@ -476,7 +477,7 @@ class ViewFormsController extends Controller
             $fourthApprover = $approvers[3]->approver_status;
             if ($fourthApprover) {
                 $name_fourth = $approvers[3]->fullname;
-                $date_approved_fourth = $approvers[3]->date_approved;
+                $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
             } else {
                 $name_fourth = '<span class="text-warning">Pending</span>';
                 $date_approved_fourth = '--';
@@ -596,7 +597,7 @@ class ViewFormsController extends Controller
             $firstApprover = $approvers[0]->approver_status;
             if ($firstApprover) {
                 $name_first = $approvers[0]->fullname;
-                $date_approved_first = $approvers[0]->date_approved;
+                $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
             } else {
                 $name_first = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[0]->fullname.'">Pending</span>';
                 $date_approved_first = '--';
@@ -605,7 +606,7 @@ class ViewFormsController extends Controller
             $secondApprover = $approvers[1]->approver_status;
             if ($secondApprover) {
                 $name_second = $approvers[1]->fullname;
-                $date_approved_second = $approvers[1]->date_approved;
+                $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
             } else {
                 $name_second = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[1]->fullname.'">Pending</span>';
                 $date_approved_second = '--';
@@ -614,7 +615,7 @@ class ViewFormsController extends Controller
             $thirdApprover = $approvers[2]->approver_status;
             if ($thirdApprover) {
                 $name_third = $approvers[2]->fullname;
-                $date_approved_third = $approvers[2]->date_approved;
+                $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
             } else {
                 $name_third = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[2]->fullname.'">Pending</span>';
                 $date_approved_third = '--';
@@ -623,7 +624,7 @@ class ViewFormsController extends Controller
             $fourthApprover = $approvers[3]->approver_status;
             if ($fourthApprover) {
                 $name_fourth = $approvers[3]->fullname;
-                $date_approved_fourth = $approvers[3]->date_approved;
+                $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
             } else {
                 $name_fourth = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[3]->fullname.'">Pending</span>';
                 $date_approved_fourth = '--';
@@ -632,7 +633,7 @@ class ViewFormsController extends Controller
             $fifthApprover = $approvers[4]->approver_status;
             if ($fifthApprover) {
                 $name_fifth = $approvers[4]->fullname;
-                $date_approved_fifth = $approvers[4]->date_approved;
+                $date_approved_fifth =$this->format_datetime($approvers[4]->updated_at);
             } else {
                 $name_fifth = '<span class="text-warning popoverInPending" style="cursor: pointer;" data-bs-toggle="popover" data-bs-animation="true" data-bs-placement="top" title="'.$approvers[4]->fullname.'">Pending</span>';
                 $date_approved_fifth = '--';
@@ -803,7 +804,7 @@ class ViewFormsController extends Controller
         $firstApprover = $approvers[0]->approver_status;
         if ($firstApprover) {
             $name_first = $approvers[0]->fullname;
-            $date_approved_first = $approvers[0]->date_approved;
+            $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
         } else {
             $name_first = $action;
             $date_approved_first = '--';
@@ -812,7 +813,7 @@ class ViewFormsController extends Controller
         $secondApprover = $approvers[1]->approver_status;
         if ($secondApprover) {
             $name_second = $approvers[1]->fullname;
-            $date_approved_second = $approvers[1]->date_approved;
+            $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
         } else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/rfteis') {
             $name_second = $action;
             $date_approved_second = '--';
@@ -824,7 +825,7 @@ class ViewFormsController extends Controller
         $thirdApprover = $approvers[2]->approver_status;
         if ($thirdApprover) {
             $name_third = $approvers[2]->fullname;
-            $date_approved_third = $approvers[2]->date_approved;
+            $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
         } else if ($approvers[1]->approver_status == 1 && $request->path == 'pages/rfteis') {
             $name_third = $action;
             $date_approved_third = '--';
@@ -836,7 +837,7 @@ class ViewFormsController extends Controller
         $fourthApprover = $approvers[3]->approver_status;
         if ($fourthApprover) {
             $name_fourth = $approvers[3]->fullname;
-            $date_approved_fourth = $approvers[3]->date_approved;
+            $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
         } else if ($approvers[2]->approver_status == 1 && ($request->path == 'pages/rfteis' || $request->path == 'pages/rfteis_disapproved')) {
             $name_fourth = $action;
             $date_approved_fourth = '--';
@@ -927,7 +928,7 @@ class ViewFormsController extends Controller
         $tools_owner = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
             ->leftJoin('project_sites', 'project_sites.id', 'tools_and_equipment.current_site_id')
             ->leftJoin('users', 'users.id', 'tools_and_equipment.current_pe')
-            ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name')
+            ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name', 'project_sites.project_code')
             ->where('tools_and_equipment.status', 1)
             ->where('ps_transfer_request_items.status', 1)
             ->where('project_sites.status', 1)
@@ -995,7 +996,7 @@ class ViewFormsController extends Controller
         $firstApprover = $approvers[0]->approver_status;
         if ($firstApprover) {
             $name_first = $approvers[0]->fullname;
-            $date_approved_first = $approvers[0]->date_approved;
+            $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
         } else {
             $name_first = $action;
             if ($user_type == 4) {
@@ -1007,7 +1008,7 @@ class ViewFormsController extends Controller
         $secondApprover = $approvers[1]->approver_status;
         if ($secondApprover) {
             $name_second = $approvers[1]->fullname;
-            $date_approved_second = $approvers[1]->date_approved;
+            $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
         } else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer' && $user_type != 4) {
             $name_second = $action;
             $date_approved_second = '--';
@@ -1019,7 +1020,7 @@ class ViewFormsController extends Controller
         $thirdApprover = $approvers[2]->approver_status;
         if ($thirdApprover) {
             $name_third = $approvers[2]->fullname;
-            $date_approved_third = $approvers[2]->date_approved;
+            $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
         } else if ($approvers[1]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer') {
             $name_third = '<button id="peProceedBtn" data-requestnumber="'.$request_tools->request_number.'" type="button" ' . $picAllUploaded . ' data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->pstrid . '"  data-approverid="' . $ra_id . '" class="approveBtn mx-auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check"></i></button>';
             $date_approved_third = '--';
@@ -1031,7 +1032,7 @@ class ViewFormsController extends Controller
         $fourthApprover = $approvers[3]->approver_status;
         if ($fourthApprover) {
             $name_fourth = $approvers[3]->fullname;
-            $date_approved_fourth = $approvers[3]->date_approved;
+            $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
         } else if ($approvers[2]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer' && $approvers[3]->approver_id == Auth::id()) {
             $name_fourth = $action;
             $date_approved_fourth = '--';
@@ -1043,7 +1044,7 @@ class ViewFormsController extends Controller
         $fifthApprover = $approvers[4]->approver_status;
         if ($fifthApprover) {
             $name_fifth = $approvers[4]->fullname;
-            $date_approved_fifth = $approvers[4]->date_approved;
+            $date_approved_fifth =$this->format_datetime($approvers[4]->updated_at);
         } else if ($approvers[3]->approver_status == 1 && $request->path == 'pages/site_to_site_transfer' && $approvers[4]->approver_id == Auth::id()) {
             $name_fifth = $action;
             $date_approved_fifth = '--';
@@ -1182,7 +1183,7 @@ class ViewFormsController extends Controller
         $firstApprover = $approvers[0]->approver_status;
         if ($firstApprover) {
             $name_first = $approvers[0]->fullname;
-            $date_approved_first = $approvers[0]->date_approved;
+            $date_approved_first = $this->format_datetime($approvers[0]->updated_at);
         }else if (Auth::user()->user_type_id == 3 && $request->path == 'pages/pullout_ongoing') {
             $name_first = $action;
             $date_approved_first = '--';
@@ -1194,7 +1195,7 @@ class ViewFormsController extends Controller
         $secondApprover = $approvers[1]->approver_status;
         if ($secondApprover) {
             $name_second = $approvers[1]->fullname;
-            $date_approved_second = $approvers[1]->date_approved;
+            $date_approved_second = $this->format_datetime($approvers[1]->updated_at);
         }else if ($approvers[0]->approver_status == 1 && $request->path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 5) {
             $name_second = $action;
             $date_approved_second = '--';
@@ -1206,7 +1207,7 @@ class ViewFormsController extends Controller
         // $thirdApprover = $approvers[2]->approver_status;
         // if ($thirdApprover) {
         //     $name_third = $approvers[2]->fullname;
-        //     $date_approved_third = $approvers[2]->date_approved;
+        //     $date_approved_third = $this->format_datetime($approvers[2]->updated_at);
         // } else {
         //     $name_third = '<span class="text-warning">Pending</span>';
         //     $date_approved_third = '--';
@@ -1215,7 +1216,7 @@ class ViewFormsController extends Controller
         // $fourthApprover = $approvers[3]->approver_status;
         // if ($fourthApprover) {
         //     $name_fourth = $approvers[3]->fullname;
-        //     $date_approved_fourth = $approvers[3]->date_approved;
+        //     $date_approved_fourth = $this->format_datetime($approvers[3]->updated_at);
         // } else {
         //     $name_fourth = '<span class="text-warning">Pending</span>';
         //     $date_approved_fourth = '--';
@@ -1266,5 +1267,13 @@ class ViewFormsController extends Controller
         $path = $request->path;
         return view('pages.view_pullout', compact('pullout_tools', 'requestor', 'approvers', 'html', 'path'))->render();
 
+    }
+
+    public function format_datetime($date){
+
+        $formattedDateTime = Carbon::parse($date)->format('m-d-Y g:i A');
+
+
+        return $formattedDateTime;
     }
 }

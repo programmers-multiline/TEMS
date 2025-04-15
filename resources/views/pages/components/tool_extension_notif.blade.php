@@ -103,26 +103,29 @@
                 <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #ffffff; box-sizing: border-box; padding: 24px;" valign="top">
                   <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi, <span style='font-weight: bold'>{{$mail_data['pe_name']}}</span></p>
                   <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">{{ $mail_data['message'] }}</h4>          
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; padding: 20px;">
-                      <thead>
-                          <tr>
-                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Asset Code</th>
-                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Descriptiom</th>
-                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Price</th>
-                          <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">{{ $mail_data['type'] == 'approved' ? 'New End Date' : 'End Date' }}</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          @foreach (json_decode($mail_data['items']) as $tool)
-                          <tr>
-                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->asset_code}}</td>
-                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_description}}</td>
-                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->price}}</td>
-                              <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->usage_end_date}}</td>
-                          </tr>
-                          @endforeach
-                      </tbody>
-                    </table>
+                    @if ( !empty($mail_data['items']) )
+                      <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; padding: 20px;">
+                        <thead>
+                            <tr>
+                            <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Asset Code</th>
+                            <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Item Descriptiom</th>
+                            <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">Price</th>
+                            <th style="border: 1px solid #ededed; text-align: left; padding: 8px;" scope="col">{{ $mail_data['type'] == 'approved' ? 'New End Date' : 'End Date' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (json_decode($mail_data['items']) as $tool)
+                            <tr>
+                                <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->asset_code}}</td>
+                                <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->item_description}}</td>
+                                <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->price}}</td>
+                                <td style="border: 1px solid #ededed; text-align: left; padding: 8px;">{{$tool->usage_end_date}}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                      </table>
+                    @endif
+                    
                     <br>
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; min-width: 100%;" width="100%">
                     <tbody>

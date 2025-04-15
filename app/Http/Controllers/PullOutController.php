@@ -110,6 +110,13 @@ class PullOutController extends Controller
 
             ->addColumn('action', function ($row) {
 
+                $tools = PulloutRequestItems::where('status', 1)->where('pullout_request_id', $row->id)->pluck('tool_id')->toArray();
+                $is_approved_by_first_approver = RequestApprover::where('status', 1)->where('request_id', $row->id)->where('sequence', 1)->where('request_type', 2)->value('approved_by');
+
+                $display = $is_approved_by_first_approver ? 'd-none' : 'd-block';
+                
+                $items = json_encode($tools);
+
                 // $tool = PulloutRequest::where('status', 1)
                 //     ->where('pullout_requests.request_status', 'approved')
                 //     ->get();
@@ -135,6 +142,7 @@ class PullOutController extends Controller
                     $action = '<div class="d-flex gap-2">
                 <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                 <button ' . $have_sched . ' data-num="' . $row->pullout_number . '" data-type="' . $row->tr_type . '" '.$atr.' type="button" class="deliverBtn ' . $have_sched2 . ' btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
+                <button data-bs-toggle="modal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->pullout_number . '" data-toolid="' . $items . '" type="button" class="cancelBtn '.$display.' btn btn-sm btn-danger mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Cancel" data-bs-original-title="Cancel"><i class="fa fa-xmark"></i></button>
                 </div>';
                 } else if ($user_type == 3 || $user_type == 5) {
                 //     $action = '<div class="d-flex">
@@ -431,7 +439,7 @@ class PullOutController extends Controller
             // })
             // ->where('request_status', 'approved')
             // ->get();
-            if(Auth::user()->emp_id == 239){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
                 $request_tools = PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
                 ->leftJoin('ters_uploads', 'ters_uploads.pullout_number', '=', 'pullout_requests.pullout_number')
                 ->select('pullout_requests.*', 'users.fullname')
@@ -466,7 +474,7 @@ class PullOutController extends Controller
             } 
 
         } else {
-            if(Auth::user()->emp_id == 239){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
                 $request_tools = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
                 ->select('pullout_requests.*', 'users.fullname')
                 ->where('pullout_requests.status', 1)
@@ -704,7 +712,7 @@ class PullOutController extends Controller
             ->distinct('request_id')
             ->get();
         }else{
-            if(Auth::user()->emp_id == 239){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
                 $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
                     ->select('pullout_requests.*', 'request_approvers.date_approved')
                     ->where('request_approvers.status', 1)
@@ -821,7 +829,7 @@ class PullOutController extends Controller
 
     public function fetch_sched_date()
     {
-        if(Auth::user()->emp_id == 239){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
             $pullout_request = PulloutRequest::leftjoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.pullout_number', 'pullout_requests.project_address', 'pullout_requests.approved_sched_date', 'pullout_requests.contact_number', 'users.fullname', 'pullout_requests.project_name', 'pullout_requests.client')
             ->where('company_id', '3')

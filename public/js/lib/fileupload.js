@@ -60,6 +60,11 @@ $("#formRequest").on("submit", function (e) {
     // console.log(form_data)
     const table = $("#table").DataTable();
 
+    var $btn = $(this); // Get the clicked button
+    if ($btn.prop('disabled')) return; // Prevent multiple clicks
+
+    $btn.prop('disabled', true).text('Processing...');
+
     $.ajax({
         type: "POST",
         url: routeUrl,
@@ -82,6 +87,10 @@ $("#formRequest").on("submit", function (e) {
                 $("#rfteisCount").text(prevCount - 1);
             }
         },
+        complete: function() {
+            $btn.prop('disabled', false).text('Upload');
+        }
+        
     });
 });
 
@@ -151,6 +160,11 @@ $("#psUploadTersForm").on("submit", function (e) {
 
     const table = $("#table").DataTable();
 
+    var $btn = $(this); // Get the clicked button
+    if ($btn.prop('disabled')) return; // Prevent multiple clicks
+
+    $btn.prop('disabled', true).text('Processing...');
+
     $.ajax({
         type: "POST",
         url: routeUrl,
@@ -163,6 +177,9 @@ $("#psUploadTersForm").on("submit", function (e) {
             table.ajax.reload();
             showToast("success", "TERS Uploaded Successfully");
         },
+        complete: function() {
+            $btn.prop('disabled', false).text('Upload');
+        }
     });
 });
 
@@ -319,6 +336,11 @@ $("#uploadTersForm").on("submit", function (e) {
 
     const table = $("#table").DataTable();
 
+    var $btn = $(this); // Get the clicked button
+    if ($btn.prop('disabled')) return; // Prevent multiple clicks
+
+    $btn.prop('disabled', true).text('Processing...');
+
     $.ajax({
         type: "POST",
         url: routeUrl,
@@ -342,6 +364,9 @@ $("#uploadTersForm").on("submit", function (e) {
                 }
             }
         },
+        complete: function() {
+            $btn.prop('disabled', false).text('Upload');
+        }
     });
 });
 

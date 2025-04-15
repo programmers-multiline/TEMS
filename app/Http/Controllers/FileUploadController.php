@@ -55,7 +55,7 @@ class FileUploadController extends Controller
 
                 $tool_ids = explode(',', $request->toolId);
 
-                $comp = Auth::user()->emp_id == 239 ? 3 : 2;
+                $comp = Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296 ? 3 : 2;
 
                 foreach ($tool_ids as $tool_id) {
                     PeLogs::create([
@@ -115,6 +115,7 @@ class FileUploadController extends Controller
                         ->where('tools_and_equipment.status', 1)
                         ->where('transfer_request_items.item_status', 0)
                         ->where('transfer_request_id', $transfer_request->id)
+                        ->whereNull('is_remove')
                         ->get();
 
                     foreach ($tools_approved as $tool) {
