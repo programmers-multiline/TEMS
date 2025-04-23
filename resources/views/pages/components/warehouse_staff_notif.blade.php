@@ -1,3 +1,16 @@
+@php
+    $formType = 'TEIS';
+    if (isset($mail_data['type'])) {
+        if ($mail_data['type'] === 'pullout') {
+            $formType = 'TERS';
+        } elseif ($mail_data['type'] === 'rttte') {
+            $formType = 'TERS and TEIS';
+        } else {
+            $formType = '';
+        }
+    }
+@endphp
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -102,7 +115,7 @@
               <tr>
                 <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #ffffff; box-sizing: border-box; padding: 24px;" valign="top">
                   <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi, <span style='font-weight: bold'>{{$mail_data['fullname']}}</span></p>
-                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">The request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span> has been approved. Please upload the TEIS form at your earliest convenience.</h4>          
+                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">The request with the reference number <span style="color: red;">#{{$mail_data['request_number']}}</span> has been approved. Please upload the {{$formType}} form at your earliest convenience.</h4>          
                     <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; padding: 20px;">
                       <thead>
                           <tr>

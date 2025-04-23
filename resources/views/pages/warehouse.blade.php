@@ -322,7 +322,7 @@
 
             const table = $("#table").DataTable({
                 processing: true,
-                serverSide: false,
+                serverSide: true,
                 searchable: true,
                 pagination: true,
                 destroy: true,

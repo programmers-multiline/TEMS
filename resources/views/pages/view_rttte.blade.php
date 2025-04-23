@@ -287,7 +287,7 @@
                         <div style="border-bottom: 1px solid black; padding-inline: 3px;">
                             <h6 style="">Project Code</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $tools_owner->project_code }}</p>
+                                {{ $request_tools->project_code }}</p>
                         </div>
                         <div style="border-bottom: 1px solid black; padding-inline: 3px;">
                             <h6 style="">Location</h6>

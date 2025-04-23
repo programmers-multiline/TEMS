@@ -564,6 +564,46 @@
 
     ///RTTTE ACC
     $rttte_acc_count = App\Models\PsTransferRequests::where('status', 1)->where('progress', 'ongoing')->where('for_pricing', 1)->count();
+
+    ///PULLOUT - ONGOING count
+    $ongoing_pullout_count = App\Models\PulloutRequest::where('status', 1)->where('progress', 'ongoing')->where('user_id', Auth::id())->count();
+
+    ///REQUEST - ONGOING count
+    if(Auth::user()->user_type_id == 4){
+        $request_tools = App\Models\TransferRequest::select('id')
+            ->where('status', 1)
+            ->where(function($query) {
+                $query->where('progress', 'ongoing')
+                    ->orWhere('progress', 'partial');
+            })
+            ->whereNull('disapproved_by')
+            ->where('pe', Auth::user()->id);
+
+        $ps_request_tools = App\Models\PsTransferRequests::select('id')
+            ->where('status', 1)
+            ->where(function($query) {
+                $query->where('progress', 'ongoing')
+                    ->orWhere('progress', 'partial');
+            })
+            ->where('user_id', Auth::user()->id);
+
+        $request_ongoing_count = $request_tools->union($ps_request_tools)->count();
+    }else{
+        $request_ongoing_count = 0;
+    }
+    
+
+    if(Auth::user()->user_type_id == 4){
+        $site_to_site_count = App\Models\PsTransferRequests::leftjoin('users', 'users.id', 'ps_transfer_requests.user_id')
+                ->select('ps_transfer_requests.user_id', 'ps_transfer_requests.id', 'ps_transfer_requests.progress', 'users.fullname', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+                ->where('ps_transfer_requests.status', 1)
+                ->where('users.status', 1)
+                ->where('request_status', 'pending')
+                ->where('current_pe', Auth::user()->id)->count();
+    }else{
+        $site_to_site_count = 0;
+    }
+
 @endphp
 
 <!doctype html>
@@ -894,14 +934,21 @@
                                                         Ongoing
                                                     @endif
                                                     @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
-                                                        For Approval
+                                                        For Approval 
                                                     @endif
                                                 </span>
                                             </a>
-                                            <span class="countContainer nav-main-link text-light {{ $pullout_tools == 0 ? 'd-none' : '' }}"><span
-                                                id="pulloutCount" class="bg-info"
-                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $pullout_tools }}</span>
-                                            </span>
+                                            @if (Auth::user()->user_type_id == 4)
+                                                <span class="countContainer nav-main-link text-light {{ $ongoing_pullout_count == 0 ? 'd-none' : '' }}"><span
+                                                     class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $ongoing_pullout_count }}</span>
+                                                </span>
+                                            @elseif (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
+                                                <span class="countContainer nav-main-link text-light {{ $pullout_tools == 0 ? 'd-none' : '' }}"><span
+                                                    id="pulloutCount" class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $pullout_tools }}</span>
+                                                </span>
+                                            @endif
                                         </li>
                                         @if (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
                                             <li class="nav-main-item">
@@ -932,11 +979,15 @@
                                             </span>
                                         </a>
                                         <ul class="nav-main-submenu">
-                                            <li class="nav-main-item">
+                                            <li class="nav-main-item d-flex align-items-center justify-content-between">
                                                 <a class="nav-main-link{{ request()->is('pages/request_ongoing') ? ' active' : '' }}"
                                                     href="/pages/request_ongoing">
                                                     <span class="nav-main-link-name">Ongoing</span>
                                                 </a>
+                                                <span class="countContainer nav-main-link text-light {{$request_ongoing_count == 0 ? 'd-none' : '' }}"><span
+                                                     class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $request_ongoing_count }}</span>
+                                                </span>
                                             </li>
                                             <li class="nav-main-item d-flex align-items-center justify-content-between">
                                                 <a class="nav-main-link{{ request()->is('pages/request_for_receiving') ? ' active' : '' }}"
@@ -997,12 +1048,20 @@
                                                     @endif
                                                 </span>
                                             </a>
-                                            <span @php
-                                            if(Auth::user()->user_type_id == 4){$ps_request_tools_count = 0;} @endphp
-                                                class="countContainer nav-main-link text-light {{ $ps_request_tools_count == 0 ? 'd-none' : '' }}"><span
-                                                    id="siteToSiteCount" class="bg-info"
-                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $ps_request_tools_count }}</span>
-                                            </span>
+                                            @if (Auth::user()->user_type_id == 4)
+                                                <span class="countContainer nav-main-link text-light {{ $site_to_site_count == 0 ? 'd-none' : '' }}"><span
+                                                     class="bg-info"
+                                                    style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $site_to_site_count }}</span>
+                                                </span>
+                                            @elseif (Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5)
+                                                <span @php
+                                                if(Auth::user()->user_type_id == 4){$ps_request_tools_count = 0;} @endphp
+                                                    class="countContainer nav-main-link text-light {{ $ps_request_tools_count == 0 ? 'd-none' : '' }}"><span
+                                                        id="siteToSiteCount" class="bg-info"
+                                                        style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $ps_request_tools_count }}</span>
+                                                </span>
+                                            @endif
+                                            
                                         </li>
                                         {{-- @if (Auth::user()->user_type_id == 4)
                                             <li class="nav-main-item d-flex align-items-center justify-content-between">

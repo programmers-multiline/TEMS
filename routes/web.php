@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/pullout_for_receiving', 'pages.pullout_for_receiving')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/site_to_site_approved', 'pages.site_to_site_approved')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/sts_request_completed', 'pages.sts_request_completed')->middleware(ActionLoggerMiddleware::class);
-    Route::view('/pages/users_management', 'pages.users_management')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/users_management', 'pages.users_management');
     Route::view('/pages/rftte_signed_form_proof', 'pages.rftte_signed_form_proof')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/not_serve_items', 'pages.not_serve_items')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/report_pe_logs', 'pages.report_pe_logs')->middleware(ActionLoggerMiddleware::class);
@@ -85,7 +85,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/list_of_requests', 'pages.list_of_requests')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/upload_tools', 'pages.upload_tools')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools')->middleware(ActionLoggerMiddleware::class);
-    Route::view('/pages/view_logs', 'pages.view_logs')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/view_logs', 'pages.view_logs');
 
 
 

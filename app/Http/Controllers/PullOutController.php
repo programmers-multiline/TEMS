@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ToolPictureForPullout;
 use DateTime;
 use Carbon\Carbon;
 use App\Models\User;
@@ -20,6 +19,8 @@ use App\Mail\DeliveryScheduleNotif;
 use App\Models\PulloutRequestItems;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\WarehouseDocsClerkNotif;
+use App\Models\ToolPictureForPullout;
 use App\Models\ToolsAndEquipmentLogs;
 use App\Models\ToolPictureReceivingUploads;
 
@@ -111,7 +112,7 @@ class PullOutController extends Controller
             ->addColumn('action', function ($row) {
 
                 $tools = PulloutRequestItems::where('status', 1)->where('pullout_request_id', $row->id)->pluck('tool_id')->toArray();
-                $is_approved_by_first_approver = RequestApprover::where('status', 1)->where('request_id', $row->id)->where('sequence', 1)->where('request_type', 2)->value('approved_by');
+                $is_approved_by_first_approver = RequestApprover::where('status', 1)->where('request_id', $row->id)->where('sequence', 1)->where('request_type', 3)->value('approved_by');
 
                 $display = $is_approved_by_first_approver ? 'd-none' : 'd-block';
                 
@@ -671,6 +672,30 @@ class PullOutController extends Controller
             $pullout_request->request_status = "approved";
 
             $pullout_request->update();
+
+            $mail_Items = [];
+
+            $tools_approved = PulloutRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'pullout_request_items.tool_id')
+                ->select('tools_and_equipment.*')
+                ->where('tools_and_equipment.status', 1)
+                ->where('pullout_request_items.status', 1)
+                ->where('pullout_request_items.item_status', 0)
+                ->where('pullout_request_id', $request->requestId)
+                ->get();
+
+            foreach ($tools_approved as $tool) {
+                array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
+            }
+
+            if($tools->company_id == 3){
+                $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 239)->first();
+            }else{
+                $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 170)->first();
+            }
+
+            $mail_data_wh = ['type' => 'pullout', 'fullname' => $docs_clerk->fullname, 'request_number' => $pullout_request->pullout_number, 'items' => json_encode($mail_Items)];
+
+            Mail::to($docs_clerk->email)->send(new WarehouseDocsClerkNotif($mail_data_wh));
         }
 
 

@@ -26,8 +26,21 @@ class WarehouseDocsClerkNotif extends Mailable
     public function build()
     {
 
+        $subject = 'TEIS Form Upload';
+
+        if (isset($this->data['type'])) {
+            if($this->data['type'] == 'pullout'){
+                 $subject = 'TERS Form Upload';
+            }elseif($this->data['type'] == 'rttte'){
+                $subject = 'TERS and TEIS Form Upload';
+            }else{
+                $subject = 'TEIS Form Upload';
+            }
+        }
+
+
         return $this->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
-        ->subject('TEIS Form Upload')
+        ->subject($subject)
         ->markdown('pages.components.warehouse_staff_notif',['mail_data' => $this->data]);
 
     }

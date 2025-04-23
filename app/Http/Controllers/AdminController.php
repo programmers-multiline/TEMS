@@ -204,18 +204,30 @@ class AdminController extends Controller
         
     }
 
-    public function fetch_users_admin(){
-        $users = User::where('users.status', 1)
-        ->leftJoin('companies', 'companies.id', 'users.comp_id')
-        ->leftJoin('departments', 'departments.id', 'users.dept_id')
-        ->leftJoin('positions', 'positions.id', 'users.pos_id')
-        ->select('users.*', 'companies.code', 'departments.department_name', 'positions.position', 'users.status as us')
-        ->get();
+    public function fetch_users_admin(Request $request){
+
+        if ($request->has('status') && ($request->status === '0' || $request->status === '1')) {
+            $status = (int) $request->status;
+        
+            $users = User::leftJoin('companies', 'companies.id', 'users.comp_id')
+                ->leftJoin('departments', 'departments.id', 'users.dept_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('users.*', 'companies.code', 'departments.department_name', 'positions.position', 'users.status as us')
+                ->where('users.status', $status)
+                ->get();
+        } else {
+            $users = User::leftJoin('companies', 'companies.id', 'users.comp_id')
+                ->leftJoin('departments', 'departments.id', 'users.dept_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('users.*', 'companies.code', 'departments.department_name', 'positions.position', 'users.status as us')
+                ->get();
+        }
+        
 
         return DataTables::of($users)
 
         ->addColumn('action', function($row){
-            return '<button data-bs-toggle="modal" data-bs-target="##addUserModal" type="button" data-id="' . $row->id . '" data-po="' . $row->po_number . '" data-asset="' . $row->asset_code . '" data-serial="' . $row->serial_number . '" data-itemcode="' . $row->item_code . '" data-itemdesc="' . $row->item_description . '" data-brand="' . $row->brand . '" data-location="' . $row->location . '" data-status="' . $row->tools_status . '" class="editUserBtn btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+            return '<button type="button" data-id="' . $row->id . '" data-empid="' . $row->emp_id . '" data-email="' . $row->email . '" data-fullname="' . $row->fullname . '" data-usertype="' . $row->user_type_id . '" data-area="' . $row->area . '" data-posid="' . $row->pos_id . '" data-deptid="' . $row->dept_id . '" data-compid="' . $row->comp_id . '" class="editUserBtn btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
             <i class="fa fa-pencil-alt"></i>
           </button>
           <button type="button" data-id="' . $row->id . '" class="deleteToolsBtn btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
@@ -247,18 +259,31 @@ class AdminController extends Controller
 
     public function user_add_edit(Request $request){
 
-        // return $request;
-        User::create([
-            'emp_id' => $request->empId,
-            'fullname' => $request->fullname,
-            'comp_id' => $request->company,
-            'dept_id' => $request->department,
-            'pos_id' => $request->position,
-            'user_type_id' => $request->userType,
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => $request->password,
-            'area' => $request->area,
-        ]);
+        if($request->hiddenTriggerBy == 'add'){
+            User::create([
+                'emp_id' => $request->empId,
+                'fullname' => $request->fullname,
+                'comp_id' => $request->company,
+                'dept_id' => $request->department,
+                'pos_id' => $request->position,
+                'user_type_id' => $request->userType,
+                'email' => $request->email,
+                'username' => $request->username,
+                'password' => $request->password,
+                'area' => $request->area,
+            ]);
+        }else{
+            User::where('status', 1)->where('id', $request->hiddenId)->update([
+                'emp_id' => $request->empId,
+                'fullname' => $request->fullname,
+                'comp_id' => $request->company,
+                'dept_id' => $request->department,
+                'pos_id' => $request->position,
+                'user_type_id' => $request->userType,
+                'email' => $request->email,
+                'area' => $request->area,
+            ]);
+        }
+       
     }
 }

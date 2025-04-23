@@ -1628,7 +1628,7 @@ class TransferRequestController extends Controller
         ]);
 
 
-
+        /// dati to nung may 0 sequence pa yung PM/OM
         if ($tools->sequence == 0) {
             $shotgun_approver = RequestApprover::where('status', 1)
                 ->where('request_id', $request->requestId)
@@ -2794,6 +2794,30 @@ class TransferRequestController extends Controller
         // $ps_tools->acc = Carbon::now();
 
         // $ps_tools->update();
+
+        $mail_Items = [];
+
+        $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+            ->select('tools_and_equipment.*')
+            ->where('tools_and_equipment.status', 1)
+            ->where('ps_transfer_request_items.status', 1)
+            ->where('ps_transfer_request_items.item_status', 0)
+            ->where('ps_transfer_request_id', $ps_tools->id)
+            ->get();
+
+        foreach ($tools_approved as $tool) {
+            array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
+        }
+
+        if($ps_tools->company_id == 3){
+            $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 239)->first();
+        }else{
+            $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 170)->first();
+        }
+
+        $mail_data_wh = ['type' => 'rttte', 'fullname' => $docs_clerk->fullname, 'request_number' => $request->requestNum, 'items' => json_encode($mail_Items)];
+
+        Mail::to($docs_clerk->email)->send(new WarehouseDocsClerkNotif($mail_data_wh));
 
     }
 
