@@ -3723,9 +3723,9 @@ class TransferRequestController extends Controller
 
     public function delete_personnel(Request $request)
     {
-        // AssignedProjects::find($request->personnelId)->update(
-        //     ['status' => 0]
-        // );
+        AssignedProjects::find($request->personnelId)->update(
+            ['status' => 0]
+        );
 
         $ap = AssignedProjects::where('status', 1)->where('id', $request->personnelId)->first();
 
