@@ -728,6 +728,13 @@
                                 icon: "error"
                             });
                             return
+                        }else if(result == 3){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "No assigned DAF approvers. Please contact IT department.",
+                                icon: "error"
+                            });
+                            return
                         }
 
                         table.ajax.reload();

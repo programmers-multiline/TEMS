@@ -132,7 +132,7 @@ class PullOutController extends Controller
 
                     $pri_ids = PulloutRequestItems::where('status', 1)->where('pullout_request_id', $row->id)->pluck('id')->toArray();
 
-                    $all_has_pic = ToolPictureForPullout::where('status', 1)->whereIn('pullout_item_id', $pri_ids)->count() == count($pri_ids);
+                    $all_has_pic = ToolPictureForPullout::where('status', 1)->whereIn('pullout_item_id', $pri_ids)->count() >= count($pri_ids);
 
                     if ($all_has_pic) {
                         $atr = 'data-proceed_pullout="1"';

@@ -141,6 +141,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('fetch_teis_request_acc', 'fetch_teis_request_acc')->name('fetch_teis_request_acc');
         Route::post('rfteis_acc_proceed', 'rfteis_acc_proceed')->name('rfteis_acc_proceed');
 
+        Route::post('approve_daf', 'approve_daf')->name('approve_daf');
+
         Route::post('remove_tool', 'remove_tool')->name('remove_tool');
 
         Route::post('redelivery_status', 'redelivery_status')->name('redelivery_status');

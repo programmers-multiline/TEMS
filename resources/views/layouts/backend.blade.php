@@ -102,87 +102,64 @@
     } else {
         $tool_approvers = 0;
     }
-
-    if (
-        Auth::user()->user_type_id == 6 &&
-        Auth::user()->comp_id == 2 &&
-        (Auth::user()->pos_id == 5 || Auth::user()->pos_id == 6)
-    ) {
-        $series = 1;
-
-        $approver = App\Models\RequestApprover::where('status', 1)
+    // --------------------------------------------------------------------------------------------------------------------------------------
+    if (Auth::user()->user_type_id == 16 || Auth::user()->user_type_id == 17) {
+        $approvers = App\Models\DafApprovers::where('status', 1)
             ->where('approver_id', Auth::user()->id)
-            ->where('series', $series)
+            ->where('approver_status', 0)
             ->where('request_type', 4)
-            ->first();
+            ->get();
 
-        if ($approver->sequence == 1) {
-            // $request_tools = TransferRequest::where('status', 1)->where('progress', 'ongoing')->get();
-            $tools_approver_dafs = App\Models\RequestApprover::leftjoin(
-                'dafs',
-                'dafs.id',
-                'request_approvers.request_id',
-            )
-                ->leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
-                ->select(
-                    'dafs.*',
-                    'request_approvers.id as approver_id',
-                    'request_approvers.request_id',
-                    'request_approvers.series',
-                    'transfer_requests.subcon',
-                    'transfer_requests.customer_name',
-                    'transfer_requests.project_name',
-                    'transfer_requests.project_code',
-                    'transfer_requests.project_address',
-                )
-                ->where('dafs.status', 1)
-                ->where('transfer_requests.status', 1)
-                ->where('request_approvers.status', 1)
-                ->where('request_approvers.approver_id', Auth::user()->id)
-                ->where('series', $series)
-                ->where('approver_status', 0)
-                ->where('request_type', 4)
-                ->count();
-        } else {
-            $prev_sequence = $approver->sequence - 1;
+        if ($approvers->isEmpty()) {
+            $tool_approvers = 0;
+        }else{
+            $tool_approvers = collect();
 
-            $prev_approver = App\Models\RequestApprover::where('status', 1)
-                ->where('request_id', $approver->request_id)
-                ->where('sequence', $prev_sequence)
-                ->where('series', $series)
-                ->where('request_type', 4)
-                ->first();
+            foreach ($approvers as $approver) {
+                $current_approvers = collect();
 
-            if ($prev_approver->approver_status == 1) {
-                $tools_approver_dafs = App\Models\RequestApprover::leftjoin(
-                    'dafs',
-                    'dafs.id',
-                    'request_approvers.request_id',
-                )
-                    ->leftjoin('transfer_requests', 'transfer_requests.teis_number', 'dafs.daf_number')
-                    ->select(
-                        'dafs.*',
-                        'request_approvers.id as approver_id',
-                        'request_approvers.request_id',
-                        'request_approvers.series',
-                        'transfer_requests.subcon',
-                        'transfer_requests.customer_name',
-                        'transfer_requests.project_name',
-                        'transfer_requests.project_code',
-                        'transfer_requests.project_address',
-                    )
-                    ->where('dafs.status', 1)
-                    ->where('transfer_requests.status', 1)
-                    ->where('request_approvers.status', 1)
-                    ->where('request_approvers.approver_id', Auth::user()->id)
-                    ->where('series', $series)
-                    ->where('approver_status', 0)
-                    ->where('request_type', 4)
-                    ->count();
-            } else {
-                $tools_approver_dafs = [];
+                if ($approver->sequence == 0) {
+                    $current_approvers = App\Models\DafApprovers::leftJoin('transfer_requests', 'transfer_requests.id', 'daf_approvers.request_id')
+                        ->select('transfer_requests.*', 'daf_approvers.id as approver_id', 'daf_approvers.request_id', 'daf_approvers.series', 'daf_approvers.approved_date')
+                        ->where('transfer_requests.status', 1)
+                        ->where('daf_approvers.status', 1)
+                        ->where('daf_approvers.approver_id', Auth::user()->id)
+                        ->where('approver_status', 0)
+                        ->whereNot('transfer_requests.request_status', 'disapproved')
+                        ->get();
+                } else {
+                    $prev_sequence = $approver->sequence - 1;
+
+                    $prev_approver = App\Models\DafApprovers::where('status', 1)
+                        ->where('request_id', $approver->request_id)
+                        ->where('sequence', $prev_sequence)
+                        ->where('request_type', 1)
+                        ->first();
+
+                        // return $prev_approver;
+
+                    if ($prev_approver && $prev_approver->approver_status == 1) {
+                        $current_approvers = App\Models\RequestApprover::leftJoin('transfer_requests', 'transfer_requests.id', 'request_approvers.request_id')
+                            ->select('transfer_requests.*', 'request_approvers.id as approver_id', 'request_approvers.request_id', 'request_approvers.series', 'request_approvers.date_approved')
+                            ->where('transfer_requests.status', 1)
+                            ->where('request_approvers.status', 1)
+                            ->where('approver_id', Auth::user()->id)
+                            ->where('approver_status', 0)
+                            ->where('request_type', 1)
+                            ->where('request_approvers.id', $approver->id)
+                            ->whereNot('transfer_requests.request_status', 'disapproved')
+                            ->get();
+                    }
+                }
+
+                // Merge the current approvers to the tool_approvers array
+                $tool_approvers = $tool_approvers->merge($current_approvers)->unique('request_id');
             }
+
+            $tool_approvers = $tool_approvers->count();
         }
+    }else{
+        $tools_approver_dafs = 0;
     }
 
     if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 3 || Auth::user()->user_type_id == 5) {
@@ -1156,7 +1133,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 1)
+                            @if (Auth::user()->user_type_id == 6 && Auth::user()->comp_id == 1 && !in_array(Auth::user()->pos_id, [6,7,10]))
                                 <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
                                     <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/rfteis', 'pages/rfteis_approved') ? ' active' : '' }}"
                                         data-toggle="submenu" aria-haspopup="true" aria-expanded="true"
@@ -1194,7 +1171,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->user_type_id == 6 && (Auth::user()->pos_id == 2 || Auth::user()->pos_id == 6))
+                            @if (Auth::user()->user_type_id == 6 || Auth::user()->user_type_id == 7 && (in_array(Auth::user()->pos_id, [12,7,6,10])))
                                 <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
                                         href="/pages/daf">

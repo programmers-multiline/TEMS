@@ -11,6 +11,7 @@ use App\Models\ActionLogs;
 use App\Models\RfteisLogs;
 use App\Models\PmGroupings;
 use App\Models\TeisUploads;
+use App\Models\DafApprovers;
 use App\Models\ProjectSites;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
@@ -213,6 +214,12 @@ class ProjectSiteController extends Controller
         $assigned = AssignedProjects::select('user_id', 'assigned_by')->where('status', 1)->where('project_id', $project_site_id)->where('pos', 'pm')->first();
 
         $currentOwner = AssignedProjects::select('user_id', 'assigned_by')->where('status', 1)->where('project_id', $request->currentSiteId)->where('pos', 'pm')->first();
+
+        $daf_approvers = SetupApprover::where('status', 1)->where('request_type', 4)->where('company_id', Auth::user()->comp_id)->orderBy('sequence', 'asc')->get();
+
+        if($daf_approvers->isEmpty()){
+            return 3;
+        }
       
         // return [$assigned , $currentOwner];
         $approvers = [];
@@ -336,6 +343,17 @@ class ProjectSiteController extends Controller
                 'user_id' => Auth::user()->id,
             ]);
         }
+
+        foreach ($daf_approvers as $approver) {
+            DafApprovers::create([
+                'request_id' => $req->id,
+                'company_id' => Auth::user()->comp_id,
+                'approver_id' => $approver->user_id,
+                'sequence' => $approver->sequence,
+		        'type' => 'rttte',
+            ]);  
+        }
+
 
 
         // ! hindi na kasama
