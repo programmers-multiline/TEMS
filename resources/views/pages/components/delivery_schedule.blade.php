@@ -102,7 +102,15 @@
               <tr>
                 <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; background-color: #ffffff; box-sizing: border-box; padding: 24px;" valign="top">
                   <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi, <span style='font-weight: bold'>{{$mail_data['requestor_name']}}</span></p>
-                  <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">We would like to inform you that the pickup date for your request with the pullout number <span style="color: red;">#{{$mail_data['pullout_number']}} </span>has been <b>{{ $mail_data['change_type'] }}</b> from <b>{{ $mail_data['original_pickup_date'] }}</b> to <b>{{ $mail_data['new_pickup_date'] }}</b>.</h4>          
+                  @if($mail_data['change_type'] === 'confirmed')
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+                      We would like to inform you that the pickup date you requested for pullout number <span style="color: red;">#{{$mail_data['pullout_number']}}</span> has been <b>confirmed</b> for <b>{{ $mail_data['new_pickup_date'] }}</b>.
+                    </p>
+                  @else
+                    <p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+                      We would like to inform you that the pickup date for your request with the pullout number <span style="color: red;">#{{$mail_data['pullout_number']}}</span> has been <b>{{ $mail_data['change_type'] }}</b> from <b>{{ $mail_data['original_pickup_date'] }}</b> to <b>{{ $mail_data['new_pickup_date'] }}</b>.
+                    </p>
+                  @endif
                     {{-- <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; padding: 20px;">
                       <thead>
                           <tr>

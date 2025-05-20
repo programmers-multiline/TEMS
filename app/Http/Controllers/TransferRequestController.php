@@ -3209,6 +3209,7 @@ class TransferRequestController extends Controller
     {
         $ps_tools = PsTransferRequests::where('status', 1)
             ->where('progress', 'completed')
+            ->where('user_id', Auth::id())
             ->get();
 
 

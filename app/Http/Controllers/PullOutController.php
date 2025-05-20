@@ -881,7 +881,7 @@ class PullOutController extends Controller
 
         $user_info = User::select('fullname', 'email')->where('status', 1)->where('id', $pullout_request->user_id)->first();
 
-        if ($pullout_request->pickup_date !== $request->pickupDate) {
+        // if ($pullout_request->pickup_date !== $request->pickupDate) {
             $pulloutDate = new DateTime($pullout_request->pickup_date);
             $requestedDate = new DateTime($request->pickupDate);
 
@@ -890,6 +890,8 @@ class PullOutController extends Controller
             if ($requestedDate > $pulloutDate) {
                 // Delayed
                 $change_type =  "delayed";
+            }else if($requestedDate == $pulloutDate){
+                $change_type = "confirmed";
             } else {
                 // Advanced
                 $change_type = "advanced";
@@ -903,7 +905,7 @@ class PullOutController extends Controller
         
             Mail::to($user_info->email)->send(new DeliveryScheduleNotif($mail_data));
 
-        }
+        // }
 
         $pullout_request->approved_sched_date = $request->pickupDate;
 

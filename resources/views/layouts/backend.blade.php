@@ -1171,7 +1171,7 @@
                                 </li>
                             @endif
 
-                            @if (Auth::user()->user_type_id == 6 || Auth::user()->user_type_id == 7 && (in_array(Auth::user()->pos_id, [12,7,6,10])))
+                            @if ((Auth::user()->user_type_id == 6 && in_array(Auth::user()->pos_id, [12,7,6,10])) || (Auth::user()->user_type_id == 7 && in_array(Auth::user()->pos_id, [12,7,6,10])))
                                 <li class="nav-main-item d-flex align-items-center justify-content-between">
                                     <a class="nav-main-link{{ request()->is('pages/daf') ? ' active' : '' }}"
                                         href="/pages/daf">

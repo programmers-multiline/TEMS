@@ -27,6 +27,12 @@
 @section('content')
     <!-- Page Content -->
     <div class="content">
+        <div class="loader-container" id="loader"
+        style="display: none; width: 100%; height: 100vh; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+        <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
+            style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
+            loop autoplay>Loading</dotlottie-player>
+    </div>
         <div id="tableContainer" class="block block-rounded">
             <div class="block-content block-content-full overflow-x-auto">
                 <!-- DataTables functionality is initialized with .js-dataTable-responsive class in js/pages/be_tables_datatables.min.js which was auto compiled from _js/pages/be_tables_datatables.js -->
@@ -68,6 +74,7 @@
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
     <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
     <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>

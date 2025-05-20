@@ -841,7 +841,7 @@ class ViewFormsController extends Controller
                 <div style="padding-left: 3px; width: 50%">
                     <h6>Date received</h6>
                     <div class="d-flex justify-content-center align-items-center">
-                       <h6 style="margin-top: 10px; font-size: 16px;">' . ($date_hr_manager ? Carbon::parse($date_hr_manager)->format('d-m-Y') : Null) . '</h6>
+                       <h6 style="margin-top: 10px; font-size: 16px;">' . ($date_hr_manager ? Carbon::createFromFormat('m-d-Y h:i A', $date_hr_manager)->format('d-m-Y') : Null) . '</h6>
                     </div>
                 </div>
             </div>
