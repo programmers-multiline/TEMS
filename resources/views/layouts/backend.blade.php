@@ -765,6 +765,13 @@
                                         <span class="nav-main-link-name">Setup Approver</span>
                                     </a>
                                 </li>
+                                <li class="nav-main-item">
+                                    <a class="nav-main-link{{ request()->is('pages/project_site_list') ? ' active' : '' }}"
+                                        href="/pages/project_site_list">
+                                        <i class="nav-main-link-icon fa fa-building-columns"></i>
+                                        <span class="nav-main-link-name">Project Sites List</span>
+                                    </a>
+                                </li>
                                 
                             @endif
 
@@ -1286,7 +1293,7 @@
                                         <a class="nav-main-link{{ request()->is('pages/upload_tools') ? ' active' : '' }}"
                                             href="/pages/upload_tools">
                                             <i class="nav-main-link-icon fa fa-upload"></i>
-                                            <span class="nav-main-link-name">Upload Tools</span>
+                                            <span class="nav-main-link-name">Upload Outstading Tools</span>
                                         </a>
                                     </li>
                                 @endif

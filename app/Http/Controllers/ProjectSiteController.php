@@ -34,17 +34,17 @@ class ProjectSiteController extends Controller
     public function view_project_site()
     {
 
-        $all_pg = ProjectSites::where('status', 1)->where('progress', 'ongoing')->select('project_name', 'id')->get();
+        $all_pg = ProjectSites::where('status', 1)->where('progress', 'ongoing')->select('project_name', 'project_code', 'id')->get();
 
         $pg = AssignedProjects::leftjoin('project_sites', 'project_sites.id', 'assigned_projects.project_id')
-            ->select('project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
+            ->select('project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address', 'project_sites.id')
             ->where('assigned_projects.status', 1)
             ->where('project_sites.status', 1)
             ->where(function($query) {
                 $query->where('assigned_projects.emp_id', Auth::user()->emp_id)
                     ->orWhere('assigned_projects.assigned_by', Auth::user()->id);
             })
-            ->groupBy('assigned_projects.project_id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
+            ->groupBy('assigned_projects.project_id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address', 'project_sites.id')
             ->get();
 
         return view('/pages/project_site', compact('all_pg', 'pg'));

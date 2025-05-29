@@ -32,7 +32,7 @@
     </style>
 @endsection
 
-@section('content-title', 'Upload Tools')
+@section('content-title', 'Upload Outstading Tools')
 
 @section('content')
     <!-- Page Content -->

@@ -18,13 +18,15 @@
                 <div class="block-content fs-sm">
                     <form id="rttteForm">
                         @csrf
+                        <input type="hidden" name="hiddenProjectId" id="hiddenProjectId">
                         <div class="col-12 mb-3">
                             <label class="form-label" for="projectName">Project Name <span
                                     class="text-danger">*</span></label>
                             <select class="form-select w-100" id="projectName" name="projectName" size="1">
                                 <option value="" disabled selected>Select Project Name</option>
                                 @foreach ($pg as $project_detail)
-                                    <option data-pcode="{{ Str::title($project_detail->project_code) }}"
+                                    <option data-pid="{{ $project_detail->id }}"
+                                    data-pcode="{{ Str::title($project_detail->project_code) }}"
                                         data-paddress="{{ Str::title($project_detail->project_address) }}"
                                         value="{{ $project_detail->project_name }}">{{ $project_detail->project_name }}
                                     </option>

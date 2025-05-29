@@ -34,7 +34,7 @@
                         <option value="" disabled selected>Project Site</option>
                         @foreach ($pg as $project_detail)
                             <option value="{{ $project_detail->id }}">
-                                {{ Str::title($project_detail->project_name) }}</option>
+                                {{ $project_detail->project_code . ' - ' . Str::title($project_detail->project_name) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -64,7 +64,7 @@
                             <th style="text-align: left;">Serial#</th>
                             <th style="text-align: left;">Item Code</th>
                             <th style="text-align: left;">Item Desc</th>
-                            <th style="text-align: left;">Brand</th>
+                            <th style="text-align: left;">TEIS#</th>
                             <th style="text-align: left;">Location</th>
                             <th style="text-align: left;">Status</th>
                             <th style="text-align: left;">Usage End Date</th>
@@ -200,7 +200,7 @@
                         data: 'item_description'
                     },
                     {
-                        data: 'brand'
+                        data: 'teis_ref'
                     },
                     {
                         data: 'warehouse_name'

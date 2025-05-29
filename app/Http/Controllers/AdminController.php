@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProjectSites;
 use App\Models\User;
 use App\Models\Companies;
 use App\Models\PmGroupings;
@@ -9,6 +10,7 @@ use App\Models\RequestType;
 use Illuminate\Http\Request;
 use App\Models\SetupApprover;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -34,6 +36,7 @@ class AdminController extends Controller
             ->where('positions.status', 1)
             ->where('companies.status', 1)
             ->where('request_type', $request->RT)
+            ->where('company_id', $request->company)
             ->orderBy('sequence', 'asc')
             ->get();
         }else{
@@ -285,5 +288,53 @@ class AdminController extends Controller
             ]);
         }
        
+    }
+
+    public function fetch_project_site_list(Request $request){
+
+        $projects = DB::table('project_sites as ps')
+    ->leftJoin('assigned_projects as pm', function($join) {
+        $join->on('ps.id', '=', 'pm.project_id')
+            ->where('pm.pos', '=', 'pm');
+    })
+    ->leftJoin('users as pm_user', 'pm.user_id', '=', 'pm_user.id')
+    ->leftJoin('assigned_projects as pe', function($join) {
+        $join->on('ps.id', '=', 'pe.project_id')
+            ->where('pe.pos', '=', 'pe');
+    })
+    ->leftJoin('users as pe_user', 'pe.user_id', '=', 'pe_user.id')
+    ->leftJoin('companies as c', 'ps.company_id', '=', 'c.id') // join companies table
+    ->select(
+        'ps.id',
+        'c.code as company_code', // get company code here
+        'ps.project_code',
+        'ps.project_name',
+        'ps.project_address',
+        'pe_user.fullname as pe_name',
+        'pm_user.fullname as pm_name',
+        'ps.area',
+        'ps.progress',
+    )
+    ->get();
+
+
+
+
+        return DataTables::of($projects)->toJson();
+    }
+
+
+    public function add_project_code(Request $request){
+         
+        
+        ProjectSites::create([
+            'company_id' => $request->company,
+            'area' => $request->area, 
+            'project_code' => $request->pcode,
+            'project_name' => $request->pname,
+            'project_location' => $request->plocation,
+            'project_address' => $request->paddress,
+            'customer_name' => $request->customerName
+        ]);
     }
 }

@@ -86,6 +86,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/upload_tools', 'pages.upload_tools')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/view_logs', 'pages.view_logs');
+    Route::view('/pages/project_site_list', 'pages.project_site_list');
 
 
 
@@ -199,6 +200,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('fetch_users_admin','fetch_users_admin')->name('fetch_users_admin');
         Route::post('user_add_edit','user_add_edit')->name('user_add_edit');
         Route::post('change_status','change_status')->name('change_status');
+        Route::get('fetch_project_site_list', 'fetch_project_site_list')->name('fetch_project_site_list');
+        Route::post('add_project_code', 'add_project_code')->name('add_project_code');
     });
 
     Route::controller(ViewFormsController::class)->group(function(){

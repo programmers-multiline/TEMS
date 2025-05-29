@@ -2806,6 +2806,16 @@ class TransferRequestController extends Controller
 
         // $ps_tools->update();
 
+        /// for logs
+        RttteLogs::create([
+                'approver_name' => Auth::user()->fullname,
+                'page' => 'rttte_acc',
+                'request_number' => $request->requestNum,
+                'title' => 'Proceed by accounting',
+                'message' => Auth::user()->fullname . ' proceed the request.',
+                'action' => 12,
+            ]);
+
         $mail_Items = [];
 
         $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
@@ -2922,6 +2932,8 @@ class TransferRequestController extends Controller
                     $icon = 'fa-upload bg-primary';
                 }elseif($tool_request->action == 11){
                     $icon = 'fa-upload bg-elegance';
+                }elseif($tool_request->action == 12){
+                    $icon = 'fa-circle-arrow-right bg-success';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }
@@ -3026,6 +3038,8 @@ class TransferRequestController extends Controller
                     $icon = 'fa-upload bg-primary';
                 }elseif($tool_request->action == 11){
                     $icon = 'fa-upload bg-elegance';
+                }elseif($tool_request->action == 12){
+                    $icon = 'fa-circle-arrow-right bg-success';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }
@@ -3506,6 +3520,15 @@ class TransferRequestController extends Controller
         $transfer_request->for_pricing = 2;
 
         $transfer_request->update();
+
+        RfteisLogs::create([
+            'approver_name' => Auth::user()->fullname,
+            'page' => 'rfteis_acc',
+            'request_number' => $request->requestNum,
+            'title' => 'Proceed by accounting',
+            'message' => Auth::user()->fullname . ' proceed the request.',
+            'action' => 12,
+        ]);
 
 
         // check if the OM approver approved for validation of email

@@ -33,7 +33,7 @@
         <select class="col-12 col-md-6 col-lg-4" id="selectProjectSite" name="example-select">
             <option value="" disabled selected>Select Project Site</option>
             @foreach ($all_pg as $site)
-                <option value="{{ $site->id }}">{{ $site->project_name }}</option>
+                <option value="{{ $site->id }}">{{ $site->project_code .' - '. $site->project_name }}</option>
             @endforeach
         </select>
         <div id="tableContainer" class="block block-rounded mt-3">
@@ -380,6 +380,29 @@
                     })
                 }
 
+
+                /// validation so that user cannot select or trasnfer tools in the same psite and same user
+
+                const userId = {{ Auth::id() }}
+                const pid = $("#hiddenProjectId").val();
+
+                const siteId = $("#tbodyModal .currentSiteId").map((i, currentSiteId) => currentSiteId.value);
+                const pe = $("#tbodyModal .currentPe").map((i, currentPe) => currentPe.value);
+
+
+
+                // const selectedItem = [];
+                
+                for (var i = 0; i < id.length; i++) {
+                    // selectedItem.push({
+                        const csiteId = siteId[i]
+                        const cpe = pe[i]
+                    // })
+                    if(userId == cpe && pid == csiteId){
+                        showToast('warning','Cannot proceed! The selected tool is already assigned to you');
+                        return
+                    }
+                }
                 // for (var i = 0; i < id.length; i++) {
                 //     selectedItemId.push(id[i])
                 // }
@@ -492,9 +515,11 @@
                 const selectedPcode = $(this).find(':selected')
                 const pCode = selectedPcode.data('pcode');
                 const pAddress = selectedPcode.data('paddress');
+                const pid = selectedPcode.data('pid');
 
                 $("#projectCode").val(pCode)
                 $("#projectAddress").val(pAddress)
+                $("#hiddenProjectId").val(pid)
 
             });
 

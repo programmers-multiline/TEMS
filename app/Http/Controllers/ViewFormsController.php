@@ -747,7 +747,7 @@ class ViewFormsController extends Controller
 
 
         ///kunin kung sino ang nag request
-        $requestor = User::where('status', 1)->where('id', $request->pe)->value('fullname');
+        //$requestor = User::where('status', 1)->where('id', $request->pe)->value('fullname'); - //tignan mo ito yung nagpapamali
 
 
         $tools = TransferRequestItems::where('status', 1)->whereNull('is_remove')->where('transfer_request_id', $request->trid)->pluck('tool_id')->toArray();
