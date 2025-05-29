@@ -322,10 +322,17 @@
                     url: '{{ route('user_add_edit') }}',
                     method: 'post',
                     data: inputData,
-                    success() {
+                    success(result) {
                         // showToast()
-                        $("#addUserModal").modal('hide')
-                        $("#users").DataTable().ajax.reload()
+                        if(result == 1){
+                            showToast('error', 'Email is already exist in the database')
+                        }else if(result == 2){
+                            showToast('error', 'Employee ID is already exist in the database')
+                        }else{
+                            $("#addUserModal").modal('hide')
+                            $("#users").DataTable().ajax.reload()
+                        }
+ 
                     }
                 });
             })

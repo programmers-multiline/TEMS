@@ -263,6 +263,19 @@ class AdminController extends Controller
     public function user_add_edit(Request $request){
 
         if($request->hiddenTriggerBy == 'add'){
+            
+            $is_email_not_unique = User::where('status', 1)->where('email', $request->email)->first();
+            $is_emp_not_unique = User::where('status', 1)->where('emp_id', $request->empId)->first();
+
+            if($is_email_not_unique){
+                return 1;
+            }
+
+            if($is_emp_not_unique){
+                return 2;
+            }
+
+
             User::create([
                 'emp_id' => $request->empId,
                 'fullname' => $request->fullname,
