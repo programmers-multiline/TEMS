@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProjectSites;
 use App\Models\User;
 use App\Models\Companies;
 use App\Models\PmGroupings;
@@ -9,6 +10,7 @@ use App\Models\RequestType;
 use Illuminate\Http\Request;
 use App\Models\SetupApprover;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -34,6 +36,7 @@ class AdminController extends Controller
             ->where('positions.status', 1)
             ->where('companies.status', 1)
             ->where('request_type', $request->RT)
+            ->where('company_id', $request->company)
             ->orderBy('sequence', 'asc')
             ->get();
         }else{
@@ -204,18 +207,30 @@ class AdminController extends Controller
         
     }
 
-    public function fetch_users_admin(){
-        $users = User::where('users.status', 1)
-        ->leftJoin('companies', 'companies.id', 'users.comp_id')
-        ->leftJoin('departments', 'departments.id', 'users.dept_id')
-        ->leftJoin('positions', 'positions.id', 'users.pos_id')
-        ->select('users.*', 'companies.code', 'departments.department_name', 'positions.position', 'users.status as us')
-        ->get();
+    public function fetch_users_admin(Request $request){
+
+        if ($request->has('status') && ($request->status === '0' || $request->status === '1')) {
+            $status = (int) $request->status;
+        
+            $users = User::leftJoin('companies', 'companies.id', 'users.comp_id')
+                ->leftJoin('departments', 'departments.id', 'users.dept_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('users.*', 'companies.code', 'departments.department_name', 'positions.position', 'users.status as us')
+                ->where('users.status', $status)
+                ->get();
+        } else {
+            $users = User::leftJoin('companies', 'companies.id', 'users.comp_id')
+                ->leftJoin('departments', 'departments.id', 'users.dept_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('users.*', 'companies.code', 'departments.department_name', 'positions.position', 'users.status as us')
+                ->get();
+        }
+        
 
         return DataTables::of($users)
 
         ->addColumn('action', function($row){
-            return '<button data-bs-toggle="modal" data-bs-target="##addUserModal" type="button" data-id="' . $row->id . '" data-po="' . $row->po_number . '" data-asset="' . $row->asset_code . '" data-serial="' . $row->serial_number . '" data-itemcode="' . $row->item_code . '" data-itemdesc="' . $row->item_description . '" data-brand="' . $row->brand . '" data-location="' . $row->location . '" data-status="' . $row->tools_status . '" class="editUserBtn btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
+            return '<button type="button" data-id="' . $row->id . '" data-empid="' . $row->emp_id . '" data-email="' . $row->email . '" data-fullname="' . $row->fullname . '" data-usertype="' . $row->user_type_id . '" data-area="' . $row->area . '" data-posid="' . $row->pos_id . '" data-deptid="' . $row->dept_id . '" data-compid="' . $row->comp_id . '" class="editUserBtn btn btn-sm btn-info js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Edit" data-bs-original-title="Edit">
             <i class="fa fa-pencil-alt"></i>
           </button>
           <button type="button" data-id="' . $row->id . '" class="deleteToolsBtn btn btn-sm btn-danger js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Delete" data-bs-original-title="Delete">
@@ -247,18 +262,92 @@ class AdminController extends Controller
 
     public function user_add_edit(Request $request){
 
-        // return $request;
-        User::create([
-            'emp_id' => $request->empId,
-            'fullname' => $request->fullname,
-            'comp_id' => $request->company,
-            'dept_id' => $request->department,
-            'pos_id' => $request->position,
-            'user_type_id' => $request->userType,
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => $request->password,
-            'area' => $request->area,
+        if($request->hiddenTriggerBy == 'add'){
+            
+            $is_email_not_unique = User::where('status', 1)->where('email', $request->email)->first();
+            $is_emp_not_unique = User::where('status', 1)->where('emp_id', $request->empId)->first();
+
+            if($is_email_not_unique){
+                return 1;
+            }
+
+            if($is_emp_not_unique){
+                return 2;
+            }
+
+
+            User::create([
+                'emp_id' => $request->empId,
+                'fullname' => $request->fullname,
+                'comp_id' => $request->company,
+                'dept_id' => $request->department,
+                'pos_id' => $request->position,
+                'user_type_id' => $request->userType,
+                'email' => $request->email,
+                'username' => $request->username,
+                'password' => $request->password,
+                'area' => $request->area,
+            ]);
+        }else{
+            User::where('status', 1)->where('id', $request->hiddenId)->update([
+                'emp_id' => $request->empId,
+                'fullname' => $request->fullname,
+                'comp_id' => $request->company,
+                'dept_id' => $request->department,
+                'pos_id' => $request->position,
+                'user_type_id' => $request->userType,
+                'email' => $request->email,
+                'area' => $request->area,
+            ]);
+        }
+       
+    }
+
+    public function fetch_project_site_list(Request $request){
+
+        $projects = DB::table('project_sites as ps')
+    ->leftJoin('assigned_projects as pm', function($join) {
+        $join->on('ps.id', '=', 'pm.project_id')
+            ->where('pm.pos', '=', 'pm');
+    })
+    ->leftJoin('users as pm_user', 'pm.user_id', '=', 'pm_user.id')
+    ->leftJoin('assigned_projects as pe', function($join) {
+        $join->on('ps.id', '=', 'pe.project_id')
+            ->where('pe.pos', '=', 'pe');
+    })
+    ->leftJoin('users as pe_user', 'pe.user_id', '=', 'pe_user.id')
+    ->leftJoin('companies as c', 'ps.company_id', '=', 'c.id') // join companies table
+    ->select(
+        'ps.id',
+        'c.code as company_code', // get company code here
+        'ps.project_code',
+        'ps.project_name',
+        'ps.project_address',
+        'pe_user.fullname as pe_name',
+        'pm_user.fullname as pm_name',
+        'ps.area',
+        'ps.progress',
+    )
+    ->get();
+
+
+
+
+        return DataTables::of($projects)->toJson();
+    }
+
+
+    public function add_project_code(Request $request){
+         
+        
+        ProjectSites::create([
+            'company_id' => $request->company,
+            'area' => $request->area, 
+            'project_code' => $request->pcode,
+            'project_name' => $request->pname,
+            'project_location' => $request->plocation,
+            'project_address' => $request->paddress,
+            'customer_name' => $request->customerName
         ]);
     }
 }

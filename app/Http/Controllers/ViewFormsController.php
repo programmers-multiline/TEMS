@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DafApprovers;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\ToolPictures;
@@ -724,6 +725,159 @@ class ViewFormsController extends Controller
                     </div>
              ';
         }
+
+
+
+
+
+        $approvers_daf = DafApprovers::leftJoin('users', 'users.id', 'daf_approvers.approver_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('daf_approvers.*', 'users.fullname', 'positions.position')
+                ->where('daf_approvers.status', 1)
+                ->where('users.status', 1)
+                ->where('request_id', $request_tools->id)
+                ->orderBy('sequence', 'asc')
+                ->get();
+
+
+        /// kunin yung info object ng naka login na user 
+        $loggedInApprover = $approvers_daf->firstWhere(function ($approver) {
+            return $approver->approver_id == Auth::id();
+        });
+
+
+        ///kunin kung sino ang nag request
+        //$requestor = User::where('status', 1)->where('id', $request->pe)->value('fullname'); - //tignan mo ito yung nagpapamali
+
+
+        $tools = TransferRequestItems::where('status', 1)->whereNull('is_remove')->where('transfer_request_id', $request->trid)->pluck('tool_id')->toArray();
+        $items = json_encode($tools);
+
+        $atr = '';
+        
+        if($loggedInApprover){
+            $atr = 'data-approverid="' . $loggedInApprover->id . '"';
+        }
+
+        $action = '<button type="button" '.$atr.'  class="approveBtn mx_auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled mb-2" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check me-1"></i>Approve</button>';
+        // $action = '<button type="button" data-requestumber="'.$request_tools->request_number.'" data-requestorid="' . $request->pe . '" data-toolid="' . $items . '" data-requestid="' . $request->trid . '"  '.$atr.'  class="approveBtn mx_auto btn btn-sm btn-primary d-block js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approved" data-bs-original-title="Approved"><i class="fa fa-check me-1"></i>Approve</button>';
+
+       // HR Manager
+        $hrManagerApprover = $approvers_daf[0]->approver_status ?? null;
+        if ($hrManagerApprover) {
+            $name_hr_manager = $approvers_daf[0]->fullname;
+            $date_hr_manager = $this->format_datetime($approvers_daf[0]->updated_at);
+        } else if($approvers_daf[0]->approver_id == Auth::id()){
+            $name_hr_manager = $action; // first approver gets the button
+            $date_hr_manager = '';
+        }else {
+            $name_hr_manager = '&nbsp;'; // first approver gets the button
+            $date_hr_manager = '';
+        }
+            
+
+        // HR Assistant
+        $hrAssistantApprover = $approvers_daf[1]->approver_status ?? null;
+        if ($hrAssistantApprover) {
+            $name_hr_assistant = $approvers_daf[1]->fullname;
+            $date_hr_assistant = $this->format_datetime($approvers_daf[1]->updated_at);
+        } else if ($approvers_daf[0]->approver_status == 1 && $approvers_daf[1]->approver_id == Auth::id()) {
+            $name_hr_assistant = $action;
+            $date_hr_assistant = '';
+        } else {
+            $name_hr_assistant = '&nbsp;';
+            $date_hr_assistant = '';
+        }
+
+        // Payroll Personnel
+        $payrollPersonnelApprover = $approvers_daf[2]->approver_status ?? null;
+        if ($payrollPersonnelApprover) {
+            $name_payroll = $approvers_daf[2]->fullname;
+            $date_payroll = $this->format_datetime($approvers_daf[2]->updated_at);
+        } else if ($approvers_daf[1]->approver_status == 1 && $approvers_daf[2]->approver_id == Auth::id()) {
+            $name_payroll = $action;
+            $date_payroll = '';
+        } else {
+            $name_payroll = '&nbsp;';
+            $date_payroll = '';
+        }
+
+        // Accounting Personnel
+        $accountingPersonnelApprover = $approvers_daf[3]->approver_status ?? null;
+        if ($accountingPersonnelApprover) {
+            $name_accounting = $approvers_daf[3]->fullname;
+            $date_accounting = $this->format_datetime($approvers_daf[3]->updated_at);
+        } else if ($approvers_daf[2]->approver_status == 1 && $approvers_daf[3]->approver_id == Auth::id()) {
+            $name_accounting = $action;
+            $date_accounting = '';
+        } else {
+            $name_accounting = '&nbsp;';
+            $date_accounting = '';
+        }
+
+
+
+
+        $daf_approvers = '
+            <div class="borders" style="display: flex; border-top: 2px solid black">
+                <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+                <div class="d-flex justify-content-between">
+                        <h6>Noted by</h6>
+                        <h6 style="">' . $date_hr_manager . '</h6>
+                        </div>
+                        <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_hr_manager . '</p>
+                    </div>
+                </div>
+                <div style="border-right: 1px solid black; padding-left: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Received by</h6>
+                        <h6 style="margin-right: 5px;">' . $date_hr_assistant . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_hr_assistant . '</p>
+                    </div>
+                </div>
+                <div style="padding-left: 3px; width: 50%">
+                    <h6>Date received</h6>
+                    <div class="d-flex justify-content-center align-items-center">
+                       <h6 style="margin-top: 10px; font-size: 16px;">' . ($date_hr_manager ? Carbon::createFromFormat('m-d-Y h:i A', $date_hr_manager)->format('d-m-Y') : Null) . '</h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="borders">
+                <h6>Remarks</h6>
+                <p style="padding-left: 10px; margin-top: 5px; margin-bottom: 5px;">&nbsp;</p>
+            </div>
+
+            <div class="borders" style="display: flex; border-top: 2px solid black">
+                <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Acknowledged by</h6>
+                        <h6 style="">' . $date_payroll . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_payroll . '</p>
+                    </div>
+                </div>
+                <div style="padding-left: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Acknowledged by</h6>
+                        <h6 style="">' . $date_accounting . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_accounting . '</p>
+                    </div>
+                </div>
+            </div>
+        ';
+
+
+
+
+
+
         $path = '';
         if($request->path){
             $path =  $request->path;
@@ -731,9 +885,9 @@ class ViewFormsController extends Controller
 
         // return $request_tools;
         if ($request->type == 'rfteis') {
-            return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path'))->render();
+            return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path', 'daf_approvers'))->render();
         } else {
-            return view('pages.view_rttte', compact('request_tools', 'html', 'requestor', 'tools_owner', 'approvers'))->render();
+            return view('pages.view_rttte', compact('request_tools', 'html', 'requestor', 'tools_owner', 'approvers', 'daf_approvers'))->render();
         }
 
     }
@@ -900,8 +1054,116 @@ class ViewFormsController extends Controller
                         </div>
         ';
 
+        $approvers_daf = DafApprovers::leftJoin('users', 'users.id', 'daf_approvers.approver_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('daf_approvers.*', 'users.fullname', 'positions.position')
+                ->where('daf_approvers.status', 1)
+                ->where('users.status', 1)
+                ->where('request_id', $request_tools->id)
+                ->orderBy('sequence', 'asc')
+                ->get();
+
+
+        // HR Manager
+        $hrManagerApprover = $approvers_daf[0]->approver_status ?? null;
+        if ($hrManagerApprover) {
+            $name_hr_manager = $approvers_daf[0]->fullname;
+            $date_hr_manager = $this->format_datetime($approvers_daf[0]->updated_at);
+        } else {
+            $name_hr_manager = '&nbsp;';
+            $date_hr_manager = '';
+        }
+
+        // HR Assistant
+        $hrAssistantApprover = $approvers_daf[1]->approver_status ?? null;
+        if ($hrAssistantApprover) {
+            $name_hr_assistant = $approvers_daf[1]->fullname;
+            $date_hr_assistant = $this->format_datetime($approvers_daf[1]->updated_at);
+        } else {
+            $name_hr_assistant = '&nbsp;';
+            $date_hr_assistant = '';
+        }
+
+        // Payroll Personnel
+        $payrollPersonnelApprover = $approvers_daf[2]->approver_status ?? null;
+        if ($payrollPersonnelApprover) {
+            $name_payroll = $approvers_daf[2]->fullname;
+            $date_payroll = $this->format_datetime($approvers_daf[2]->updated_at);
+        } else {
+            $name_payroll = '&nbsp;';
+            $date_payroll = '';
+        }
+
+        // Accounting Personnel
+        $accountingPersonnelApprover = $approvers_daf[3]->approver_status ?? null;
+        if ($accountingPersonnelApprover) {
+            $name_accounting = $approvers_daf[3]->fullname;
+            $date_accounting = $this->format_datetime($approvers_daf[3]->updated_at);
+        } else {
+            $name_accounting = '&nbsp;';
+            $date_accounting = '';
+        }
+
+
+        $daf_approvers = '
+            <div class="borders" style="display: flex; border-top: 2px solid black">
+                <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+                <div class="d-flex justify-content-between">
+                        <h6>Noted by</h6>
+                        <h6 style="">' . $date_hr_manager . '</h6>
+                        </div>
+                        <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_hr_manager . '</p>
+                    </div>
+                </div>
+                <div style="border-right: 1px solid black; padding-left: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Received by</h6>
+                        <h6 style="margin-right: 5px;">' . $date_hr_assistant . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_hr_assistant . '</p>
+                    </div>
+                </div>
+                <div style="padding-left: 3px; width: 50%">
+                    <h6>Date received</h6>
+                    <div class="d-flex justify-content-center align-items-center">
+                        <h6 style="margin-top: 10px; font-size: 16px;">' . ($date_hr_manager ? Carbon::parse($date_hr_manager)->format('d-m-Y') : Null) . '</h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="borders">
+                <h6>Remarks</h6>
+                <p style="padding-left: 10px; margin-top: 5px; margin-bottom: 5px;">&nbsp;</p>
+            </div>
+
+            <div class="borders" style="display: flex; border-top: 2px solid black">
+                <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Acknowledged by</h6>
+                        <h6 style="">' . $date_payroll . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_payroll . '</p>
+                    </div>
+                </div>
+                <div style="padding-left: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Acknowledged by</h6>
+                        <h6 style="">' . $date_accounting . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_accounting . '</p>
+                    </div>
+                </div>
+            </div>
+        ';
+
+
+
         $path = '';
-        return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path'))->render();
+        return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path', 'daf_approvers'))->render();
 
     }
 
@@ -1139,7 +1401,115 @@ class ViewFormsController extends Controller
        ';
 
 
-        return view('pages.view_rttte', compact('request_tools', 'html', 'tools_owner', 'requestor', 'approvers'))->render();
+
+       $approvers_daf = DafApprovers::leftJoin('users', 'users.id', 'daf_approvers.approver_id')
+                ->leftJoin('positions', 'positions.id', 'users.pos_id')
+                ->select('daf_approvers.*', 'users.fullname', 'positions.position')
+                ->where('daf_approvers.status', 1)
+                ->where('users.status', 1)
+                ->where('request_id', $request_tools->id)
+                ->orderBy('sequence', 'asc')
+                ->get();
+
+
+        // HR Manager
+        $hrManagerApprover = $approvers_daf[0]->approver_status ?? null;
+        if ($hrManagerApprover) {
+            $name_hr_manager = $approvers_daf[0]->fullname;
+            $date_hr_manager = $this->format_datetime($approvers_daf[0]->updated_at);
+        } else {
+            $name_hr_manager = '&nbsp;';
+            $date_hr_manager = '';
+        }
+
+        // HR Assistant
+        $hrAssistantApprover = $approvers_daf[1]->approver_status ?? null;
+        if ($hrAssistantApprover) {
+            $name_hr_assistant = $approvers_daf[1]->fullname;
+            $date_hr_assistant = $this->format_datetime($approvers_daf[1]->updated_at);
+        } else {
+            $name_hr_assistant = '&nbsp;';
+            $date_hr_assistant = '';
+        }
+
+        // Payroll Personnel
+        $payrollPersonnelApprover = $approvers_daf[2]->approver_status ?? null;
+        if ($payrollPersonnelApprover) {
+            $name_payroll = $approvers_daf[2]->fullname;
+            $date_payroll = $this->format_datetime($approvers_daf[2]->updated_at);
+        } else {
+            $name_payroll = '&nbsp;';
+            $date_payroll = '';
+        }
+
+        // Accounting Personnel
+        $accountingPersonnelApprover = $approvers_daf[3]->approver_status ?? null;
+        if ($accountingPersonnelApprover) {
+            $name_accounting = $approvers_daf[3]->fullname;
+            $date_accounting = $this->format_datetime($approvers_daf[3]->updated_at);
+        } else {
+            $name_accounting = '&nbsp;';
+            $date_accounting = '';
+        }
+
+
+        $daf_approvers = '
+            <div class="borders" style="display: flex; border-top: 2px solid black">
+                <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+                <div class="d-flex justify-content-between">
+                        <h6>Noted by</h6>
+                        <h6 style="">' . $date_hr_manager . '</h6>
+                        </div>
+                        <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_hr_manager . '</p>
+                    </div>
+                </div>
+                <div style="border-right: 1px solid black; padding-left: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Received by</h6>
+                        <h6 style="margin-right: 5px;">' . $date_hr_assistant . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_hr_assistant . '</p>
+                    </div>
+                </div>
+                <div style="padding-left: 3px; width: 50%">
+                    <h6>Date received</h6>
+                    <div class="d-flex justify-content-center align-items-center">
+                        <h6 style="margin-top: 10px; font-size: 16px;">' . ($date_hr_manager ? Carbon::parse($date_hr_manager)->format('d-m-Y') : Null) . '</h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="borders">
+                <h6>Remarks</h6>
+                <p style="padding-left: 10px; margin-top: 5px; margin-bottom: 5px;">&nbsp;</p>
+            </div>
+
+            <div class="borders" style="display: flex; border-top: 2px solid black">
+                <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Acknowledged by</h6>
+                        <h6 style="">' . $date_payroll . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_payroll . '</p>
+                    </div>
+                </div>
+                <div style="padding-left: 3px; width: 100%">
+                    <div class="d-flex justify-content-between">
+                        <h6>Acknowledged by</h6>
+                        <h6 style="">' . $date_accounting . '</h6>
+                    </div>
+                    <div class="d-flex" style="justify-content: center; padding-top: 10px;">
+                        <p style="margin-block: 0px; font-weight: 600; font-size: 16px; margin-bottom: 9px">' . $name_accounting . '</p>
+                    </div>
+                </div>
+            </div>
+        ';
+
+
+        return view('pages.view_rttte', compact('request_tools', 'html', 'tools_owner', 'requestor', 'approvers', 'daf_approvers'))->render();
 
     }
 

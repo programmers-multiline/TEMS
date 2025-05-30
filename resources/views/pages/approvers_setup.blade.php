@@ -49,7 +49,7 @@
                     <div class="block-content">
                         <button type="button" class="btn btn-primary mb-3" id="addApproverBtn" data-triggerby="add"
                             data-bs-toggle="modal" data-bs-target="#approverSetupModal" disabled>Add Approver</button>
-                        <button type="button" class="btn btn-success mb-3" id="addZeroSequenceBtn" disabled>Add 0 Sequence</button>
+                        {{-- <button type="button" class="btn btn-success mb-3" id="addZeroSequenceBtn" disabled>Add 0 Sequence</button> --}}
                         <p id="result"></p>
                         {{-- <ul class="list-group push" id="approvers">
                         </ul> --}}
@@ -188,6 +188,7 @@
                 let table;
 
                 const RT = $("#selectRequestType").val()
+                const company = $("#selectCompany").val();
 
                 if (RT == 4) {
                     table = $("#tableApprovers").DataTable({
@@ -200,6 +201,7 @@
                             type: 'get',
                             url: '{{ route('fetch_approvers') }}',
                             data: {
+                                company,
                                 RT,
                                 _token: '{{ csrf_token() }}'
                             },

@@ -9,6 +9,7 @@ use App\Models\Warehouse;
 use App\Models\RfteisLogs;
 use App\Mail\ApproverEmail;
 use App\Models\PmGroupings;
+use App\Models\DafApprovers;
 use App\Models\ProjectSites;
 use Illuminate\Http\Request;
 use App\Models\SetupApprover;
@@ -246,8 +247,12 @@ class WarehouseController extends Controller
         $project_site_id = ProjectSites::where('status', 1)->where('project_code', $request->projectCode)->value('id');
         $assigned = AssignedProjects::where('status', 1)->where('project_id', $project_site_id)->where('pos', 'pm')->first();
         $setup_approvers = SetupApprover::where('status', 1)->where('requestor', Auth::user()->id)->where('request_type', 1)->orderBy('sequence', 'asc')->get();
+        $daf_approvers = SetupApprover::where('status', 1)->where('request_type', 4)->where('company_id', Auth::user()->comp_id)->orderBy('sequence', 'asc')->get();
 
-        // return $request->idArray;
+        if($daf_approvers->isEmpty()){
+            return 3;
+        }
+
         if(!$assigned){
             return 1;
         }elseif($setup_approvers->isEmpty()){
@@ -395,7 +400,15 @@ class WarehouseController extends Controller
         // }
 
 
-
+        foreach ($daf_approvers as $approver) {
+            DafApprovers::create([
+                'request_id' => $req->id,
+                'company_id' => Auth::user()->comp_id,
+                'approver_id' => $approver->user_id,
+                'sequence' => $approver->sequence,
+		        'type' => 'rfteis',
+            ]);  
+        }
 
 
         // foreach ($approvers as $approver) {  

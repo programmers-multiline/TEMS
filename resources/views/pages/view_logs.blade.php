@@ -42,7 +42,7 @@ if(Auth::user()->user_type_id == 4){
     </style>
 @endsection
 
-@section('content-title', 'List of tools')
+@section('content-title', 'List of Logs')
 
 @section('content')
     <!-- Page Content -->

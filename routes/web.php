@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/pullout_for_receiving', 'pages.pullout_for_receiving')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/site_to_site_approved', 'pages.site_to_site_approved')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/sts_request_completed', 'pages.sts_request_completed')->middleware(ActionLoggerMiddleware::class);
-    Route::view('/pages/users_management', 'pages.users_management')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/users_management', 'pages.users_management');
     Route::view('/pages/rftte_signed_form_proof', 'pages.rftte_signed_form_proof')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/not_serve_items', 'pages.not_serve_items')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/report_pe_logs', 'pages.report_pe_logs')->middleware(ActionLoggerMiddleware::class);
@@ -85,7 +85,8 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/pages/list_of_requests', 'pages.list_of_requests')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/upload_tools', 'pages.upload_tools')->middleware(ActionLoggerMiddleware::class);
     Route::view('/pages/list_of_upload_tools', 'pages.list_of_upload_tools')->middleware(ActionLoggerMiddleware::class);
-    Route::view('/pages/view_logs', 'pages.view_logs')->middleware(ActionLoggerMiddleware::class);
+    Route::view('/pages/view_logs', 'pages.view_logs');
+    Route::view('/pages/project_site_list', 'pages.project_site_list');
 
 
 
@@ -140,6 +141,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('sts_request_approved', 'sts_request_approved')->name('sts_request_approved');
         Route::get('fetch_teis_request_acc', 'fetch_teis_request_acc')->name('fetch_teis_request_acc');
         Route::post('rfteis_acc_proceed', 'rfteis_acc_proceed')->name('rfteis_acc_proceed');
+
+        Route::post('approve_daf', 'approve_daf')->name('approve_daf');
 
         Route::post('remove_tool', 'remove_tool')->name('remove_tool');
 
@@ -197,6 +200,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('fetch_users_admin','fetch_users_admin')->name('fetch_users_admin');
         Route::post('user_add_edit','user_add_edit')->name('user_add_edit');
         Route::post('change_status','change_status')->name('change_status');
+        Route::get('fetch_project_site_list', 'fetch_project_site_list')->name('fetch_project_site_list');
+        Route::post('add_project_code', 'add_project_code')->name('add_project_code');
     });
 
     Route::controller(ViewFormsController::class)->group(function(){

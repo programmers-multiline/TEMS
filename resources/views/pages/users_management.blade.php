@@ -21,6 +21,7 @@
     $companies = App\Models\Companies::where('status', 1)->get();
     $departments = App\Models\Departments::where('status', 1)->get();
     $positions = App\Models\Positions::where('status', 1)->get();
+    $account_types = App\Models\UserType::where('status', 1)->get();
 @endphp
 
 @section('content-title', 'Users Management')
@@ -85,9 +86,7 @@
                         </div>
                     </div>
                     <div class="block-content fs-sm mt-1 mb-6">
-                        <input type="hidden" id="hiddenId">
-                        <input type="hidden" id="hiddenTriggerBy">
-
+                        
                         <div id="editApproverModal" class="d-flex align-items-center gap-2 mb-4">
                             <span id="sequenceModal" class="badge rounded-pill bg-primary fs-6"></span>
                             <div>
@@ -101,6 +100,8 @@
                                 @csrf
                                 <div class="row mb-3">
                                     <div class="col-4">
+                                        <input type="hidden" name="hiddenTriggerBy" id="hiddenTriggerBy" value="add">
+                                        <input type="hidden" name="hiddenId" id="hiddenId">
                                         <label class="form-label" for="empId">Employee ID <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="empId" name="empId"
@@ -153,14 +154,17 @@
                                                 class="text-danger">*</span></label>
                                         <select class="form-select" id="userType" name="userType" size="1">
                                             <option value="" disabled selected>Select Type</option>
-                                            <option value='1'>Admin</option>
+                                            @foreach ($account_types as $types)
+                                                <option value="{{ $types->id }}">{{ $types->type_name }}</option>
+                                            @endforeach
+                                            {{-- <option value='1'>Admin</option>
                                             <option value='2'>Warehouse</option>
                                             <option value='3'>PM</option>
                                             <option value='4'>PE/Requestor</option>
                                             <option value='5'>OM</option>
                                             <option value='6'>Approver</option>
                                             <option value='7'>Accounting</option>
-                                            <option value='8'>Viewer</option>
+                                            <option value='8'>Viewer</option> --}}
                                         </select>
                                     </div>
                                 </div>
@@ -286,53 +290,20 @@
                 ],
             });
 
-
+            $("#selectStatus").change(function() {
+                const status = $(this).val();
+                table.ajax.url('{{ route('fetch_users_admin') }}?status=' + status).load();
+            })
 
             // initiate select 2
             $("#selectCompany").select2({
                 placeholder: "Select Company",
             });
 
-            $("#selectRequestType").select2({
-                placeholder: "Select Department",
-            });
-
             $("#selectCompanyModal").select2({
                 dropdownParent: $("#approverSetupModal"),
                 placeholder: "Select Company",
             });
-
-            $("#selectApproverModal").select2({
-                dropdownParent: $("#approverSetupModal"),
-                placeholder: "Select Approver",
-                allowClear: true
-            });
-
-            $("#selectArea").select2({
-                placeholder: "Select Area"
-            });
-
-            $("#selectRequestor").select2({
-                placeholder: "Select Requestor"
-            })
-
-
-
-            $("#selectCompanyModal").change(function() {
-                const comp = $(this).val();
-
-                $.ajax({
-                    url: '{{ route('fetch_users') }}',
-                    method: 'post',
-                    data: {
-                        comp,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success(result) {
-                        $("#selectApproverModal").html(result);
-                    }
-                });
-            })
 
 
             // Ito ang ginamit ko sa pag add ng approver at pag edit ng approver. tinatamad ako gumawa ng bagong modal e hahaha.
@@ -342,14 +313,8 @@
                 // const selectedArea = $("#selectArea").val();
                 // const selectedRequestor = $("#selectRequestor").val();
                 // const selectedApprover = $("#selectApproverModal").val();
-                // const hiddenTriggerBy = $("#hiddenTriggerBy").val();
+                const hiddenTriggerBy = $("#hiddenTriggerBy").val();
                 // const hiddenId = $("#hiddenId").val();
-
-                // if(hiddenTriggerBy == 'edit'){
-                //     $('#selectApproverModal').removeAttr('multiple');
-                // }else{
-                //     $('#selectApproverModal').attr('multiple', 'multiple');
-                // }
 
                 const inputData = $("#userForm").serializeArray();
 
@@ -357,10 +322,17 @@
                     url: '{{ route('user_add_edit') }}',
                     method: 'post',
                     data: inputData,
-                    success() {
+                    success(result) {
                         // showToast()
-                        $("#addUserModal").modal('hide')
-                        $("#users").DataTable().ajax.reload()
+                        if(result == 1){
+                            showToast('error', 'Email is already exist in the database')
+                        }else if(result == 2){
+                            showToast('error', 'Employee ID is already exist in the database')
+                        }else{
+                            $("#addUserModal").modal('hide')
+                            $("#users").DataTable().ajax.reload()
+                        }
+ 
                     }
                 });
             })
@@ -383,25 +355,29 @@
             })
 
 
-            $(document).on('click', '.editApprover', function() {
-                $('#selectApproverModal').removeAttr('multiple');
-                // $('#selectApproverModal').select2('destroy').select2({
-                //     dropdownParent: $("#approverSetupModal"),
-                //     placeholder: "Select Approver"
-                // });
+            $(document).on('click', '.editUserBtn', function() {
+                $("#hiddenTriggerBy").val('edit')
+                $('#addUserModal').modal('show')
 
-                const setupApproverId = $(this).data('id');
-                const fullname = $(this).data('fn');
-                const company = $(this).data('comp');
-                const position = $(this).data('pos');
-                const triggerBy = $(this).data('triggerby');
+                const id = $(this).data('id');
+                const empid = $(this).data('empid');
+                const email = $(this).data('email');
+                const fullname = $(this).data('fullname');
+                const usertype = $(this).data('usertype');
+                const area = $(this).data('area');
+                const posid = $(this).data('posid');
+                const deptid = $(this).data('deptid');
+                const compid = $(this).data('compid');
 
-                const compAndPos = company + ' - ' + position
-
-                $("#fnModal").text(fullname)
-                $("#compAndPosModal").text(compAndPos)
-                $("#hiddenId").val(setupApproverId)
-                $("#hiddenTriggerBy").val(triggerBy)
+                $("#hiddenId").val(id)
+                $("#empId").val(empid)
+                $("#email").val(email)
+                $("#fullname").val(fullname)
+                $("#position").val(posid)
+                $("#userType").val(usertype)
+                $("#department").val(deptid)
+                $("#company").val(compid)
+                $("#area").val(area)
 
             })
 

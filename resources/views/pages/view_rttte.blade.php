@@ -287,7 +287,7 @@
                         <div style="border-bottom: 1px solid black; padding-inline: 3px;">
                             <h6 style="">Project Code</h6>
                             <p style="padding-left: 10px;margin-top: 5px;margin-bottom: 5px;">
-                                {{ $tools_owner->project_code }}</p>
+                                {{ $request_tools->project_code }}</p>
                         </div>
                         <div style="border-bottom: 1px solid black; padding-inline: 3px;">
                             <h6 style="">Location</h6>
@@ -534,7 +534,8 @@
                         <p> Note: This authorization form remains valid until revoked in writing by the employee or
                             until further notice.</p>
                     </div>
-                    <div class="borders" style="display: flex; border-top: 2px solid black">
+                    {!! $daf_approvers !!}
+                    {{-- <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">Noted by</h6>
                             <div>&nbsp;</div>
@@ -574,7 +575,7 @@
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     {{-- <table id="modalTable" class="fs-sm table-bordered w-100">
                     <thead>

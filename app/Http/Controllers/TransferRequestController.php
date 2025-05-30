@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DafApprovers;
 use Mail;
 use Carbon\Carbon;
 use App\Models\Daf;
@@ -97,6 +98,16 @@ class TransferRequestController extends Controller
                 ->where('request_status', 'approved')
                 ->where('user_id', Auth::user()->id)
                 ->whereNotNull('is_deliver');
+        }
+
+        if($request->path == 'pages/daf'){
+            $request_tools = TransferRequest::select('id','teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress', 'disapproved_by')
+            ->where('status', 1)
+            ->where('progress', 'completed');
+
+        $ps_request_tools = PsTransferRequests::select('id','request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress', 'wh')
+            ->where('status', 1)
+            ->where('progress', 'completed');
         }
 
         $unioned_tables = $request_tools->union($ps_request_tools)->get();
@@ -1628,7 +1639,7 @@ class TransferRequestController extends Controller
         ]);
 
 
-
+        /// dati to nung may 0 sequence pa yung PM/OM
         if ($tools->sequence == 0) {
             $shotgun_approver = RequestApprover::where('status', 1)
                 ->where('request_id', $request->requestId)
@@ -2795,6 +2806,40 @@ class TransferRequestController extends Controller
 
         // $ps_tools->update();
 
+        /// for logs
+        RttteLogs::create([
+                'approver_name' => Auth::user()->fullname,
+                'page' => 'rttte_acc',
+                'request_number' => $request->requestNum,
+                'title' => 'Proceed by accounting',
+                'message' => Auth::user()->fullname . ' proceed the request.',
+                'action' => 12,
+            ]);
+
+        $mail_Items = [];
+
+        $tools_approved = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
+            ->select('tools_and_equipment.*')
+            ->where('tools_and_equipment.status', 1)
+            ->where('ps_transfer_request_items.status', 1)
+            ->where('ps_transfer_request_items.item_status', 0)
+            ->where('ps_transfer_request_id', $ps_tools->id)
+            ->get();
+
+        foreach ($tools_approved as $tool) {
+            array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
+        }
+
+        if($ps_tools->company_id == 3){
+            $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 239)->first();
+        }else{
+            $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 170)->first();
+        }
+
+        $mail_data_wh = ['type' => 'rttte', 'fullname' => $docs_clerk->fullname, 'request_number' => $request->requestNum, 'items' => json_encode($mail_Items)];
+
+        Mail::to($docs_clerk->email)->send(new WarehouseDocsClerkNotif($mail_data_wh));
+
     }
 
     public function tools_deliver(Request $request)
@@ -2887,6 +2932,8 @@ class TransferRequestController extends Controller
                     $icon = 'fa-upload bg-primary';
                 }elseif($tool_request->action == 11){
                     $icon = 'fa-upload bg-elegance';
+                }elseif($tool_request->action == 12){
+                    $icon = 'fa-circle-arrow-right bg-success';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }
@@ -2991,6 +3038,8 @@ class TransferRequestController extends Controller
                     $icon = 'fa-upload bg-primary';
                 }elseif($tool_request->action == 11){
                     $icon = 'fa-upload bg-elegance';
+                }elseif($tool_request->action == 12){
+                    $icon = 'fa-circle-arrow-right bg-success';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }
@@ -3174,6 +3223,7 @@ class TransferRequestController extends Controller
     {
         $ps_tools = PsTransferRequests::where('status', 1)
             ->where('progress', 'completed')
+            ->where('user_id', Auth::id())
             ->get();
 
 
@@ -3471,6 +3521,15 @@ class TransferRequestController extends Controller
 
         $transfer_request->update();
 
+        RfteisLogs::create([
+            'approver_name' => Auth::user()->fullname,
+            'page' => 'rfteis_acc',
+            'request_number' => $request->requestNum,
+            'title' => 'Proceed by accounting',
+            'message' => Auth::user()->fullname . ' proceed the request.',
+            'action' => 12,
+        ]);
+
 
         // check if the OM approver approved for validation of email
 
@@ -3581,6 +3640,7 @@ class TransferRequestController extends Controller
         ->where('users.status', 1)
         ->where('positions.status', 1)
         ->where('companies.status', 1)
+        ->where('users.comp_id', Auth::user()->comp_id)
         ->orderBy('user_type_id', 'asc')
         ->whereIn('users.user_type_id', [3, 4])
         ->get();
@@ -3699,9 +3759,9 @@ class TransferRequestController extends Controller
 
     public function delete_personnel(Request $request)
     {
-        // AssignedProjects::find($request->personnelId)->update(
-        //     ['status' => 0]
-        // );
+        AssignedProjects::find($request->personnelId)->update(
+            ['status' => 0]
+        );
 
         $ap = AssignedProjects::where('status', 1)->where('id', $request->personnelId)->first();
 
@@ -3860,6 +3920,15 @@ class TransferRequestController extends Controller
             ActionLogger::log(Auth::user()->fullname . " cancelled " . '#'. $request->requestNumber);
         }
 
+    }
+
+
+    public function approve_daf(Request $request){
+        $daf_approvers = DafApprovers::where('status', 1)->where('id', $request->id)->update([
+            'approver_status' => 1,
+            'approved_by' => Auth::id(),
+            'approved_date' => now()
+        ]);
     }
 
 

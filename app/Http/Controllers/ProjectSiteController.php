@@ -11,6 +11,7 @@ use App\Models\ActionLogs;
 use App\Models\RfteisLogs;
 use App\Models\PmGroupings;
 use App\Models\TeisUploads;
+use App\Models\DafApprovers;
 use App\Models\ProjectSites;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
@@ -33,17 +34,17 @@ class ProjectSiteController extends Controller
     public function view_project_site()
     {
 
-        $all_pg = ProjectSites::where('status', 1)->where('progress', 'ongoing')->select('project_name', 'id')->get();
+        $all_pg = ProjectSites::where('status', 1)->where('progress', 'ongoing')->select('project_name', 'project_code', 'id')->get();
 
         $pg = AssignedProjects::leftjoin('project_sites', 'project_sites.id', 'assigned_projects.project_id')
-            ->select('project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
+            ->select('project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address', 'project_sites.id')
             ->where('assigned_projects.status', 1)
             ->where('project_sites.status', 1)
             ->where(function($query) {
                 $query->where('assigned_projects.emp_id', Auth::user()->emp_id)
                     ->orWhere('assigned_projects.assigned_by', Auth::user()->id);
             })
-            ->groupBy('assigned_projects.project_id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address')
+            ->groupBy('assigned_projects.project_id', 'project_sites.customer_name', 'project_sites.project_name', 'project_sites.project_code', 'project_sites.project_address', 'project_sites.id')
             ->get();
 
         return view('/pages/project_site', compact('all_pg', 'pg'));
@@ -213,6 +214,12 @@ class ProjectSiteController extends Controller
         $assigned = AssignedProjects::select('user_id', 'assigned_by')->where('status', 1)->where('project_id', $project_site_id)->where('pos', 'pm')->first();
 
         $currentOwner = AssignedProjects::select('user_id', 'assigned_by')->where('status', 1)->where('project_id', $request->currentSiteId)->where('pos', 'pm')->first();
+
+        $daf_approvers = SetupApprover::where('status', 1)->where('request_type', 4)->where('company_id', Auth::user()->comp_id)->orderBy('sequence', 'asc')->get();
+
+        if($daf_approvers->isEmpty()){
+            return 3;
+        }
       
         // return [$assigned , $currentOwner];
         $approvers = [];
@@ -336,6 +343,17 @@ class ProjectSiteController extends Controller
                 'user_id' => Auth::user()->id,
             ]);
         }
+
+        foreach ($daf_approvers as $approver) {
+            DafApprovers::create([
+                'request_id' => $req->id,
+                'company_id' => Auth::user()->comp_id,
+                'approver_id' => $approver->user_id,
+                'sequence' => $approver->sequence,
+		        'type' => 'rttte',
+            ]);  
+        }
+
 
 
         // ! hindi na kasama

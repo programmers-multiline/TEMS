@@ -38,7 +38,7 @@
 
 @section('content')
     <div class="loader-container" id="loader"
-        style="display: none; width: 100%; height: 100%; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
+        style="display: none; width: 100%; height: 100vh; position: absolute; top: 0; right: 0; margin-top: 0; background-color: rgba(0, 0, 0, 0.26); z-index: 1033;">
         <dotlottie-player src="{{ asset('js/loader.json') }}" background="transparent" speed="1"
             style=" position: absolute; top: 35%; left: 45%; width: 160px; height: 160px" direction="1" playMode="normal"
             loop autoplay>Loading</dotlottie-player>
@@ -725,6 +725,13 @@
                             Swal.fire({
                                 title: "Cannot request!",
                                 text: "No assigned CNC and Warehouse manager approver. Please contact IT department.",
+                                icon: "error"
+                            });
+                            return
+                        }else if(result == 3){
+                            Swal.fire({
+                                title: "Cannot request!",
+                                text: "No assigned DAF approvers. Please contact IT department.",
                                 icon: "error"
                             });
                             return

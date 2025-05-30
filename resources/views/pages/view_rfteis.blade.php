@@ -554,7 +554,8 @@
                         <p> Note: This authorization form remains valid until revoked in writing by the employee or
                             until further notice.</p>
                     </div>
-                    <div class="borders" style="display: flex; border-top: 2px solid black">
+                    {!! $daf_approvers !!}
+                    {{-- <div class="borders" style="display: flex; border-top: 2px solid black">
                         <div style="border-right: 1px solid black; padding-inline: 3px; width: 100%">
                             <h6 style="">Noted by</h6>
                             <div>&nbsp;</div>
@@ -594,7 +595,7 @@
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     {{-- <table id="modalTable" class="fs-sm table-bordered w-100">
                     <thead>
