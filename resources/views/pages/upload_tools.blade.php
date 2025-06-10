@@ -1,11 +1,14 @@
 @php
-    $auth_pg = App\Models\AssignedProjects::leftjoin('project_sites as ps', 'ps.id', 'assigned_projects.project_id')
-                                            ->select('ps.id', 'ps.project_code', 'ps.project_name')
-                                            ->where('ps.status', 1)
-                                            ->where('assigned_projects.status', 1)
-                                            ->where('assigned_projects.user_id', Auth::id())
-                                            ->where('assigned_projects.pos', 'pe')
-                                            ->get();
+    // $auth_pg = App\Models\AssignedProjects::leftjoin('project_sites as ps', 'ps.id', 'assigned_projects.project_id')
+    //                                         ->select('ps.id', 'ps.project_code', 'ps.project_name')
+    //                                         ->where('ps.status', 1)
+    //                                         ->where('assigned_projects.status', 1)
+    //                                         ->where('assigned_projects.user_id', Auth::id())
+    //                                         ->where('assigned_projects.pos', 'pe')
+    //                                         ->get();
+
+    $auth_pg = App\Models\ProjectSites::where('status', 1)->select('project_sites.id', 'project_sites.project_code', 'project_sites.project_name')->get();
+    $pes = App\Models\user::where('status', 1)->where('user_type_id', 4)->select('id', 'fullname')->get();
 @endphp
 
 @extends('layouts.backend')
@@ -48,6 +51,12 @@
                 <option value="" disabled selected>Select Project Site</option>
                 @foreach ($auth_pg as $site)
                     <option value="{{ $site->id }}">{{ $site->project_code .' - '. $site->project_name }}</option>
+                @endforeach
+            </select>
+             <select class="col-12 col-md-6 col-lg-4" id="selectPe" name="pe" required>
+                <option value="" disabled selected>Select PE</option>
+                @foreach ($pes as $pe)
+                    <option value="{{ $pe->id }}">{{ $pe->fullname}}</option>
                 @endforeach
             </select>
             <div class="d-flex mb-3 mt-3 justify-content-between flex-wrap align-items-center">
@@ -115,6 +124,10 @@
         <script>
             $("#selectProjectSite").select2({
                 placeholder: "Select Project site",
+            });
+
+            $("#selectPe").select2({
+                placeholder: "Select PE",
             });
             // $(document).ready(function() {
 
@@ -212,6 +225,7 @@
                     let allData = previewTable.rows().data().toArray();
                     let psite = $("#selectProjectSite").val();
                     let upload_id = $("#upload_id").val();
+                    let pe = $("#selectPe").val();
 
                     $.ajax({
                         url: '{{ route('import_excel') }}',
@@ -221,6 +235,7 @@
                             data: allData,
                             psite,
                             upload_id,
+                            pe,
                         },
                         beforeSend() {
                             $("#loader").show()

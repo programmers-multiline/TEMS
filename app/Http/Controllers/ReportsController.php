@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActionLogs;
-use App\Models\PulloutRequest;
+use App\Models\PulloutLogs;
+use App\Models\RttteLogs;
 use Carbon\Carbon;
 use App\Models\PeLogs;
 use App\Models\Uploads;
+use App\Models\ActionLogs;
+use App\Models\RfteisLogs;
 use App\Models\TeisUploads;
 use App\Models\TersUploads;
 use Illuminate\Http\Request;
+use App\Models\PulloutRequest;
 use App\Models\TransferRequest;
 use App\Models\AssignedProjects;
 use Yajra\DataTables\DataTables;
 use App\Models\PsTransferRequests;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ToolsAndEquipmentLogs;
 
@@ -436,37 +440,51 @@ class ReportsController extends Controller
         $logs = ActionLogs::leftJoin('users as u', 'u.id', 'action_logs.user_id')
         ->leftJoin('companies as c', 'c.id', 'u.comp_id')
         ->leftJoin('positions as p', 'p.id' , 'u.pos_id')
-        ->select('u.fullname', 'u.emp_id', 'u.username', 'u.fullname', 'p.position', 'c.code', 'action_logs.created_at', 'action_logs.action')
+        ->select('u.emp_id', 'u.username', 'u.fullname', 'p.position', 'c.code', 'action_logs.created_at', 'action_logs.action')
         ->where('u.status', 1)
         ->where('p.status', 1)
-        ->where('c.status', 1)
+        ->where('c.status', 1);
+
+        $rfteis_logs = RfteisLogs::leftJoin('users as u', 'u.fullname', 'rfteis_logs.approver_name')
+        ->leftJoin('companies as c', 'c.id', 'u.comp_id')
+        ->leftJoin('positions as p', 'p.id' , 'u.pos_id')
+        ->select('u.emp_id', 'u.username', 'u.fullname', 'p.position', 'c.code', 'rfteis_logs.created_at', 
+        DB::raw("CONCAT(rfteis_logs.message, '(', rfteis_logs.request_number, ')') as action"))
+        ->where('u.status', 1)
+        ->where('p.status', 1)
+        ->where('c.status', 1);
+
+        $rttte_logs = RttteLogs::leftJoin('users as u', 'u.fullname', 'rttte_logs.approver_name')
+        ->leftJoin('companies as c', 'c.id', 'u.comp_id')
+        ->leftJoin('positions as p', 'p.id' , 'u.pos_id')
+        ->select('u.emp_id', 'u.username', 'u.fullname', 'p.position', 'c.code', 'rttte_logs.created_at', 
+        DB::raw("CONCAT(rttte_logs.message, '(', rttte_logs.request_number, ')') as action"))
+        ->where('u.status', 1)
+        ->where('p.status', 1)
+        ->where('c.status', 1);
+
+        $pullout_logs = PulloutLogs::leftJoin('users as u', 'u.fullname', 'pullout_logs.approver_name')
+        ->leftJoin('companies as c', 'c.id', 'u.comp_id')
+        ->leftJoin('positions as p', 'p.id' , 'u.pos_id')
+        ->select('u.emp_id', 'u.username', 'u.fullname', 'p.position', 'c.code', 'pullout_logs.created_at', 
+        DB::raw("CONCAT(pullout_logs.message, '(', pullout_logs.request_number, ')') as action"))
+        ->where('u.status', 1)
+        ->where('p.status', 1)
+        ->where('c.status', 1);
+
+        /// pag mabagal rey mo to kaso may error pa eh
+        // $unionQuery = $logs->union($rfteis_logs)->union($rttte_logs)->union($pullout_logs);
+
+        // $mergedLogs = DB::table(DB::raw("({$unionQuery->toSql()}) as merged_logs"))
+        // ->mergeBindings($logs) // important to keep bindings from first query
+        // ->orderBy('created_at', 'desc')
+        // ->paginate(10);
+
+        $mergedLogs = $logs->union($rfteis_logs)->union($rttte_logs)->union($pullout_logs)
         ->orderBy('created_at', 'desc')
         ->get();
 
-        // $ps_request_tools = PsTransferRequests::select('request_number as teis_number', 'daf_status', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type','progress')
-        //     ->where('status', 1)
-        //     ->where('request_status', 'approved');
-
-        // $pullout_request = PulloutRequest::select('pullout_number as teis_number', 'contact_number', 'request_status', 'subcon', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'progress')
-        //     ->where('status', 1)
-        //     ->where('request_status', 'approved');
-
-        // // filter
-        // if ($request->request_type == 'rfteis') {
-        //     $query = $request_tools;
-        // } elseif ($request->request_type == 'rttte') {
-        //     $query = $ps_request_tools;
-        // } elseif ($request->request_type == 'pullout') {
-        //     $query = $pullout_request;
-        // } else {
-        //     // no filter
-        //     $query = $request_tools->union($ps_request_tools)->union($pullout_request);
-        // }
-        
-
-        // $unioned_tables = $query->get();
-
-        return DataTables::of($logs)
+        return DataTables::of($mergedLogs)
         
         ->addColumn('date', function($row){
     

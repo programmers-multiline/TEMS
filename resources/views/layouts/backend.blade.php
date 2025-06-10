@@ -1286,9 +1286,9 @@
                                 
                             @endif
 
-                            @if (Auth::user()->user_type_id == 4 && Auth::user()->comp_id == 3 || Auth::user()->user_type_id == 7 && Auth::user()->comp_id == 3 || Auth::user()->user_type_id == 1)
+                            @if (Auth::user()->user_type_id == 7 && Auth::user()->comp_id == 3 || Auth::user()->user_type_id == 1 || (Auth::user()->user_type_id == 8 && Auth::user()->comp_id == 3 && Auth::user()->dept_id == 5))
                                 <li class="nav-main-heading">Other</li>
-                                @if (Auth::user()->user_type_id == 4 || Auth::user()->user_type_id == 1)
+                                @if (Auth::user()->user_type_id == 1)
                                     <li class="nav-main-item">
                                         <a class="nav-main-link{{ request()->is('pages/upload_tools') ? ' active' : '' }}"
                                             href="/pages/upload_tools">

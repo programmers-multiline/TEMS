@@ -131,7 +131,7 @@ class ImportController extends Controller
 
         $tool_upload = UploadTools::create([
             'upload_id' => $upload_id,
-            'uploader_id' => Auth::id(),
+            'uploader_id' => $request->pe,
             'project_id' => $request->psite,
             'company_id' => $comp_id,
         ]);
@@ -180,7 +180,7 @@ class ImportController extends Controller
         ];
 
         // Send an email notification
-        Mail::to($CA->email)->send(new ToolExtensionNotif($mail_data));
+        Mail::to($CA->email)->cc('mbi_acctg1@multi-linegroup.com')->send(new ToolExtensionNotif($mail_data));
 
         $ps = ProjectSites::where('status', 1)->where('id', $request->psite)->value('project_name');
 
@@ -246,7 +246,7 @@ class ImportController extends Controller
                     ->where('upload_tools.status', 1)
                     ->where('upload_tools.project_id', $request->projectSiteId)
                     ->where('upload_tools.progress', $request->status)
-                    ->where('upload_tools.uploader_id', Auth::id())
+                    // ->where('upload_tools.uploader_id', Auth::id())
                     ->get();
             } elseif ($request->status) {
                 $upload_tools = UploadTools::leftJoin('project_sites as ps', 'ps.id', 'upload_tools.project_id')
@@ -256,7 +256,7 @@ class ImportController extends Controller
                     ->where('u.status', 1)
                     ->where('upload_tools.status', 1)
                     ->where('upload_tools.progress', $request->status)
-                    ->where('upload_tools.uploader_id', Auth::id())
+                    // ->where('upload_tools.uploader_id', Auth::id())
                     ->get();
 
             } elseif ($request->projectSiteId) {
@@ -267,7 +267,7 @@ class ImportController extends Controller
                     ->where('u.status', 1)
                     ->where('upload_tools.status', 1)
                     ->where('upload_tools.project_id', $request->projectSiteId)
-                    ->where('upload_tools.uploader_id', Auth::id())
+                    // ->where('upload_tools.uploader_id', Auth::id())
                     ->get();
             } else {
                 // no filter
@@ -277,7 +277,7 @@ class ImportController extends Controller
                     ->where('ps.status', 1)
                     ->where('u.status', 1)
                     ->where('upload_tools.status', 1)
-                    ->where('upload_tools.uploader_id', Auth::id())
+                    // ->where('upload_tools.uploader_id', Auth::id())
                     ->get();
             }
         }
@@ -344,8 +344,10 @@ class ImportController extends Controller
             ->addColumn('add_price', function ($row) {
 
                 // $is_have_value = $row->price ? 'disabled' : '';
+                $cost = ToolsAndEquipment::where('status', 1)->where('item_code', $row->item_code)->orderBy('price', 'desc')->value('price');
+                
     
-                return '<input class="form-control price" value="' . $row->cost . '" data-id="' . $row->id . '" style="width: 110px;" type="number" name="price" min="1">';
+                return '<input class="form-control price" value="' . $cost . '" data-id="' . $row->id . '" style="width: 110px;" type="number" name="price" min="1">';
             })
 
             ->rawColumns(['request_status', 'add_price'])
@@ -398,6 +400,14 @@ class ImportController extends Controller
             }
 
         }
+
+        $pname = ProjectSites::where('status', 1)->where('id', $tool_request->project_id)->value('project_name');
+
+        ActionLogs::create([
+            'user_id' => Auth::id(),
+            'action' => Auth::user()->fullname . ' approved outstading Tools for ' . $pname . '( id: ' . $tool_request->project_id . ')',
+            'ip_address' => request()->ip(),
+        ]);
     }
 
     public function downloadTemplate()

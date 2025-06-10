@@ -105,7 +105,7 @@ if(Auth::user()->user_type_id == 4){
                             </div>
                         </div>
                         <div class="block-content fs-sm">
-                            @if (Auth::user()->user_type_id == 7)
+                            @if (Auth::user()->user_type_id == 7 || (Auth::user()->user_type_id == 8 && Auth::user()->comp_id == 3 && Auth::user()->dept_id == 5))
                                 <button type="button" id="addPriceBtn" class="btn btn-primary mb-3 ms-auto"><i class="fa fa-clipboard-check me-1"></i>Save Cost</button>
                             @endif
                             <table id="modalTable" class="table fs-sm table-bordered table-hover table-vcenter w-100">
@@ -116,7 +116,7 @@ if(Auth::user()->user_type_id == 4){
                                         <th>Quantity</th>
                                         <th>TEIS# Ref</th>
                                         <th>Asset Code</th>
-                                        @if (Auth::user()->user_type_id == 7)
+                                        @if (Auth::user()->user_type_id == 7 || (Auth::user()->user_type_id == 8 && Auth::user()->comp_id == 3 && Auth::user()->dept_id == 5))
                                             <th>Add Cost</th>
                                         @endif
                                         <th>Status</th>
@@ -173,8 +173,8 @@ if(Auth::user()->user_type_id == 4){
                 scrollX: true,
                 "aoColumnDefs": [{
                     "targets": [1],
-                    "visible": user_type_id == 7,
-                    "searchable": user_type_id == 7
+                    "visible": user_type_id == 7 || 8,
+                    "searchable": user_type_id == 7 || 8
                 }],
                 ajax: {
                     type: 'get',
@@ -207,12 +207,14 @@ if(Auth::user()->user_type_id == 4){
 
             $("#selectProjectSite").change(function() {
                 const projectSiteId = $(this).val();
-                table.ajax.url('{{ route('fetch_upload_tools') }}?projectSiteId=' + projectSiteId).load();
+                const status = $('#selectProgress').val();
+                table.ajax.url('{{ route('fetch_upload_tools') }}?status=' + status + '&projectSiteId=' + projectSiteId).load();
             })
 
             $("#selectProgress").change(function() {
+                const projectSiteId = $('#selectProjectSite').val();
                 const status = $(this).val();
-                table.ajax.url('{{ route('fetch_upload_tools') }}?status=' + status).load();
+                table.ajax.url('{{ route('fetch_upload_tools') }}?status=' + status + '&projectSiteId=' + projectSiteId).load();
             })
 
 
@@ -236,8 +238,8 @@ if(Auth::user()->user_type_id == 4){
                     destroy: true,
                     "aoColumnDefs": [{
                     "targets": [-1, -2],
-                    "visible": user_type_id == 7,
-                    "searchable": user_type_id == 7
+                    "visible": user_type_id == 7 || 8,
+                    "searchable": user_type_id == 7 || 8
                     }],
                     ajax: {
                         type: 'post',
