@@ -15,4 +15,9 @@ class RequestApprover extends Model
     {
         static::addGlobalScope(new CompanyScope);
     }
+
+    public function pulloutRequest()
+{
+    return $this->belongsTo(PulloutRequest::class, 'request_id');
+}
 }
