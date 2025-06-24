@@ -118,7 +118,9 @@ class ProjectSiteController extends Controller
                     $tool_id = PulloutRequestItems::leftjoin('pullout_requests', 'pullout_requests.id', 'pullout_request_items.pullout_request_id')
                         ->select('pullout_request_items.*')
                         ->where('pullout_requests.progress', 'ongoing')
-                        ->where('pullout_requests.status', 1)->get();
+                        ->where('pullout_requests.status', 1)
+                        ->where('pullout_request_items.status', 1)
+                        ->get();
 
                     $psTransferRequest = PsTransferRequestItems::leftjoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.ps_transfer_request_id')
                         ->select('ps_transfer_request_items.*')

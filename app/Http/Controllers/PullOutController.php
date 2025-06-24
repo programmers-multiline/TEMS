@@ -727,38 +727,63 @@ class PullOutController extends Controller
     public function fetch_completed_pullout()
     {
         if(Auth::user()->user_type_id == 4){
-            $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
-            ->select('pullout_requests.*', 'request_approvers.date_approved')
-            ->where('request_approvers.status', 1)
-            ->where('pullout_requests.status', 1)
-            ->where('request_approvers.request_type', 3)
+            $pullout_tools = PulloutRequest::with(['approvers' => function ($query) {
+                $query->where('status', 1)
+                    ->where('request_type', 3);
+            }])
+            ->where('status', 1)
             ->where('progress', 'completed')
             ->where('user_id', Auth::id())
-            ->distinct('request_id')
-            ->get();
+            ->whereHas('approvers', function ($query) {
+                $query->where('status', 1)
+                    ->where('request_type', 3);
+            })
+            ->get()
+            ->map(function ($request) {
+                $request->date_approved = $request->approvers->max('date_approved');
+                return $request;
+            });
+
         }else{
             if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
-                $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
-                    ->select('pullout_requests.*', 'request_approvers.date_approved')
-                    ->where('request_approvers.status', 1)
-                    ->where('request_approvers.company_id', '3')
-                    ->where('pullout_requests.company_id', '3')
-                    ->where('pullout_requests.status', 1)
-                    ->where('request_approvers.request_type', 3)
-                    ->where('progress', 'completed')
-                    ->distinct('request_id')
-                    ->get();
+                $pullout_tools = PulloutRequest::with(['approvers' => function ($query) {
+                    $query->where('status', 1)
+                        ->where('request_type', 3)
+                        ->where('company_id', 3);
+                }])
+                ->where('company_id', 3)
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->whereHas('approvers', function ($query) {
+                    $query->where('status', 1)
+                        ->where('request_type', 3)
+                        ->where('company_id', 3);
+                })
+                ->get()
+                ->map(function ($request) {
+                    $request->date_approved = $request->approvers->max('date_approved');
+                    return $request;
+                });
+
             }else{
-                $pullout_tools = PulloutRequest::leftjoin('request_approvers', 'request_approvers.request_id', 'pullout_requests.id')
-                    ->select('pullout_requests.*', 'request_approvers.date_approved')
-                    ->where('request_approvers.status', 1)
-                    ->where('request_approvers.company_id', '2')
-                    ->where('pullout_requests.company_id', '2')
-                    ->where('pullout_requests.status', 1)
-                    ->where('request_approvers.request_type', 3)
-                    ->where('progress', 'completed')
-                    ->distinct('request_id')
-                    ->get();
+                $pullout_tools = PulloutRequest::with(['approvers' => function ($query) {
+                    $query->where('status', 1)
+                        ->where('request_type', 3)
+                        ->where('company_id', 2);
+                }])
+                ->where('company_id', 3)
+                ->where('status', 1)
+                ->where('progress', 'completed')
+                ->whereHas('approvers', function ($query) {
+                    $query->where('status', 1)
+                        ->where('request_type', 3)
+                        ->where('company_id', 2);
+                })
+                ->get()
+                ->map(function ($request) {
+                    $request->date_approved = $request->approvers->max('date_approved');
+                    return $request;
+                });
             }
             
         }

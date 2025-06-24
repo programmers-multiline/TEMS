@@ -15,4 +15,9 @@ class PulloutRequest extends Model
     {
         static::addGlobalScope(new CompanyScope);
     }
+
+    public function approvers()
+    {
+        return $this->hasMany(RequestApprover::class, 'request_id');
+    }
 }
