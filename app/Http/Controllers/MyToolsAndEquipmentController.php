@@ -429,7 +429,7 @@ class MyToolsAndEquipmentController extends Controller
 
 
         foreach ($approvers as $approver) {
-            $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+            $mail_data = ['requestor_name' => Auth::user()->fullname, 'request_number' => $new_pullout_number, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
             \Log::info("Sending email to: " . $approver->email);
             Mail::to($approver->email)->send(new ApproverEmail($mail_data));
         }
@@ -488,7 +488,7 @@ class MyToolsAndEquipmentController extends Controller
             array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price, 'exp_date' => $tool->usage_end_date]);
         }
 
-        $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'message' => 'Request for the extension of tools has been submitted and requires your approval. Below are the details of the request.', 'approver' => $approver_details->fullname, 'items' => json_encode($mail_Items)];
+        $mail_data = ['requestor_name' => Auth::user()->fullname, 'request_number' => 'N/A', 'date_requested' => Carbon::today()->format('m/d/Y'), 'message' => 'Request for the extension of tools has been submitted and requires your approval. Below are the details of the request.', 'approver' => $approver_details->fullname, 'items' => json_encode($mail_Items)];
 
         Mail::to($approver_details->email)->send(new ApproverEmail($mail_data));
 

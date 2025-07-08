@@ -432,7 +432,7 @@ class WarehouseController extends Controller
             array_push($mail_Items, ['asset_code' => $tool->asset_code, 'item_description' => $tool->item_description, 'price' => $tool->price]);
         }
 
-        $mail_data = ['requestor_name' => Auth::user()->fullname, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+        $mail_data = ['requestor_name' => Auth::user()->fullname, 'request_number' => $new_teis_number, 'date_requested' => Carbon::today()->format('m/d/Y'), 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
 
         Mail::to($approver->email)->send(new ApproverEmail($mail_data));
 
