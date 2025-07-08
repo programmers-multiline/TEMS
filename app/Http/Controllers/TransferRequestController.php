@@ -1742,7 +1742,7 @@ class TransferRequestController extends Controller
             if($nextSec != 4){
 
                 // email para sa ibang approvers
-                $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+                $mail_data = ['requestor_name' => $requestor_name['fullname'], 'request_number' => $request->requestNumber, 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
         
                 Mail::to($approver->email)->send(new ApproverEmail($mail_data));
 
@@ -1750,7 +1750,7 @@ class TransferRequestController extends Controller
                     //? para sa accounting email : dapat sa request palang nag eemail na ito e pero dito ko muna nilagay kasi nagmamadaliako
                     $user = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 7)->where('comp_id', $tools->company_id)->first();
 
-                    $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $user->fullname, 'items' => json_encode($mail_Items)];
+                    $mail_data = ['requestor_name' => $requestor_name['fullname'], 'request_number' => $request->requestNumber, 'date_requested' => $date_requested, 'approver' => $user->fullname, 'items' => json_encode($mail_Items)];
             
                     Mail::to($user->email)->send(new ApproverEmail($mail_data));
                 }
@@ -1760,7 +1760,7 @@ class TransferRequestController extends Controller
                 $request_tools = TransferRequest::where('status', 1)->where('id', $request->requestId)->first();
 
                 if($request_tools->for_pricing == 2){
-                    $mail_data = ['requestor_name' => $requestor_name['fullname'], 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+                    $mail_data = ['requestor_name' => $requestor_name['fullname'], 'request_number' => $request->requestNumber, 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
             
                     Mail::to($approver->email)->send(new ApproverEmail($mail_data));
                 }
@@ -3563,7 +3563,7 @@ class TransferRequestController extends Controller
         }
 
 
-        $mail_data = ['requestor_name' => $fullname, 'date_requested' => $date_requested, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
+        $mail_data = ['requestor_name' => $fullname, 'date_requested' => $date_requested, 'request_number' => $request->requestNum, 'approver' => $approver->fullname, 'items' => json_encode($mail_Items)];
 
         if($omApprover[2]->approver_status == 1){
             Mail::to($approver->email)->send(new ApproverEmail($mail_data));

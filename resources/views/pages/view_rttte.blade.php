@@ -665,6 +665,21 @@
                                 </td>
                             </tr>
                         @endforeach
+
+                            {{-- Row for parallel approver --}}
+                            <tr>
+                                <td data-label="Sequence">6</td>
+                                <td data-label="Fullname">{{ $parallelApprover[0]->fullname ?? 'John Doe' }}</td>
+                                <td data-label="Position">{{ $parallelApprover[0]->position ?? 'Manager' }}</td>
+                                <td data-label="Date Approved">{{ $parallelApprover[0]->date_approved ?? '' }}</td>
+                                <td data-label="Status">
+                                    @if ($parallelApprover[0]->for_pricing == 2)
+                                        <span class="badge bg-success">Approved</span>
+                                    @else
+                                        <span class="badge bg-warning">Pending</span>
+                                    @endif
+                                </td>
+                            </tr>
                     </tbody>
                 </table>
         </div>

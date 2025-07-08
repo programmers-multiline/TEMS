@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DafApprovers;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\DafApprovers;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
 use App\Models\RequestApprover;
 use App\Models\TransferRequest;
 use App\Models\PsTransferRequests;
+use Illuminate\Support\Facades\DB;
 use App\Models\TransferRequestItems;
 use Illuminate\Support\Facades\Auth;
 use App\Models\PsTransferRequestItems;
@@ -366,13 +367,13 @@ class ViewFormsController extends Controller
     {
 
         if ($request->type == 'rfteis') {
-            $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'wh_location')
+            $request_tools = TransferRequest::select('id', 'pe', 'company_id', 'for_pricing', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'wh_location')
                 ->where('status', 1)
                 // ->where('progress', 'ongoing')
                 ->where('teis_number', $request->id)
                 ->first();
         } else {
-            $request_tools = PsTransferRequests::select('id', 'user_id', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+            $request_tools = PsTransferRequests::select('id', 'user_id', 'company_id', 'for_pricing', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
                 ->where('status', 1)
                 // ->where('progress', 'ongoing')
                 ->where('request_number', $request->id)
@@ -874,7 +875,14 @@ class ViewFormsController extends Controller
         ';
 
 
-
+        $parallelApprover = User::leftJoin('positions', 'positions.id', 'users.pos_id')
+        ->select('users.fullname', 'positions.position', DB::raw("'{$request_tools->for_pricing}' as for_pricing"))
+        ->where('positions.status', 1)
+        ->where('users.status', 1)
+        ->where('user_type_id', 7)
+        ->where('comp_id', $request_tools->company_id)
+        ->latest('users.created_at')
+        ->get();
 
 
 
@@ -885,16 +893,16 @@ class ViewFormsController extends Controller
 
         // return $request_tools;
         if ($request->type == 'rfteis') {
-            return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path', 'daf_approvers'))->render();
+            return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path', 'daf_approvers','parallelApprover'))->render();
         } else {
-            return view('pages.view_rttte', compact('request_tools', 'html', 'requestor', 'tools_owner', 'approvers', 'daf_approvers'))->render();
+            return view('pages.view_rttte', compact('request_tools', 'html', 'requestor', 'tools_owner', 'approvers', 'daf_approvers','parallelApprover'))->render();
         }
 
     }
     public function rfteis_approvers_view(Request $request)
     {
 
-        $request_tools = TransferRequest::select('id', 'pe', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by', 'disapproved_date', 'disapproved_reason', 'wh_location')
+        $request_tools = TransferRequest::select('id', 'pe', 'company_id', 'for_pricing', 'teis_number as request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type', 'disapproved_by', 'disapproved_date', 'disapproved_reason', 'wh_location')
             ->where('status', 1)
             // ->where('progress', 'ongoing')
             ->where('teis_number', $request->id)
@@ -1160,10 +1168,17 @@ class ViewFormsController extends Controller
             </div>
         ';
 
-
+         $parallelApprover = User::leftJoin('positions', 'positions.id', 'users.pos_id')
+            ->select('users.fullname', 'positions.position', DB::raw("'{$request_tools->for_pricing}' as for_pricing"))
+            ->where('positions.status', 1)
+            ->where('users.status', 1)
+            ->where('user_type_id', 7)
+            ->where('comp_id', $request_tools->company_id)
+            ->latest('users.created_at')
+            ->get();
 
         $path = '';
-        return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path', 'daf_approvers'))->render();
+        return view('pages.view_rfteis', compact('request_tools', 'html', 'requestor', 'approvers', 'path', 'daf_approvers', 'parallelApprover'))->render();
 
     }
 
@@ -1171,7 +1186,7 @@ class ViewFormsController extends Controller
     public function rttte_approvers_view(Request $request)
     {
 
-        $request_tools = PsTransferRequests::select('id', 'user_id', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
+        $request_tools = PsTransferRequests::select('id', 'user_id', 'company_id', 'for_pricing', 'request_number', 'daf_status', 'request_status', 'subcon', 'customer_name', 'project_name', 'project_code', 'project_address', 'date_requested', 'tr_type')
             ->where('status', 1)
             // ->where('progress', 'ongoing')
             ->where('request_number', $request->id)
@@ -1508,8 +1523,17 @@ class ViewFormsController extends Controller
             </div>
         ';
 
+        $parallelApprover = User::leftJoin('positions', 'positions.id', 'users.pos_id')
+            ->select('users.fullname', 'positions.position', DB::raw("'{$request_tools->for_pricing}' as for_pricing"))
+            ->where('positions.status', 1)
+            ->where('users.status', 1)
+            ->where('user_type_id', 7)
+            ->where('comp_id', $request_tools->company_id)
+            ->latest('users.created_at')
+            ->get();
 
-        return view('pages.view_rttte', compact('request_tools', 'html', 'tools_owner', 'requestor', 'approvers', 'daf_approvers'))->render();
+
+        return view('pages.view_rttte', compact('request_tools', 'html', 'tools_owner', 'requestor', 'approvers', 'daf_approvers', 'parallelApprover'))->render();
 
     }
 
