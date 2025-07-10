@@ -24,6 +24,7 @@ class ToolsAndEquipment extends Model
                 // Lock the table to ensure uniqueness
                 $latest = DB::table('upload_tools_details')
                     ->where('asset_code', 'LIKE', 'OLDTE-%')
+                    ->where('status', 1)
                     ->orderByRaw("CAST(SUBSTRING(asset_code, 7) AS UNSIGNED) DESC")
                     ->lockForUpdate()
                     ->first();
@@ -32,6 +33,7 @@ class ToolsAndEquipment extends Model
                 if (!$latest) {
                     $latest = DB::table('tools_and_equipment')
                         ->where('asset_code', 'LIKE', 'OLDTE-%')
+                        ->where('status', 1)
                         ->orderByRaw("CAST(SUBSTRING(asset_code, 7) AS UNSIGNED) DESC")
                         ->lockForUpdate()
                         ->first();

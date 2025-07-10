@@ -236,6 +236,8 @@ if(Auth::user()->user_type_id == 4){
                     processing: true,
                     serverSide: false,
                     destroy: true,
+                    pagination: false,
+                    "pageLength": 1000,
                     "aoColumnDefs": [{
                     "targets": [-1, -2],
                     "visible": user_type_id == 7 || 8,
