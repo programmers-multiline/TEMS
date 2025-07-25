@@ -391,6 +391,7 @@ class ImportController extends Controller
                     'item_code' => $tool_upload_details->item_code,
                     'item_description' => $tool_upload_details->item_description,
                     'price' => $tool_upload_details->cost,
+                    'teis_ref' => $tool_upload_details->teis_ref,
                     'location' => $loc,
                     'company_id' => $tool_request->company_id,
                     'wh_ps' => 'ps',

@@ -308,12 +308,14 @@ class AdminController extends Controller
         $projects = DB::table('project_sites as ps')
     ->leftJoin('assigned_projects as pm', function($join) {
         $join->on('ps.id', '=', 'pm.project_id')
-            ->where('pm.pos', '=', 'pm');
+            ->where('pm.pos', '=', 'pm')
+            ->where('pm.status', 1);
     })
     ->leftJoin('users as pm_user', 'pm.user_id', '=', 'pm_user.id')
     ->leftJoin('assigned_projects as pe', function($join) {
         $join->on('ps.id', '=', 'pe.project_id')
-            ->where('pe.pos', '=', 'pe');
+            ->where('pe.pos', '=', 'pe')
+            ->where('pe.status', 1);
     })
     ->leftJoin('users as pe_user', 'pe.user_id', '=', 'pe_user.id')
     ->leftJoin('companies as c', 'ps.company_id', '=', 'c.id') // join companies table
@@ -328,6 +330,7 @@ class AdminController extends Controller
         'ps.area',
         'ps.progress',
     )
+    ->where('ps.status', 1)
     ->get();
 
 
