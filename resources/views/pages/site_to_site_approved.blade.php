@@ -1,7 +1,7 @@
 @extends('layouts.backend')
 
 @section('css')
-    <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+    <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
@@ -78,8 +78,8 @@
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
-    <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
 
     <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>

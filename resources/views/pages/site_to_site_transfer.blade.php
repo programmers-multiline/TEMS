@@ -1,7 +1,7 @@
 @extends('layouts.backend')
 
 @section('css')
-<link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.1/css/select.dataTables.css">
+<link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
 <link rel="stylesheet" href="{{ asset('js/plugins/magnific-popup/magnific-popup.css') }}">
 {{-- <link rel="stylesheet" href="{{ asset('css/track_request.css') }}"> --}}
 <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
