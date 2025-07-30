@@ -149,8 +149,8 @@ if(Auth::user()->user_type_id == 4){
 
 
     {{-- <script src="https://cdn.datatables.net/2.0.4/js/dataTables.js"></script> --}}
-    <script src="https://cdn.datatables.net/select/2.0.1/js/dataTables.select.js"></script>
-    <script src="https://cdn.datatables.net/select/2.0.1/js/select.dataTables.js"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/dataTables.select.js') }}"></script>
+    <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="{{ asset('js/plugins/select2/js/select2.full.min.js') }}"></script>
 
 
