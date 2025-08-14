@@ -380,8 +380,9 @@ class ViewFormsController extends Controller
                 ->first();
 
             $tools_owner = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-                ->leftJoin('project_sites', 'project_sites.id', 'tools_and_equipment.current_site_id')
-                ->leftJoin('users', 'users.id', 'tools_and_equipment.current_pe')
+                ->leftJoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.ps_transfer_request_id')
+                ->leftJoin('project_sites', 'project_sites.id', 'ps_transfer_requests.current_site_id')
+                ->leftJoin('users', 'users.id', 'ps_transfer_requests.current_pe')
                 ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name',  'project_sites.project_code')
                 ->where('tools_and_equipment.status', 1)
                 ->where('ps_transfer_request_items.status', 1)
@@ -1203,9 +1204,10 @@ class ViewFormsController extends Controller
 
 
         $tools_owner = PsTransferRequestItems::leftJoin('tools_and_equipment', 'tools_and_equipment.id', 'ps_transfer_request_items.tool_id')
-            ->leftJoin('project_sites', 'project_sites.id', 'tools_and_equipment.current_site_id')
-            ->leftJoin('users', 'users.id', 'tools_and_equipment.current_pe')
-            ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name', 'project_sites.project_code')
+            ->leftJoin('ps_transfer_requests', 'ps_transfer_requests.id', 'ps_transfer_request_items.ps_transfer_request_id')
+            ->leftJoin('project_sites', 'project_sites.id', 'ps_transfer_requests.current_site_id')
+            ->leftJoin('users', 'users.id', 'ps_transfer_requests.current_pe')
+            ->select('users.fullname', 'project_sites.project_location', 'project_sites.project_name',  'project_sites.project_code')
             ->where('tools_and_equipment.status', 1)
             ->where('ps_transfer_request_items.status', 1)
             ->where('project_sites.status', 1)
