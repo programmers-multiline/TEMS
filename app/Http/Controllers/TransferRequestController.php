@@ -989,8 +989,10 @@ class TransferRequestController extends Controller
                     $have_two = in_array(2, $transfer_state);
                     //!baliktarin para gumana
                     if($have_two){
-                      return ' <button '.$have_ters.' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TERS" data-trigger="hover" data-bs-original-title="Upload TERS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TERS</span></button>
-                            ';  
+                      return '<div class="d-flex gap-2"> 
+                            <button '.$have_ters.' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TERS" data-trigger="hover" data-bs-original-title="Upload TERS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TERS</span></button>
+                            <button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>      
+                            </div>';  
                     }elseif($ters_uploads){
                         return $uploads_file;
                     }else{
@@ -1015,6 +1017,7 @@ class TransferRequestController extends Controller
                     $action = '
                             <div class="d-flex gap-2 align-items-center justify-content-center">
                                 <button ' . $have_teis . ' data-pe="'.$row->pe.'" data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>TEIS</span></button>
+                                <button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                                 </div>
                                 ';
                                 // <button ' . $have_teis2 . ' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="deliverBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
@@ -1045,14 +1048,17 @@ class TransferRequestController extends Controller
                     $action = '<div class="d-flex gap-2">
                     <button ' . $have_ters . ' data-prevreqnum="'.$prev_request_number.'" data-prevpe="'.$row->current_pe.'" data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TERS" data-bs-original-title="Upload TERS"><i class="fa fa-upload me-1"></i>TERS</button>
                     <button ' . $have_teis . ' '.$have_ters2.' data-pe="'.$row->pe.'" data-type="' . $row->tr_type . '" data-num="' . $row->teis_number . '" data-toolid="'.$ids.'" data-bs-toggle="modal" data-bs-target="#createTeis" type="button" class="uploadTeisBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled d-flex align-items-center" data-bs-toggle="tooltip" aria-label="Upload TEIS" data-bs-original-title="Upload TEIS"><i class="fa fa-upload me-1"></i>TEIS</button>
+                    <button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
                     </div>';
                     ///<button ' . $have_ters2 . ' '.$have_teis2.' data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" type="button" class="proceedBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Deliver" data-bs-original-title="Deliver"><i class="fa fa-truck"></i></button>
                     }
                     /// for proof of receiving in warehouse
                     if($request->path == 'pages/rftte_signed_form_proof'){
                         $action = '
+                                    <div class="d-flex gap-2">
                                     <button data-num="' . $row->teis_number . '" data-type="' . $row->tr_type . '" data-bs-toggle="modal" data-bs-target="#uploadReceivingProof" type="button" class="uploadReceivingProofBtn btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload Proof of Received" data-bs-original-title="Upload Proof of Received"><span class="d-flex align-items-center"><i class="fa fa-upload me-1"></i>Proof</span></button>
-                                ';
+                                    <button data-bs-toggle="modal" data-bs-target="#trackRequestModal" data-trtype="' . $row->tr_type . '" data-requestnumber="' . $row->teis_number . '" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                                </div>';
                     }
 
                 
@@ -2940,7 +2946,7 @@ class TransferRequestController extends Controller
 
 
                 $createdAt = $tool_request->created_at; 
-                $timeAgo = Carbon::parse($createdAt)->diffForHumans();
+                $timeAgo = Carbon::parse($createdAt)->format('M d, Y g:i A');
 
                 $html .='
                     <li class="timeline-event">
@@ -2986,7 +2992,7 @@ class TransferRequestController extends Controller
 
 
                 $createdAt = $tool_request->created_at; 
-                $timeAgo = Carbon::parse($createdAt)->diffForHumans();
+                $timeAgo = Carbon::parse($createdAt)->format('M d, Y g:i A');
 
                 $html .='
                     <li class="timeline-event">
@@ -3046,7 +3052,7 @@ class TransferRequestController extends Controller
 
 
                 $createdAt = $tool_request->created_at; 
-                $timeAgo = Carbon::parse($createdAt)->diffForHumans();
+                $timeAgo = Carbon::parse($createdAt)->format('M d, Y g:i A');
 
                 $html .='
                     <li class="timeline-event">

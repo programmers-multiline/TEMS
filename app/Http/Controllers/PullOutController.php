@@ -553,11 +553,15 @@ class PullOutController extends Controller
                 if ($request->path == "pages/pullout_for_receiving") {
                     $action = '<div class="d-flex align-items-center justify-content-center">
                         <button ' . $have_ters . ' ' . $is_tools_received . ' data-pulloutnum="' . $row->pullout_number . '" data-prevreqdata="' .$priJson. '" data-type="pullout" data-bs-toggle="modal" data-bs-target="#uploadTers" type="button" class="uploadTersBtn btn btn-sm btn-primary js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-upload"></i></button>
+                        <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                        </div>
                         ';
                 } else {
                     $dateSched = $row->approved_sched_date ? $row->approved_sched_date : $row->pickup_date;
                     $action = '<div class="d-flex align-items-center gap-2">
                 <button id="addSchedBtn" data-pulloutnum="' . $row->pullout_number . '" data-pe="' . $row->fullname . '" data-location="' . $row->project_address . '" data-pickupdate="' . $dateSched . '" data-bs-toggle="modal" data-bs-target="#addSched" type="button" class="btn btn-sm btn-secondary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Add Schedule" data-bs-original-title="Add Schedule"><i class="fa fa-calendar-plus"></i></button>
+                <button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>
+                </div>
                 ';
                 }
 
@@ -860,7 +864,8 @@ class PullOutController extends Controller
                 <button type="button" data-requestid="' . $row->request_id . '"  data-series="' . $row->series . '" data-id="' . $row->approver_id . '" class="pulloutApproveBtn btn btn-sm btn-primary d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Approve" data-bs-original-title="Approve"><i class="fa fa-check"></i></button>
                 </div>';
                 } else {
-                    $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                    $action = '<button data-bs-toggle="modal" data-requestnum="' . $row->pullout_number . '" data-trtype="pullout" data-bs-target="#trackRequestModal" type="button" class="trackBtn btn btn-sm btn-success d-block mx-auto js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Track" data-bs-original-title="Track"><i class="fa fa-map-location-dot"></i></button>';
+                    // $action = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
                 };
                 return $action;
             })

@@ -120,6 +120,7 @@
 
     @include('pages.modals.upload_pullout_modal')
     @include('pages.modals.ongoing_pullout_request_modal')
+    @include('pages.modals.track_request_modal')
 
 @endsection
 
@@ -280,6 +281,37 @@
                         data: 'action'
                     },
                 ],
+                drawCallback: function() {
+                    $(".trackBtn").tooltip();
+
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnum');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+
+                                $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
+
+                                // $("#requestProgress li").each(function(index) {
+                                //     if (index < result) {
+                                //         $(this).addClass("active");
+                                //     }
+                                // });
+
+                            }
+                        })
+                    })
+                }
             });
 
 

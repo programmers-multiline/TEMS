@@ -367,14 +367,14 @@ class ImportController extends Controller
 
         }
 
-        $tools = UploadToolsDetails::where('status', 1)->where('tools_upload_id', $request->id)->pluck('approver_status')->toArray();
+        $tools = UploadToolsDetails::where('status', 1)->where('tools_upload_id', $request->req_id)->pluck('approver_status')->toArray();
 
         $is_all_not_approved = in_array(0, $tools);
 
         if ($is_all_not_approved) {
             return 0;
         } else {
-            $tool_request = UploadTools::where('status', 1)->where('id', $request->id)->first();
+            $tool_request = UploadTools::where('status', 1)->where('id', $request->req_id)->first();
 
             $tool_request->progress = 1;
             $tool_request->save();

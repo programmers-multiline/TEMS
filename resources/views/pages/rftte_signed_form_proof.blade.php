@@ -63,6 +63,7 @@
     @include('pages.modals.ps_upload_ters_modal')
     @include('pages.modals.upload_proof_of_receiving_modal')
     @include('pages.modals.ongoing_teis_request_modal')
+    @include('pages.modals.track_request_modal')
 
 @endsection
 
@@ -157,6 +158,38 @@
                     $(".uploadTeisBtn").tooltip();
                     $(".uploadTersBtn").tooltip();
                     $(".proceedBtn").tooltip();
+
+
+                    $(".trackBtn").tooltip();
+
+
+                    $(".trackBtn").click(function() {
+                        const requestNumber = $(this).data('requestnumber');
+                        const trType = $(this).data('trtype');
+
+                        $.ajax({
+                            url: "{{ route('track_request') }}",
+                            method: "post",
+                            data: {
+                                requestNumber,
+                                trType,
+                                _token: "{{ csrf_token() }}"
+                            },
+                            success(result) {
+
+
+                                $("#requestProgress").html(result)
+                                $(".trackRequestNumber").text('#' + requestNumber)
+
+                                // $("#requestProgress li").each(function(index) {
+                                //     if (index < result) {
+                                //         $(this).addClass("active");
+                                //     }
+                                // });
+
+                            }
+                        })
+                    })
                 }
             });
 
