@@ -226,6 +226,12 @@
                     <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
                     @if (Auth::user()->user_type_id == 2)
                         <button id="pulloutPrintBtn" class="btn btn-success mb-2">Print Pullout</button>
+                        <button data-receivingpic="{{ $uploads_file}}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
+
+                    @endif
+                    @if (Auth::user()->user_type_id == 9)
+                        <button data-reqnum="{{ $pullout_tools->pullout_number }}" class="pullout_multi_upload btn btn-success mb-2" data-bs-target="#multi_upload_pullout" data-bs-toggle="modal"><i class="fa me-1 fa-upload"></i>Upload Picture</button>
+                        <button data-receivingpic="{{ $uploads_file }}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
                     @endif
                 </div>
                 <div class="flex">
@@ -330,12 +336,12 @@
                             <th class=""
                                 style="border-bottom: none; position: relative; width: 13%; font-size: 11px">
                                 <span class="th-absolute">REASON FOR TRANSFER</span></th>
-
-                            @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
+                            {{-- //#1.8v changes --}}
+                            {{-- @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
                                 <th class=""
                                 style="border-bottom: none; position: relative; width: 10%; font-size: 12px">
                                 <span class="th-absolute">Tool Photo</span></th>
-                            @endif
+                            @endif --}}
 
                             @if ($path == 'pages/pullout_for_receiving')
                             <th class=""
@@ -366,7 +372,8 @@
                             <th>OTHERS</th> --}}
                             <th></th>
                             @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
-                            <th></th>
+                            {{-- //#1.8v changes --}}
+                            {{-- <th></th> --}}
                             @endif
                             @if ($path == 'pages/pullout_for_receiving')
                             <th></th>
@@ -526,6 +533,15 @@
                     });
 
                 })
+
+
+                $(document).on("click", ".view_pullout_upload", function () {
+                    const pic = $(this).data("receivingpic");
+
+                    $(".receiving_pullout_pic_div").html(pic);
+                    
+                });
+
 
 
             });

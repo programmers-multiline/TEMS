@@ -410,9 +410,9 @@
                                 {
                                     data: 'reason'
                                 },
-                                {
-                                    data: 'capture_tool'
-                                }
+                                // {
+                                //     data: 'capture_tool'
+                                // }
                             ],
                             drawCallback: function() {
 

@@ -2986,6 +2986,8 @@ class TransferRequestController extends Controller
                     $icon = 'fa-file-circle-xmark bg-danger';
                 }elseif($tool_request->action == 99){
                     $icon = 'fa-camera bg-warning';
+                }elseif($tool_request->action == 7){
+                    $icon = 'fa-upload bg-elegance';
                 }else{
                     $icon = 'fa-file bg-primary';
                 }

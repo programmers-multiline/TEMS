@@ -1659,9 +1659,38 @@ class ViewFormsController extends Controller
                     </div>
                 </div>
             ';
+
+      
+            $picture = ToolPictures::leftjoin('uploads', 'uploads.id', 'upload_id')
+                ->select('uploads.name')
+                ->where('tool_pictures.status', 1)
+                ->where('pstr_id', $request->id)
+                ->orderBy('tool_pictures.created_at', 'asc')
+                ->get();
+
+            $uploads_file = [];
+            $uploads_file = '<div class="row mx-auto js-gallery img-fluid-100 js-gallery-enabled">';
+            if(count($picture) === 0){
+                $uploads_file .= '<span class="mx-auto fw-bold text-secondary" style="font-size: 26px; opacity: 65%">NO UPLOAD PICTURE OF TOOLS</span>';
+            }else{
+                foreach ($picture as $pic) {
+                    
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/tool_pictures') . '/' . $pic['name'] . '">
+                    <span>
+                        <img class="img-fluid" src="' . asset('uploads/tool_pictures') . '/' . $pic['name'] . '" alt="">
+                    </span>
+                    </a>
+                    </div>';
+          
+                }
+            }
+            $uploads_file .= '</div>';
+
+        
         // para malaman kung ilalabas ba ang action or hindi
         $path = $request->path;
-        return view('pages.view_pullout', compact('pullout_tools', 'requestor', 'approvers', 'html', 'path'))->render();
+        return view('pages.view_pullout', compact('pullout_tools', 'requestor', 'approvers', 'html', 'path','uploads_file'))->render();
 
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PsTransferRequestItems;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\PeLogs;
@@ -29,6 +28,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WarehouseDocsClerkNotif;
 use App\Models\ToolPictureForPullout;
+use App\Models\PsTransferRequestItems;
+use App\Models\ToolPictureReceivingUploads;
 
 class FileUploadController extends Controller
 {
@@ -423,6 +424,18 @@ class FileUploadController extends Controller
             
         }
 
+        PulloutLogs::create([
+            'page' => 'pullout_for_receiving',
+            'request_number' => $request->tersNum,
+            'title' => 'Upload TERS',
+            'message' => Auth::user()->fullname . ' ' . 'upload TERS.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+                $ters_name . '">
+                <span>View</span>
+                </a>',
+            'action' => 7,
+            'approver_name' => Auth::user()->fullname,
+        ]);
+
         if ($request->path == 'pages/not_serve_items') {
             ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
             TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
@@ -731,6 +744,41 @@ class FileUploadController extends Controller
                 'approver_name' => Auth::user()->fullname,
             ]);
         }
+    }
+
+
+    public function multi_upload_tools_pic(Request $request)
+    {
+        //  dd($request->all());      
+        if ($request->hasFile('picture_upload')) {
+
+
+            $toolPicture = $request->picture_upload;
+
+            foreach ($toolPicture as $pic) {
+                $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
+                $uploads = Uploads::create([
+                    'name' => $pic_name,
+                    'original_name' => $pic->getClientOriginalName(),
+                    'extension' => $pic->getClientOriginalExtension(),
+                ]);
+                $pic->move('uploads/tool_pictures/', $pic_name);
+
+                /// for logs
+
+                ToolPictures::create([
+                    'pstr_id' => $request->reqNumfm,
+                    'tool_id' => 0,
+                    'upload_id' => $uploads->id,
+                    'tr_type' => 'pullout',
+                ]);
+
+
+            }
+        }
+
+        return $request->reqNumfm;
+
     }
 
 

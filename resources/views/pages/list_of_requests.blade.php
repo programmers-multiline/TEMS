@@ -74,6 +74,8 @@
                             <th>Date Requested</th>
                             <th>Status</th>
                             <th>Type</th>
+                            <th>TEIS</th>
+                            <th>TERS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -143,6 +145,12 @@
                     },
                     {
                         data: 'request_type'
+                    },
+                    {
+                        data: 'teis'
+                    },
+                    {
+                        data: 'ters'
                     }
                 ],
                 drawCallback: function() {

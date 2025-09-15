@@ -165,6 +165,82 @@
         </div>
     </div>
 
+    <div class="modal fade" id="multi_upload_pullout" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+            <div class="modal-content">
+                <form id="multiUploadPicForm" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" id="routeUrl" value="{{route('multi_upload_tools_pic')}}">
+
+                        <div class="block block-rounded shadow-none mb-0">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">Upload Tool Picture</h3>
+                                <div class="block-options closeModalRfteis">
+                                    <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="block-content fs-sm">
+                                <div class="block block-rounded">
+                                    <div class="block-content">
+                                        <input type="file" id="bulkPictureUpload" multiple
+                                            data-allow-reorder="true" data-max-file-size="10MB" data-max-files="100" accept="image/*">
+
+
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="reqNumModalhiddenfm" name="reqNumfm">{{-- for multi upload --}}
+                            {{-- <input type="hidden" id="toolIdModalhidden" name="toolId"> --}}
+                            <div class="block-content block-content-full block-content-sm text-end border-top">
+                            <button type="button" id="" class="btn btn-alt-secondary"
+                            data-bs-target="#ongoingPulloutRequestModal" data-bs-toggle="modal">
+                                Back
+                            </button>
+                            <button id="" class="btn btn-alt-primary">
+                                Upload
+                            </button>
+                        </div>
+                        </div>
+                    </form>      
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="view_upload_pullout_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        role="dialog" aria-labelledby="modal-popin" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+            <div class="modal-content">
+                <div class="block block-rounded shadow-none mb-0">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">View Tool Picture</h3>
+                        <div class="block-options closeModalRfteis">
+                            <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close" data-bs-target="#ongoingPulloutRequestModal" data-bs-toggle="modal">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="block-content fs-sm">
+                        <div class="block block-rounded">
+                            <div class="receiving_pullout_pic_div">
+                                {{-- {{ $uploads_file }} --}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="block-content block-content-full block-content-sm text-end border-top">
+                        <button type="button" id="" class="btn btn-alt-secondary"
+                        data-bs-target="#ongoingPulloutRequestModal" data-bs-toggle="modal">
+                            Back
+                        </button>
+                    </div>     
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     @include('pages.modals.upload_pullout_modal')
     @include('pages.modals.ongoing_pullout_request_modal')
@@ -197,7 +273,7 @@
     <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
     <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/webcam-easy/dist/webcam-easy.min.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/webcam-easy/dist/webcam-easy.min.js"></script> --}}
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     <!-- Fileupload JS -->
@@ -207,74 +283,74 @@
     <script>
         $(document).ready(function() {
 
-            const webcamElement = $('#webcam')[0];
-            const canvasElement = $('#canvas')[0];
-            const photoElement = $('#photo')[0];
-            let pictureDataURL = null; // Store the captured photo
-            const webcam = new Webcam(webcamElement, 'environment', canvasElement);
+            // const webcamElement = $('#webcam')[0];
+            // const canvasElement = $('#canvas')[0];
+            // const photoElement = $('#photo')[0];
+            // let pictureDataURL = null; // Store the captured photo
+            // const webcam = new Webcam(webcamElement, 'environment', canvasElement);
 
-            function showCameraModal() {
-                pictureDataURL = null;
-                $('#photo').hide(); // Hide previous photo
-                $('#webcam').show(); // Show camera
-                $('#cameraModal').fadeIn(); // Show modal
-                $('#start-camera').show();
-                $('#capture, #retake, #upload').hide();
-                $('#cancel').show();
-            }
+            // function showCameraModal() {
+            //     pictureDataURL = null;
+            //     $('#photo').hide(); // Hide previous photo
+            //     $('#webcam').show(); // Show camera
+            //     $('#cameraModal').fadeIn(); // Show modal
+            //     $('#start-camera').show();
+            //     $('#capture, #retake, #upload').hide();
+            //     $('#cancel').show();
+            // }
 
-            function hideCameraModal() {
-                $('#cameraModal').fadeOut();
-                webcam.stop();
-            }
+            // function hideCameraModal() {
+            //     $('#cameraModal').fadeOut();
+            //     webcam.stop();
+            // }
 
-            // Start the camera
-            $('#start-camera').on('click', function () {
-                navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: "environment" } } // "ideal" tries back camera but falls back
-                })
-                .then((stream) => {
-                    const video = $('video')[0];
-                    video.srcObject = stream;
-                    video.play();
-                })
-                .catch(err => {
-                    console.error("Error accessing the camera:", err);
-                    alert("Could not access the camera. Please check your device settings.");
-                });
-
-
-                webcam.start()
-                    .then(() => {
-                        document.getElementById('start-camera').style.display = 'none';
-                        document.getElementById('capture').style.display = 'inline-block';
-                    })
-                    .catch(err => console.error(err));
-            });
+            // // Start the camera
+            // $('#start-camera').on('click', function () {
+            //     navigator.mediaDevices.getUserMedia({
+            //         video: { facingMode: { ideal: "environment" } } // "ideal" tries back camera but falls back
+            //     })
+            //     .then((stream) => {
+            //         const video = $('video')[0];
+            //         video.srcObject = stream;
+            //         video.play();
+            //     })
+            //     .catch(err => {
+            //         console.error("Error accessing the camera:", err);
+            //         alert("Could not access the camera. Please check your device settings.");
+            //     });
 
 
-            // Capture photo
-            $('#capture').on('click', function () {
-                pictureDataURL = webcam.snap();
-                $('#photo').attr('src', pictureDataURL).show(); // Update and display photo
-                $('#webcam').hide();
-                $('#capture').hide();
-                $('#retake, #upload').show();
-            });
+            //     webcam.start()
+            //         .then(() => {
+            //             document.getElementById('start-camera').style.display = 'none';
+            //             document.getElementById('capture').style.display = 'inline-block';
+            //         })
+            //         .catch(err => console.error(err));
+            // });
 
-            // Retake photo
-            $('#retake').on('click', function () {
-                $('#photo').hide();
-                $('#webcam').show();
-                webcam.start();
-                $('#capture').show();
-                $('#retake, #upload').hide();
-            });
 
-            // Cancel camera modal
-            $('#cancel').on('click', function () {
-                hideCameraModal();
-            });
+            // // Capture photo
+            // $('#capture').on('click', function () {
+            //     pictureDataURL = webcam.snap();
+            //     $('#photo').attr('src', pictureDataURL).show(); // Update and display photo
+            //     $('#webcam').hide();
+            //     $('#capture').hide();
+            //     $('#retake, #upload').show();
+            // });
+
+            // // Retake photo
+            // $('#retake').on('click', function () {
+            //     $('#photo').hide();
+            //     $('#webcam').show();
+            //     webcam.start();
+            //     $('#capture').show();
+            //     $('#retake, #upload').hide();
+            // });
+
+            // // Cancel camera modal
+            // $('#cancel').on('click', function () {
+            //     hideCameraModal();
+            // });
 
             let pulloutNum;
 
@@ -396,6 +472,7 @@
                 const id = $(this).data("id");
                 type = $(this).data("transfertype");
                 const path = $("#path").val();
+                const user_type_id = {{ Auth::user()->user_type_id }};
 
                 $.ajax({
                     url: '{{ route('view_pullout_request') }}',
@@ -428,6 +505,12 @@
                                 }
 
                             },
+                              columnDefs: [
+                                {
+                                    targets: 8,
+                                    visible: user_type_id !== 9
+                                }
+                            ],
                             columns: [{
                                     data: 'item_no'
                                 },
@@ -659,11 +742,11 @@
                     const priId = $(this).data('pri_id');
                     const number = $(this).data('number');
                     /// Find the input within this row and get its value
-                    const checker = $(this).closest('tr').find('.checker').val();
+                    // const checker = $(this).closest('tr').find('.checker').val();
                     const whEval = $(this).closest('tr').find('.whEval').val();
 
-                    if (!checker || !whEval) {
-                        showToast("warning", "Please input checker and select status.");
+                    if ( /*!checker||*/ !whEval) {
+                        showToast("warning", "Please select status.");
                         return;
                     }
 
@@ -690,19 +773,19 @@
                         reverseButtons: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-
+    
 
                             // Show camera modal
-                        showCameraModal();
+                            // showCameraModal();
 
-                        // Handle upload click
-                        $(document).off('click', '#upload').on('click','#upload', function() {
-                            hideCameraModal();
+                            // Handle upload click
+                            // $(document).off('click', '#upload').on('click','#upload', function() {
+                            // hideCameraModal();
 
-                            if (!pictureDataURL) {
-                                alert("No photo captured!");
-                                return;
-                            }
+                            // if (!pictureDataURL) {
+                            //     alert("No photo captured!");
+                            //     return;
+                            // }
 
                             // Execute AJAX after photo is captured
                             $.ajax({
@@ -710,9 +793,9 @@
                                 method: 'post',
                                 data: {
                                     priId,
-                                    checker,
+                                    // checker,
                                     whEval,
-                                    photo: pictureDataURL,
+                                    // photo: pictureDataURL,
                                     _token: "{{ csrf_token() }}"
                                 },
                                 beforeSend(){
@@ -743,8 +826,7 @@
                                     showToast("error",
                                         "An error occurred. Please try again.");
                                 }
-                            })
-                        });
+                            });
 
 
                         } else if (
