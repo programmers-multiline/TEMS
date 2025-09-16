@@ -1702,10 +1702,10 @@ class ViewFormsController extends Controller
             }else{
                 foreach ($received_proof_uploads as $item) {
 
-                $upload_file_pullout .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                $upload_file_pullout .= '<div class="animated fadeIn">
                 <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/receiving_proofs') . '/' .
                 $item['uploads']['name'] . '">
-                <span>Pullout Form</span>
+                <span class="fs-5"><i class="fa fa-paperclip me-1"></i>View</span>
                 </a>
             </div>';
 

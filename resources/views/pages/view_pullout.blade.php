@@ -225,10 +225,10 @@
                 <div class="actionButtons">
                     
                     @if (Auth::user()->user_type_id == 4)
-                        <div class="d-flex align-items-center justify-content-between gap-2">
-                            <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
-                            <div class="d-flex align-items-center align-items-center">
-                                <label class="form-label font-bold fs-5" style="width: 30%" for="signed_pullout_form">Attach Form:</label>
+                        <div class="d-flex flex-column gap-2">
+                            <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2 w-25">View Approvers</button>
+                            <div class="d-flex align-items-center align-items-center mb-3">
+                                <label class="form-label font-bold fs-5 mb-0 me-1"  for="signed_pullout_form">Attach Pull-out Form:</label>
                                 <div>{!! $upload_file_pullout !!}</div>
                             </div>
                         </div>
@@ -239,7 +239,7 @@
                         <button id="pulloutPrintBtn" class="btn btn-success mb-2">Print Pullout</button>
                         <button data-receivingpic="{{ $uploads_file}}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
                         <div class="d-flex align-items-center align-items-center">
-                            <label class="form-label font-bold fs-5" style="width: 30%" for="signed_pullout_form">Attach Form:</label>
+                            <label class="form-label font-bold fs-5 mb-0 me-2"  for="signed_pullout_form">Attach Pullout Form:</label>
                             <div>{!! $upload_file_pullout !!}</div>
                         </div>
                     @endif
