@@ -429,7 +429,7 @@
 
     // pullout for receiving warehouse
     if(Auth::user()->user_type_id == 2){
-        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296 || Auth::user()->emp_id == 9322){
             $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)
@@ -579,6 +579,34 @@
                 ->where('current_pe', Auth::user()->id)->count();
     }else{
         $site_to_site_count = 0;
+    }
+
+    //for receiving clerk
+    if(Auth::user()->user_type_id == 9){
+        if(Auth::user()->emp_id == 9322){
+            $pullout_for_receiving_r = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('company_id', '3')
+            ->where('request_status', 'approved')
+            ->where('progress', 'ongoing')
+            ->whereNotNull('is_deliver')
+            ->count();
+        }else{
+            $pullout_for_receiving_r = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
+            ->select('pullout_requests.*', 'users.fullname')
+            ->where('pullout_requests.status', 1)
+            ->where('users.status', 1)
+            ->where('company_id', '2')
+            ->where('request_status', 'approved')
+            ->where('progress', 'ongoing')
+            ->whereNotNull('is_deliver')
+            ->count();
+        }
+        
+    }else{
+        $pullout_for_receiving_r = 0;
     }
 
 @endphp
@@ -871,6 +899,34 @@
                                         <i class="nav-main-link-icon fa fa-qrcode"></i>
                                         <span class="nav-main-link-name">Qr Code Generator</span>
                                     </a>
+                                </li>
+                            @endif
+
+                            @if (Auth::user()->user_type_id == 9)
+                                <li class="nav-main-item{{ request()->is('') ? ' open' : '' }}">
+                                    <a class="nav-main-link nav-main-link-submenu{{ request()->is('pages/pullout_warehouse', 'pages/pullout_completed_warehouse') ? ' active' : '' }}"
+                                        data-toggle="submenu" aria-haspopup="true" aria-expanded="true" href="#">
+                                        <i class="nav-main-link-icon fa fa-building-circle-arrow-right"></i>
+                                        <span class="nav-main-link-name">Pull-Out Request</span>
+                                    </a>
+                                    <ul class="nav-main-submenu">
+                                        <li class="nav-main-item d-flex align-items-center justify-content-between">
+                                            <a class="nav-main-link{{ request()->is('pages/pullout_for_receiving') ? ' active' : '' }}"
+                                                href="/pages/pullout_for_receiving">
+                                                <span class="nav-main-link-name">For Receiving</span>
+                                            </a>
+                                            <span class="countContainer nav-main-link text-light {{$pullout_for_receiving_r == 0 ? 'd-none' : '' }}"><span
+                                                id="pulloutForReceivingCount" class="bg-info"
+                                                style="width: 20px; line-height: 20px; border-radius: 50%;text-align: center; font-size: .65rem;">{{ $pullout_for_receiving_r }}</span>
+                                            </span>
+                                        </li>
+                                        <li class="nav-main-item">
+                                            <a class="nav-main-link{{ request()->is('pages/pullout_completed') ? ' active' : '' }}"
+                                                href="/pages/pullout_completed">
+                                                <span class="nav-main-link-name">Completed</span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             @endif
 

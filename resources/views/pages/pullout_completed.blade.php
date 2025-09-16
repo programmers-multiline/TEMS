@@ -276,6 +276,51 @@
                 // });
             })
 
+            $(document).on("click", "#signed_pullout_form_btn", function (e) {
+                e.preventDefault();
+
+                const fileInput = $("#signed_pullout_form")[0].files[0];
+                const reqnum = $("#attachreqnum").val();
+                const reqtype = $("#attachreqtype").val();
+
+
+                if (!fileInput) {
+                    showToast("error", "Please select a file first!");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("signed_pullout_form", fileInput);
+                formData.append("reqnum", reqnum);
+                formData.append("reqtype", reqtype);
+                formData.append("_token", "{{ csrf_token() }}");
+
+                $.ajax({
+                    url: '{{ route('upload_signed_pullout_form') }}',
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    beforeSend() {
+                        $("#signed_pullout_form_btn").prop("disabled", true);
+                        $("#signed_pullout_form_btn").val('uploading..');
+                    },
+                    success(response) {
+                        showToast("success", "Pullout Form uploaded successfully");
+                        $("#ongoingPulloutRequestModal").modal('hide');
+                        // $("#table").DataTable().ajax.reload();
+                        $("#ongoingPulloutRequestModal").one("hidden.bs.modal", function () {
+                            $('.pulloutNumber[data-id="' + reqnum + '"]').trigger("click");
+                        });
+
+                    },
+                    error(xhr, status, error) {
+                        console.error("Upload failed:", error);
+                        showToast("error", "Failed to upload form");
+                    }
+                });
+            });
+
 
         })
     </script>

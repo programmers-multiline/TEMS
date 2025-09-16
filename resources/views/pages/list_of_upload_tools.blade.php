@@ -221,15 +221,14 @@ if(Auth::user()->user_type_id == 4){
             $(document).on('click', '.uploadToolDetails', function() {
 
                 const id = $(this).data("id");
+                const isClosed = $(this).data('status') === 1;
 
-                if($(this).data("status") === 1){
-                    $("#addPriceBtn").addClass("hidden-important");
-                }else{
-                    $("#addPriceBtn").removeClass("hidden-important");
-                }
+                const $btn = $('#addPriceBtn');
+                $btn.toggleClass('hidden-important', isClosed)
+                    .data('id', id); // set via .data()
 
-                // attached to the save price button
-                $("#addPriceBtn").attr("data-id", id);
+                // // attached to the save price button
+                // $("#addPriceBtn").attr("data-id", id);
 
                 const modalTable = $("#modalTable").DataTable({
                     scrollX: true,
@@ -280,8 +279,8 @@ if(Auth::user()->user_type_id == 4){
 
             $("#addPriceBtn").click(function() {
 
-            const id = $(this).data("id");
-
+            const req_id = $(this).data("id");
+    
             const allData = [];
             const prices = [];
 
@@ -319,7 +318,7 @@ if(Auth::user()->user_type_id == 4){
                 url: '{{ route('import_tool_add_price') }}',
                 method: 'post',
                 data: {
-                    id,
+                    req_id,
                     priceDatas: stringData,
                     _token: "{{ csrf_token() }}"
                 },

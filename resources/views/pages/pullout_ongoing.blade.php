@@ -3,6 +3,25 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-select/css/select.dataTables.css') }}">
     {{-- <link rel="stylesheet" href="{{ asset('css/track_request.css') }}"> --}}
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond/filepond.min.css') }}">
+    <link rel="stylesheet"
+        href="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.css') }}">
+
+
+    <style>
+        #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
+            display: none;
+        }
+
+        #table>thead>tr>th.dt-orderable-none.dt-select.dt-ordering-asc>span.dt-column-order {
+            display: none;
+        }
+
+        .filepond--credits {
+            display: none;
+        }
+    </style>
 
     <style>
         #table>thead>tr>th.text-center.dt-orderable-none.dt-ordering-asc>span.dt-column-order {
@@ -159,6 +178,51 @@
     </div>
 
 
+    <div class="modal fade" id="uploadPicturePullout" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"
+        aria-labelledby="modal-popin" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-popin" role="document">
+            <div class="modal-content">
+
+                <form id="uploadPicFormPullout" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" id="routeUrl" value="{{route('upload_tools_pic_pullout')}}">
+
+                    <div class="block block-rounded shadow-none mb-0">
+                        <div class="block-header block-header-default">
+                            <h3 class="block-title">Upload Picture Pullout</h3>
+                            <div class="block-options closeModalRfteis">
+                                <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="block-content fs-sm">
+                            <div class="block block-rounded">
+                                <div class="block-content">
+                                    <input type="file" id="pictureUploadPullout" 
+                                        data-allow-reorder="true" data-max-file-size="10MB" data-max-files="1">
+
+
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="pulloutItemIdModalhidden" name="pulloutItemId">
+                        <div class="block-content block-content-full block-content-sm text-end border-top">
+                            <button type="button" class="btn btn-alt-secondary"
+                                data-bs-target="#ongoingPulloutRequestModal" data-bs-toggle="modal">
+                                Back
+                            </button>
+                            <button type="submit" data-bs-target="#ongoingPulloutRequestModal" data-bs-toggle="modal" class="btn btn-alt-primary">
+                                Upload
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
     <!-- END Page Content -->
 
     @include('pages.modals.ongoing_pullout_request_modal')
@@ -177,6 +241,23 @@
     <script src="{{ asset('js/plugins/datatables-select/js/select.dataTables.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/webcam-easy/dist/webcam-easy.min.js"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+
+    <script src="{{ asset('js/plugins/filepond/filepond.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js') }}"></script>
+    <script
+        src="{{ asset('js/plugins/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-encode/filepond-plugin-file-encode.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-edit/filepond-plugin-image-edit.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}">
+    </script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js') }}"></script>
+    <script src="{{ asset('js/plugins/filepond-plugin-image-transform/filepond-plugin-image-transform.min.js') }}">
+    </script>
+    
 
     {{-- <script type="module">
     Codebase.helpersOnLoad('cb-table-tools-checkable');
@@ -752,6 +833,51 @@
                 });
             })
 
+
+            $(document).on("click", "#signed_pullout_form_btn", function (e) {
+                e.preventDefault();
+
+                const fileInput = $("#signed_pullout_form")[0].files[0];
+                const reqnum = $("#attachreqnum").val();
+                const reqtype = $("#attachreqtype").val();
+
+
+                if (!fileInput) {
+                    showToast("error", "Please select a file first!");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("signed_pullout_form", fileInput);
+                formData.append("reqnum", reqnum);
+                formData.append("reqtype", reqtype);
+                formData.append("_token", "{{ csrf_token() }}");
+
+                $.ajax({
+                    url: '{{ route('upload_signed_pullout_form') }}',
+                    type: "POST",
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success(response) {
+                        showToast("success", "Pullout Form uploaded successfully");
+                        $("#ongoingPulloutRequestModal").modal('hide');
+                        // $("#table").DataTable().ajax.reload();
+                        $("#ongoingPulloutRequestModal").one("hidden.bs.modal", function () {
+                            $('.pulloutNumber[data-id="' + reqnum + '"]').trigger("click");
+                        });
+
+                    },
+                    error(xhr, status, error) {
+                        console.error("Upload failed:", error);
+                        showToast("error", "Failed to upload form");
+                    }
+                });
+            });
+
+
         })
     </script>
+    <!-- Fileupload JS -->
+    <script src="{{ asset('js\lib\fileupload.js') }}"></script>
 @endsection

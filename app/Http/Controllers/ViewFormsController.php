@@ -8,6 +8,7 @@ use App\Models\DafApprovers;
 use App\Models\ToolPictures;
 use Illuminate\Http\Request;
 use App\Models\PulloutRequest;
+use App\Models\ReceivingProof;
 use App\Models\RequestApprover;
 use App\Models\TransferRequest;
 use App\Models\PsTransferRequests;
@@ -1659,9 +1660,64 @@ class ViewFormsController extends Controller
                     </div>
                 </div>
             ';
+
+      
+            $picture = ToolPictures::leftjoin('uploads', 'uploads.id', 'upload_id')
+                ->select('uploads.name')
+                ->where('tool_pictures.status', 1)
+                ->where('pstr_id', $request->id)
+                ->orderBy('tool_pictures.created_at', 'asc')
+                ->get();
+
+            $uploads_file = [];
+            $uploads_file = '<div class="row mx-auto js-gallery img-fluid-100 js-gallery-enabled">';
+            if(count($picture) === 0){
+                $uploads_file .= '<span class="mx-auto fw-bold text-secondary" style="font-size: 26px; opacity: 65%">NO UPLOAD PICTURE OF TOOLS</span>';
+            }else{
+                foreach ($picture as $pic) {
+                    
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/tool_pictures') . '/' . $pic['name'] . '">
+                    <span>
+                        <img class="img-fluid" src="' . asset('uploads/tool_pictures') . '/' . $pic['name'] . '" alt="">
+                    </span>
+                    </a>
+                    </div>';
+          
+                }
+            }
+            $uploads_file .= '</div>';
+
+
+            $received_proof_uploads = ReceivingProof::with('uploads')->where('status', 1)->where('request_number', $pullout_tools->pullout_number)->where('tr_type', 'pullout')->get()->toArray();
+            $upload_file_pullout = [];
+            $upload_file_pullout = '<div class="w-100 d-flex align-items-center">';
+            if(count($received_proof_uploads) === 0 && Auth::user()->user_type_id == 2 ){
+                $upload_file_pullout .= '<span class="mx-auto fw-bold text-secondary text-danger" style="font-size: 12px; opacity: 65%">NO PULLOUT FORM UPLOADED</span>';
+            }if(count($received_proof_uploads) === 0 && Auth::user()->user_type_id == 4 ){
+                $upload_file_pullout .= '<input class="form-control" style="width: 60%" type="file" id="signed_pullout_form">
+                                    <input type="hidden" id="attachreqnum" value="'. $pullout_tools->pullout_number .'">
+                                    <input type="hidden" id="attachreqtype" value="pullout">
+                                    <button id="signed_pullout_form_btn" data-reqnum="'. $pullout_tools->pullout_number .'" class="btn ms-2 btn-success">Upload</button>';
+            }else{
+                foreach ($received_proof_uploads as $item) {
+
+                $upload_file_pullout .= '<div class="animated fadeIn">
+                <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/receiving_proofs') . '/' .
+                $item['uploads']['name'] . '">
+                <span class="fs-5"><i class="fa fa-paperclip me-1"></i>View</span>
+                </a>
+            </div>';
+
+            }
+            }
+            
+            $upload_file_pullout .= '</div>';
+
+        
         // para malaman kung ilalabas ba ang action or hindi
         $path = $request->path;
-        return view('pages.view_pullout', compact('pullout_tools', 'requestor', 'approvers', 'html', 'path'))->render();
+        return view('pages.view_pullout', compact('pullout_tools', 'requestor', 'approvers', 'html', 'path','uploads_file', 'upload_file_pullout'))->render();
 
     }
 

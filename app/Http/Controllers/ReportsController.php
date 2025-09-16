@@ -430,7 +430,57 @@ class ReportsController extends Controller
                 }
             })
 
-            ->rawColumns(['view_tools', 'request_status', 'request_type','customer_name','subcon'])
+            ->addColumn('teis', function ($row) {
+                $teis_uploads = TeisUploads::with('uploads')->where('status', 1)->where('teis_number', $row->teis_number)->where('tr_type', $row->tr_type)->get()->toArray();
+                $uploads_file = [];
+                $uploads_file = '<div class="row mx-auto">';
+                foreach ($teis_uploads as $item) {
+
+                    $uploads_file .= '<div class="col-md-6 col-lg-4 col-xl-3 animated fadeIn">
+                    <a target="_blank" class="img-link img-link-zoom-in img-thumb img-lightbox" href="' . asset('uploads/teis_form') . '/' . $item['uploads']['name'] . '">
+                    <span>'.$item['teis'].'.pdf</span>
+                    </a>
+                </div>';
+
+                }
+                $uploads_file .= '</div>';
+                return $uploads_file;
+            })
+
+            ->addColumn('ters', function ($row) {
+                $ters_uploads = TersUploads::with('uploads')
+                    ->where('status', 1)
+                    ->where('pullout_number', $row->teis_number)
+                    ->where('tr_type', $row->tr_type)
+                    ->get();
+            
+                    if ($ters_uploads->isEmpty()) {
+                        return '';
+                    } elseif ($ters_uploads->count() === 1) {
+                        // If only one file, display it directly
+                        $item = $ters_uploads->first();
+                        return '<a target="_blank" class="text-primary" href="' . asset('uploads/ters_form/' . $item->uploads->name) . '">' . $item->teis . '.pdf</a>';
+                    } else {
+                    // If multiple files, show them in a dropdown
+                    $dropdown_id = 'dropdownTers' . $row->pullout_number; // Unique dropdown based on pullout_number
+            
+                    $output = '<div class="dropdown">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="' . $dropdown_id . '" data-bs-toggle="dropdown" aria-expanded="false">
+                            View Files
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="' . $dropdown_id . '">';
+            
+                    foreach ($ters_uploads as $item) {
+                        $output .= '<li><a class="dropdown-item" target="_blank" href="' . asset('uploads/ters_form/' . $item->uploads->name) . '">' . $item->teis . '.pdf</a></li>';
+                    }
+            
+                    $output .= '</ul></div>';
+            
+                    return $output;
+                }
+            })
+
+            ->rawColumns(['view_tools', 'request_status', 'request_type','customer_name','subcon','ters', 'teis'])
             ->toJson();
     }
 

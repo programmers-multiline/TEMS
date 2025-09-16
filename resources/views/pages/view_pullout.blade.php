@@ -223,9 +223,30 @@
         <div class="py-3">
             <div style="width: 1100px; height: 1056px;" class="containerPrint px-2">
                 <div class="actionButtons">
-                    <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
+                    
+                    @if (Auth::user()->user_type_id == 4)
+                        <div class="d-flex flex-column gap-2">
+                            <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2 w-25">View Approvers</button>
+                            <div class="d-flex align-items-center align-items-center mb-3">
+                                <label class="form-label font-bold fs-5 mb-0 me-1"  for="signed_pullout_form">Attach Pull-out Form:</label>
+                                <div>{!! $upload_file_pullout !!}</div>
+                            </div>
+                        </div>
+
+                    @endif
                     @if (Auth::user()->user_type_id == 2)
+                        <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
                         <button id="pulloutPrintBtn" class="btn btn-success mb-2">Print Pullout</button>
+                        <button data-receivingpic="{{ $uploads_file}}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
+                        <div class="d-flex align-items-center align-items-center">
+                            <label class="form-label font-bold fs-5 mb-0 me-2"  for="signed_pullout_form">Attach Pullout Form:</label>
+                            <div>{!! $upload_file_pullout !!}</div>
+                        </div>
+                    @endif
+                    @if (Auth::user()->user_type_id == 9)
+                        <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
+                        <button data-reqnum="{{ $pullout_tools->pullout_number }}" class="pullout_multi_upload btn btn-success mb-2" data-bs-target="#multi_upload_pullout" data-bs-toggle="modal"><i class="fa me-1 fa-upload"></i>Upload Picture</button>
+                        <button data-receivingpic="{{ $uploads_file }}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
                     @endif
                 </div>
                 <div class="flex">
@@ -330,7 +351,7 @@
                             <th class=""
                                 style="border-bottom: none; position: relative; width: 13%; font-size: 11px">
                                 <span class="th-absolute">REASON FOR TRANSFER</span></th>
-
+                            {{-- //#1.8v changes --}}
                             @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
                                 <th class=""
                                 style="border-bottom: none; position: relative; width: 10%; font-size: 12px">
@@ -366,6 +387,7 @@
                             <th>OTHERS</th> --}}
                             <th></th>
                             @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
+                            {{-- //#1.8v changes --}}
                             <th></th>
                             @endif
                             @if ($path == 'pages/pullout_for_receiving')
@@ -526,6 +548,15 @@
                     });
 
                 })
+
+
+                $(document).on("click", ".view_pullout_upload", function () {
+                    const pic = $(this).data("receivingpic");
+
+                    $(".receiving_pullout_pic_div").html(pic);
+                    
+                });
+
 
 
             });

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PsTransferRequestItems;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\PeLogs;
@@ -29,6 +28,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\WarehouseDocsClerkNotif;
 use App\Models\ToolPictureForPullout;
+use App\Models\PsTransferRequestItems;
+use App\Models\ToolPictureReceivingUploads;
 
 class FileUploadController extends Controller
 {
@@ -423,6 +424,18 @@ class FileUploadController extends Controller
             
         }
 
+        PulloutLogs::create([
+            'page' => 'pullout_for_receiving',
+            'request_number' => $request->tersNum,
+            'title' => 'Upload TERS',
+            'message' => Auth::user()->fullname . ' ' . 'upload TERS.' . '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/ters_form') . '/' .
+                $ters_name . '">
+                <span>View</span>
+                </a>',
+            'action' => 7,
+            'approver_name' => Auth::user()->fullname,
+        ]);
+
         if ($request->path == 'pages/not_serve_items') {
             ///patalandaan para malaman kung lahat na ng items sa tools na hindi na served at di na possible sa redelivery
             TransferRequestItems::where('status', 1)->where('teis_number', $request->tersNum)->where('transfer_state', 2)->update([
@@ -732,6 +745,110 @@ class FileUploadController extends Controller
             ]);
         }
     }
+
+
+    public function multi_upload_tools_pic(Request $request)
+    {
+        //  dd($request->all());      
+        if ($request->hasFile('picture_upload')) {
+
+
+            $toolPicture = $request->picture_upload;
+
+            foreach ($toolPicture as $pic) {
+                $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
+                $uploads = Uploads::create([
+                    'name' => $pic_name,
+                    'original_name' => $pic->getClientOriginalName(),
+                    'extension' => $pic->getClientOriginalExtension(),
+                ]);
+                $pic->move('uploads/tool_pictures/', $pic_name);
+
+                /// for logs
+
+                ToolPictures::create([
+                    'pstr_id' => $request->reqNumfm,
+                    'tool_id' => 0,
+                    'upload_id' => $uploads->id,
+                    'tr_type' => 'pullout',
+                ]);
+
+
+            }
+        }
+
+        return $request->reqNumfm;
+
+    }
+
+
+    public function upload_signed_pullout_form(Request $request)
+    {
+        $pic = $request->signed_pullout_form;
+
+
+        $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
+            $uploads = Uploads::create([
+                'name' => $pic_name,
+                'original_name' => $pic->getClientOriginalName(),
+                'extension' => $pic->getClientOriginalExtension(),
+            ]);
+            $pic->move('uploads/receiving_proofs/', $pic_name);
+
+            // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+
+            ReceivingProof::create([
+                'request_number' => $request->reqnum,
+                'upload_id' => $uploads->id,
+                'tr_type' => $request->reqtype,
+            ]);
+
+    }
+
+    public function upload_tools_pic_pullout(Request $request){
+
+        $pulloutTools = PulloutRequestItems::find($request->pulloutItemId);
+
+        $pic = $request->picture_upload[0];
+
+
+        $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
+            $uploads = Uploads::create([
+                'name' => $pic_name,
+                'original_name' => $pic->getClientOriginalName(),
+                'extension' => $pic->getClientOriginalExtension(),
+            ]);
+
+            $pic->move('uploads/tool_picture_for_pullout/', $pic_name);
+
+            
+        
+            ToolPictureForPullout::create([
+                'pullout_item_id' => $request->pulloutItemId, 
+                'tool_id' => $pulloutTools->tool_id,
+                'upload_id' => $uploads->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            ///for logs
+
+            $tool_name = ToolsAndEquipment::where('status', 1)->where('id', $pulloutTools->tool_id)->value('item_description');
+
+            PulloutLogs::create([
+                'page' => 'pullout_ongoing',
+                'request_number' => $pulloutTools->pullout_number,
+                'title' => 'Upload photo for pullout',
+                'message' => Auth::user()->fullname . ' upload a photo of ' . $tool_name . ' for pullout' . '.'. '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_picture_for_pullout') . '/' .
+                        $pic_name . '">
+                        <span>View</span>
+                        </a>',
+                'action' => 99,
+                'approver_name' => Auth::user()->fullname,
+            ]);
+
+            return $pulloutTools->pullout_number;
+    }
+
 
 
 }
