@@ -429,7 +429,7 @@
 
     // pullout for receiving warehouse
     if(Auth::user()->user_type_id == 2){
-        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296 || Auth::user()->emp_id == 7676){
+        if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296 || Auth::user()->emp_id == 9322){
             $pullout_for_receiving = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)
@@ -583,7 +583,7 @@
 
     //for receiving clerk
     if(Auth::user()->user_type_id == 9){
-        if(Auth::user()->emp_id == 7676){
+        if(Auth::user()->emp_id == 9322){
             $pullout_for_receiving_r = App\Models\PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
             ->select('pullout_requests.*', 'users.fullname')
             ->where('pullout_requests.status', 1)

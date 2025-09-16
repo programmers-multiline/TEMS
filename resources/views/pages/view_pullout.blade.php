@@ -223,13 +223,28 @@
         <div class="py-3">
             <div style="width: 1100px; height: 1056px;" class="containerPrint px-2">
                 <div class="actionButtons">
-                    <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
-                    @if (Auth::user()->user_type_id == 2)
-                        <button id="pulloutPrintBtn" class="btn btn-success mb-2">Print Pullout</button>
-                        <button data-receivingpic="{{ $uploads_file}}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
+                    
+                    @if (Auth::user()->user_type_id == 4)
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
+                            <div class="d-flex align-items-center align-items-center">
+                                <label class="form-label font-bold fs-5" style="width: 30%" for="signed_pullout_form">Attach Form:</label>
+                                <div>{!! $upload_file_pullout !!}</div>
+                            </div>
+                        </div>
 
                     @endif
+                    @if (Auth::user()->user_type_id == 2)
+                        <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
+                        <button id="pulloutPrintBtn" class="btn btn-success mb-2">Print Pullout</button>
+                        <button data-receivingpic="{{ $uploads_file}}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
+                        <div class="d-flex align-items-center align-items-center">
+                            <label class="form-label font-bold fs-5" style="width: 30%" for="signed_pullout_form">Attach Form:</label>
+                            <div>{!! $upload_file_pullout !!}</div>
+                        </div>
+                    @endif
                     @if (Auth::user()->user_type_id == 9)
+                        <button id="view_approvers" class="btn btn-primary timeline-trigger mb-2">View Approvers</button>
                         <button data-reqnum="{{ $pullout_tools->pullout_number }}" class="pullout_multi_upload btn btn-success mb-2" data-bs-target="#multi_upload_pullout" data-bs-toggle="modal"><i class="fa me-1 fa-upload"></i>Upload Picture</button>
                         <button data-receivingpic="{{ $uploads_file }}" class="view_pullout_upload btn btn-info mb-2" data-bs-target="#view_upload_pullout_modal" data-bs-toggle="modal"><i class="fa me-1 fa-eye"></i>View</button>
                     @endif
@@ -337,11 +352,11 @@
                                 style="border-bottom: none; position: relative; width: 13%; font-size: 11px">
                                 <span class="th-absolute">REASON FOR TRANSFER</span></th>
                             {{-- //#1.8v changes --}}
-                            {{-- @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
+                            @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
                                 <th class=""
                                 style="border-bottom: none; position: relative; width: 10%; font-size: 12px">
                                 <span class="th-absolute">Tool Photo</span></th>
-                            @endif --}}
+                            @endif
 
                             @if ($path == 'pages/pullout_for_receiving')
                             <th class=""
@@ -373,7 +388,7 @@
                             <th></th>
                             @if ($path == 'pages/pullout_ongoing' && Auth::user()->user_type_id == 4)
                             {{-- //#1.8v changes --}}
-                            {{-- <th></th> --}}
+                            <th></th>
                             @endif
                             @if ($path == 'pages/pullout_for_receiving')
                             <th></th>

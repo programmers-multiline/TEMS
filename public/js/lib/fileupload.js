@@ -661,3 +661,68 @@ $("#multiUploadPicForm").on("submit", function (e) {
         },
     });
 });
+
+
+
+
+// Upload Picture PULLOUT
+
+var uploadPicPulloutPond = FilePond.create(document.querySelector("#pictureUploadPullout"), {
+    labelIdle: `Drag & Drop your Picture of tool here <span class="filepond--label-action">Browse</span>`,
+    imagePreviewHeight: 600,
+    imageCropAspectRatio: "1:1",
+});
+
+$(document).on("click", ".uploadPicturePulloutBtn", function () {
+    const pri_id = $(this).data("pri_id");
+
+    $("#pulloutItemIdModalhidden").val(pri_id);
+
+
+    
+});
+
+
+
+// SUBMIT FORM
+$("#uploadPicFormPullout").on("submit", function (e) {
+    e.preventDefault();
+    
+    var routeUrl = $("#uploadPicFormPullout #routeUrl").val();
+    
+    var frm = document.getElementById("uploadPicFormPullout");
+    var form_data = new FormData(frm);
+    
+    pondpicture = uploadPicPulloutPond.getFiles();
+    if(!pondpicture[0]){
+        showToast("warning", "Select Picture of tool first");
+        return
+    }
+    
+    for (var i = 0; i < pondpicture.length; i++) {
+        form_data.append("picture_upload[]", pondpicture[i].file);
+    }
+    const table = $("#table").DataTable();
+
+    $.ajax({
+        type: "POST",
+        url: routeUrl,
+        processData: false,
+        contentType: false,
+        cache: false,
+        data: form_data,
+        success: function (pulloutNum) {
+            $("#uploadPicturePullout").modal('hide')
+            // $("#ongoingTeisRequestModal").modal('show')
+            $("#modalTable").DataTable().ajax.reload();
+            table.ajax.reload();
+            showToast("success", "Tool Picture Uploaded");
+
+            // clear the selection in filepond
+            uploadPicPulloutPond.removeFiles();
+
+            // $('.pulloutNumber[data-id="' + pulloutNum + '"]').trigger('click');
+
+        },
+    });
+});

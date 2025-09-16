@@ -782,4 +782,73 @@ class FileUploadController extends Controller
     }
 
 
+    public function upload_signed_pullout_form(Request $request)
+    {
+        $pic = $request->signed_pullout_form;
+
+
+        $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
+            $uploads = Uploads::create([
+                'name' => $pic_name,
+                'original_name' => $pic->getClientOriginalName(),
+                'extension' => $pic->getClientOriginalExtension(),
+            ]);
+            $pic->move('uploads/receiving_proofs/', $pic_name);
+
+            // $uploads = Uploads::where('status', 1)->orderBy('id', 'desc')->first();
+
+            ReceivingProof::create([
+                'request_number' => $request->reqnum,
+                'upload_id' => $uploads->id,
+                'tr_type' => $request->reqtype,
+            ]);
+
+    }
+
+    public function upload_tools_pic_pullout(Request $request){
+
+        $pulloutTools = PulloutRequestItems::find($request->pulloutItemId);
+
+        $pic = $request->picture_upload[0];
+
+
+        $pic_name = mt_rand(111111, 999999) . date('YmdHms') . '.' . $pic->getClientOriginalExtension();
+            $uploads = Uploads::create([
+                'name' => $pic_name,
+                'original_name' => $pic->getClientOriginalName(),
+                'extension' => $pic->getClientOriginalExtension(),
+            ]);
+
+            $pic->move('uploads/tool_picture_for_pullout/', $pic_name);
+
+            
+        
+            ToolPictureForPullout::create([
+                'pullout_item_id' => $request->pulloutItemId, 
+                'tool_id' => $pulloutTools->tool_id,
+                'upload_id' => $uploads->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            ///for logs
+
+            $tool_name = ToolsAndEquipment::where('status', 1)->where('id', $pulloutTools->tool_id)->value('item_description');
+
+            PulloutLogs::create([
+                'page' => 'pullout_ongoing',
+                'request_number' => $pulloutTools->pullout_number,
+                'title' => 'Upload photo for pullout',
+                'message' => Auth::user()->fullname . ' upload a photo of ' . $tool_name . ' for pullout' . '.'. '<a target="_blank" class="img-link img-thumb" href="' . asset('uploads/tool_picture_for_pullout') . '/' .
+                        $pic_name . '">
+                        <span>View</span>
+                        </a>',
+                'action' => 99,
+                'approver_name' => Auth::user()->fullname,
+            ]);
+
+            return $pulloutTools->pullout_number;
+    }
+
+
+
 }

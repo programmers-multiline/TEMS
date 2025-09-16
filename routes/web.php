@@ -234,6 +234,9 @@ Route::middleware(['auth'])->group(function () {
 
     //multi-upload for receiving of warehouse
     Route::post('multi_upload_tools_pic', [FileUploadController::class, 'multi_upload_tools_pic'])->name('multi_upload_tools_pic');
+    
+    Route::post('upload_signed_pullout_form', [FileUploadController::class, 'upload_signed_pullout_form'])->name('upload_signed_pullout_form');
+    Route::post('upload_tools_pic_pullout', [FileUploadController::class, 'upload_tools_pic_pullout'])->name('upload_tools_pic_pullout');
 
 
     Route::post('search', [SearchController::class, 'search'])->name('search');

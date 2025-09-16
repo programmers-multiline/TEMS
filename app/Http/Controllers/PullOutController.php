@@ -329,42 +329,43 @@ class PullOutController extends Controller
                 }
             })
 
-            //#1.8v changes
-            // ->addColumn('capture_tool', function ($row) use ($request) {
-            //     if ($request->path == "pages/pullout_ongoing") {
+            #1.8v changes
+            ->addColumn('capture_tool', function ($row) use ($request) {
+                if ($request->path == "pages/pullout_ongoing") {
 
-            //         $picture = ToolPictureForPullout::leftjoin('uploads', 'uploads.id', 'upload_id')
-            //             ->select('uploads.name', 'uploads.original_name')
-            //             ->where('tool_picture_for_pullouts.status', 1)
-            //             ->where('pullout_item_id', $row->pri_id)
-            //             ->orderBy('tool_picture_for_pullouts.created_at', 'desc')
-            //             ->first();
+                    $picture = ToolPictureForPullout::leftjoin('uploads', 'uploads.id', 'upload_id')
+                        ->select('uploads.name', 'uploads.original_name')
+                        ->where('tool_picture_for_pullouts.status', 1)
+                        ->where('pullout_item_id', $row->pri_id)
+                        ->orderBy('tool_picture_for_pullouts.created_at', 'desc')
+                        ->first();
 
-            //             if($picture){
-            //                 $uploads_file =
-            //                     '<div class="d-flex justify-content-center align-items-center">
-            //                     <div class="animated fadeIn pictureContainer">
-            //                         <a target="_blank" class="img-link-zoom-in" href="' . asset('uploads/tool_picture_for_pullout') . '/' . $picture->name . '">
-            //                         <span>'.$picture->original_name.'</span>
-            //                         </a>
-            //                     </div>
-            //                 </div>';
-            //             } else {
-            //                 if (Auth::user()->user_type_id == 4 && $request->path == 'pages/pullout_ongoing' && $row->request_status == 'approved') {
-            //                     $uploads_file = '<div class="d-flex gap-2 justify-content-center align-items-center">
-            //                 <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" type="button" class="pulloutCaptureBtn noPicture btn btn-sm btn-alt-info" data-bs-toggle="tooltip" aria-label="Capture Pullout Tool" data-bs-original-title="Capture Pullout Tool"><i class="fa fa-camera"></i></button>
-            //                 </div>';
-            //                 } else {
-            //                     $uploads_file = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
-            //                 }
-            //             }
+                        if($picture){
+                            $uploads_file =
+                                '<div class="d-flex justify-content-center align-items-center">
+                                <div class="animated fadeIn pictureContainer">
+                                    <a target="_blank" class="img-link-zoom-in" href="' . asset('uploads/tool_picture_for_pullout') . '/' . $picture->name . '">
+                                    <span>'.$picture->original_name.'</span>
+                                    </a>
+                                </div>
+                            </div>';
+                        } else {
+                            if (Auth::user()->user_type_id == 4 && $request->path == 'pages/pullout_ongoing' /* && $row->request_status == 'approved' */) {
+                                $uploads_file = '<div class="d-flex gap-2 justify-content-center align-items-center">
+                            <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" type="button" class="pulloutCaptureBtn noPicture btn btn-sm btn-alt-info" data-bs-toggle="tooltip" aria-label="Capture Pullout Tool" data-bs-original-title="Capture Pullout Tool"><i class="fa fa-camera"></i></button>
+                            <button data-trtype="pullout" data-pri_id="' . $row->pri_id . '" data-number="' . $row->pullout_number . '" data-bs-toggle="modal" data-bs-target="#uploadPicturePullout" type="button" class="uploadPicturePulloutBtn noPicture btn btn-sm btn-success js-bs-tooltip-enabled" data-bs-toggle="tooltip" aria-label="Upload Picture of tool" data-bs-original-title="Upload Picture of tool"><i class="fa fa-upload"></i></button>
+                            </div>';
+                            } else {
+                                $uploads_file = '<span class="mx-auto fw-bold text-secondary" style="font-size: 14px; opacity: 65%">No Action</span>';
+                            }
+                        }
 
-            //         return $uploads_file;
-            //     }
-            // })
+                    return $uploads_file;
+                }
+            })
 
 
-            ->rawColumns(['tools_status', 'action', 'new_tools_status', 'new_tools_status_defective', 'checker', 'wh_eval', 'item_no'])
+            ->rawColumns(['tools_status', 'action', 'new_tools_status', 'new_tools_status_defective', 'checker', 'wh_eval', 'item_no', 'capture_tool'])
             ->toJson();
     }
 
@@ -445,7 +446,7 @@ class PullOutController extends Controller
             // })
             // ->where('request_status', 'approved')
             // ->get();
-            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296 || Auth::user()->emp_id == 7676){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296 || Auth::user()->emp_id == 9322){
                 $request_tools = PulloutRequest::leftJoin('users', 'users.id', 'pullout_requests.user_id')
                 ->leftJoin('ters_uploads', 'ters_uploads.pullout_number', '=', 'pullout_requests.pullout_number')
                 ->select('pullout_requests.*', 'users.fullname')
@@ -705,13 +706,15 @@ class PullOutController extends Controller
 
             if($tools->company_id == 3){
                 $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 239)->first();
+                $receiving_clerk = User::where('status', 1)->where('user_type_id', 9)->where('comp_id', 3)->first();
             }else{
                 $docs_clerk = User::select('fullname', 'email')->where('status', 1)->where('user_type_id', 2)->where('emp_id', 170)->first();
+                $receiving_clerk = User::where('status', 1)->where('user_type_id', 9)->where('comp_id', 2)->first();
             }
 
             $mail_data_wh = ['type' => 'pullout', 'fullname' => $docs_clerk->fullname, 'request_number' => $pullout_request->pullout_number, 'items' => json_encode($mail_Items)];
 
-            Mail::to($docs_clerk->email)->send(new WarehouseDocsClerkNotif($mail_data_wh));
+            Mail::to($docs_clerk->email)->cc($receiving_clerk)->send(new WarehouseDocsClerkNotif($mail_data_wh));
         }
 
 
@@ -761,7 +764,7 @@ class PullOutController extends Controller
             });
 
         }else{
-            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296  || Auth::user()->emp_id == 7676){
+            if(Auth::user()->emp_id == 239 || Auth::user()->emp_id == 9296  || Auth::user()->emp_id == 9322){
                 $pullout_tools = PulloutRequest::with(['approvers' => function ($query) {
                     $query->where('status', 1)
                         ->where('request_type', 3)
